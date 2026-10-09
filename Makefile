@@ -10,7 +10,7 @@ PYTHON ?= python3
 VENV ?= .repro-venv
 REPRO_SCRIPT := scripts/reproduce.sh
 
-.PHONY: help reproduce check-data leaderboard clean-repro
+.PHONY: help reproduce check-data leaderboard mlflow-ui mlflow-status clean-repro
 .DEFAULT_GOAL := help
 
 help:  ## Show this help
@@ -30,6 +30,16 @@ check-data:  ## Verify raw dataset + committed split digests; non-zero exit on d
 # aborts with a named error if required runs or annotations are missing.
 leaderboard:  ## Re-render reports/leaderboard.md from the recorded MLflow runs
 	PYTHONPATH=src $(PYTHON) -m heart.reporting.leaderboard
+
+# View the recorded training runs. The UI is pointed at the one SQLite
+# tracking store (experiments/mlruns/mlflow.db); it preflights first so an
+# empty or missing store is named loudly instead of opening a blank server.
+# Override the port with MLFLOW_UI_PORT (default 5000).
+mlflow-ui:  ## Launch the MLflow UI against the local tracking store
+	PYTHONPATH=src $(PYTHON) scripts/mlflow_ui.py --launch
+
+mlflow-status:  ## Report tracking-store status and run counts (no server)
+	PYTHONPATH=src $(PYTHON) scripts/mlflow_ui.py --status
 
 # Remove the reproduction venv created by `make reproduce` (not the mlflow
 # run store, which is evidence).

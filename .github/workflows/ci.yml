@@ -1,0 +1,49 @@
+# CI for heart-failure-prediction.
+#
+# Minimal by design: test + build. No lint stage exists yet (the project has
+# no linter configured); add a job here when one is adopted.
+#
+# Deps come from pyproject.toml extras (pinned for reproducibility).
+# app/requirements.txt is deliberately NOT used here — it is the narrower
+# Streamlit Community Cloud deploy manifest.
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install package with dev/ml/app extras
+        run: pip install -e ".[dev,ml,app]"
+
+      - name: Dataset integrity gate
+        run: make check-data
+
+      - name: Run test suite
+        run: pytest
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build wheel
+        run: pipx run build
