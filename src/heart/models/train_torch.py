@@ -52,7 +52,6 @@ import importlib
 import json
 import logging
 import math
-import os
 import sys
 import time
 from dataclasses import dataclass, field
@@ -90,6 +89,7 @@ from heart.gpu.device_check import (
     TARGET_GPU_ARCH,
     probe_torch,
 )
+from heart.runtime import atomic_write_text, json_default, write_json_document
 from heart.models.mlp import (
     MLPConfig,
     MLPError,
@@ -1268,13 +1268,11 @@ def render_training_report(result: TrainingResult) -> str:
     return "\n".join(lines)
 
 
-def _atomic_write_text(path: str | Path, content: str) -> Path:
+def _atomic_write_report(path: str | Path, content: str) -> Path:
+    """Atomically write ``content``, raising TorchReportError on fs failure."""
     destination = Path(path)
     try:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        tmp = destination.with_name(destination.name + ".part")
-        tmp.write_text(content, encoding="utf-8")
-        os.replace(tmp, destination)
+        atomic_write_text(destination, content)
     except OSError as exc:
         raise TorchReportError(
             f"Could not write the MLP training report to {destination}: {exc}"
@@ -1288,17 +1286,9 @@ def write_training_report(result: TrainingResult, path: str | Path) -> Path:
         raise TorchReportError(
             f"result must be a TrainingResult, got {type(result).__name__}."
         )
-    destination = _atomic_write_text(path, render_training_report(result))
+    destination = _atomic_write_report(path, render_training_report(result))
     logger.info("Wrote MLP training report to %s", destination)
     return destination
-
-
-def _json_default(value: object) -> object:
-    if isinstance(value, np.generic):
-        return value.item()
-    raise TypeError(
-        f"Object of type {type(value).__name__} is not JSON serializable"
-    )
 
 
 def write_training_json(result: TrainingResult, path: str | Path) -> Path:
@@ -1307,15 +1297,12 @@ def write_training_json(result: TrainingResult, path: str | Path) -> Path:
         raise TorchReportError(
             f"result must be a TrainingResult, got {type(result).__name__}."
         )
-    try:
-        payload = json.dumps(
-            result.to_dict(), indent=2, sort_keys=True, default=_json_default
-        )
-    except TypeError as exc:
-        raise TorchReportError(
-            f"Could not serialise the training result: {exc}"
-        ) from exc
-    destination = _atomic_write_text(path, payload + "\n")
+    destination = write_json_document(
+        path,
+        result.to_dict(),
+        error_factory=TorchReportError,
+        label="training result",
+    )
     logger.info("Wrote MLP training JSON to %s", destination)
     return destination
 
@@ -1516,7 +1503,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if args.json:
-        print(json.dumps(result.to_dict(), indent=2, sort_keys=True, default=_json_default))
+        print(json.dumps(result.to_dict(), indent=2, sort_keys=True, default=json_default))
     else:
         print(describe_training_result(result))
         print(f"report: {args.report_path}")
