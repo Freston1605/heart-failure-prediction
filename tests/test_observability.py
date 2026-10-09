@@ -22,10 +22,13 @@ def fresh_logging(tmp_path):
     saved_handlers = list(root.handlers)
     saved_level = root.level
     yield obs_module
+    # AppTest page runs may have added heart handlers; never restore those
+    # (each instrumentation entrypoint re-configures idempotently).
     for handler in list(root.handlers):
         root.removeHandler(handler)
     for handler in saved_handlers:
-        root.addHandler(handler)
+        if not getattr(handler, "heart_record", False):
+            root.addHandler(handler)
     root.setLevel(saved_level)
     obs_module.CONFIGURED = False
 
