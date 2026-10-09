@@ -1,0 +1,80 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 7706,
+      "beforeUrl": "about:blank",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+      "line": "#1 | browser_navigate | success | 7706ms | url=\"https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.s...\" | URL changed to https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/; title changed to Heart Failure Prediction Portfolio · Streamlit; links 0→2; visible text changed | Warnings: JS: Failed to load resource: the server responded with a status of 404 () (x2) | Failed to load resource: the server responded with a status of 403 (); Network: POST xhr 403 | GET xhr 404\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 2,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 568,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "line": "#2 | browser_click | success | 568ms | selector=\"section.stSidebar a[href$=\\\"/Explore\\\"]\" | PASS (url_changed) | URL changed to https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore; title changed to 1 — Explore · Streamlit; focus changed; links 7→5"
+    },
+    {
+      "id": 3,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 142,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "line": "#3 | browser_click | success | 142ms | selector=\"section.stSidebar a[href$=\\\"/Predict\\\"]\" | SOFT-FAIL (no observable state change) | focus changed; visible text changed"
+    },
+    {
+      "id": 4,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 4875,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+      "line": "#4 | browser_navigate | success | 4875ms | url=\"https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.s...\" | URL changed to https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict; title changed to 2 — Predict · Streamlit; focus changed; visible text changed | Warnings: JS: Failed to load resource: the server responded with a status of 404 () (x4)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 5,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 4849,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#5 | browser_navigate | success | 4849ms | url=\"https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.s...\" | URL changed to https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1; title changed to 2 — Predict · Streamlit; focus changed; visible text changed | Warnings: JS: Failed to load resource: the server responded with a status of 404 () (x4)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 6,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 5147,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#6 | browser_click | success | 5147ms | selector=\"button[kind=\\\"primary\\\"][type=\\\"submit\\\"]\" | SOFT-FAIL (no observable state change) | focus changed; buttons 32→33; visible text changed"
+    },
+    {
+      "id": 7,
+      "tool": "browser_key_press",
+      "status": "success",
+      "durationMs": 98,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#7 | browser_key_press | success | 98ms | key=\"Escape\" | SOFT-FAIL (no observable state change) | buttons 33→32; visible text changed"
+    },
+    {
+      "id": 8,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 531,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#8 | browser_click | success | 531ms | selector=\"button.st-emotion-cache-1wh9gjz.e1w4kd626\" | SOFT-FAIL (no observable state change) | focus changed; landmarks 5→6; visible text changed"
+    }
+  ],
+  "retained": 8,
+  "totalRecorded": 8,
+  "bounded": false,
+  "summary": "Timeline: 8 browser actions recorded."
+}

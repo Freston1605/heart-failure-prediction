@@ -1,0 +1,17 @@
+# Streamlit instance configuration for the deployed app.
+# Checked into the repo so the public deployment and local runs render alike.
+
+[theme]
+base = "light"
+primaryColor = "#c0392b"
+
+[server]
+# Deployment hosts pick their own port/headers; these only bind local runs.
+port = 8501
+headless = true
+# The artifact is deserialized once per process via st.cache_resource; the
+# 2.5 MB pickle is well under any default upload/message cap.
+maxUploadSize = 200
+
+[browser]
+gatherUsageStats = false

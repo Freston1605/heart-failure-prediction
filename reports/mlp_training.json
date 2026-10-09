@@ -1,0 +1,188 @@
+{
+  "cpu_fallback": true,
+  "device": "cpu",
+  "device_resolution": {
+    "cpu_fallback": true,
+    "device": "cpu",
+    "device_name": null,
+    "gcn_arch_name": null,
+    "gpu_available": false,
+    "hip_version": "7.2.53211",
+    "is_gpu": false,
+    "reason": "GPU not usable by torch (device_count=0 or unavailable).",
+    "requested": "gpu",
+    "torch_available": true,
+    "torch_version": "2.10.0+rocm7.2.4.git3d3aa833",
+    "warnings": [
+      "GPU unavailable; training the MLP on CPU (explicit, logged fallback). The run completes; it is not a failure."
+    ]
+  },
+  "duration_seconds": 2.06612,
+  "generated_at": "2026-10-06T21:29:26+00:00",
+  "history": {
+    "best_epoch": 2,
+    "best_val_loss": 0.45211687684059143,
+    "epochs_run": 3,
+    "stopped_early": false,
+    "train_losses": [
+      0.6678223699331284,
+      0.5923170208930969,
+      0.48760928511619567
+    ],
+    "val_losses": [
+      0.6343268156051636,
+      0.5462999939918518,
+      0.45211687684059143
+    ]
+  },
+  "is_baseline_features": false,
+  "metrics": {
+    "accuracy": 0.8695652173913043,
+    "brier_score": 0.12516507630764134,
+    "calibration": {
+      "bins": [
+        {
+          "bin": 0,
+          "count": 0,
+          "fraction_positive": null,
+          "gap": null,
+          "lower": 0.0,
+          "mean_predicted": null,
+          "upper": 0.1
+        },
+        {
+          "bin": 1,
+          "count": 1,
+          "fraction_positive": 0.0,
+          "gap": 0.1973127141700011,
+          "lower": 0.1,
+          "mean_predicted": 0.1973127141700011,
+          "upper": 0.2
+        },
+        {
+          "bin": 2,
+          "count": 35,
+          "fraction_positive": 0.0,
+          "gap": 0.258260836611525,
+          "lower": 0.2,
+          "mean_predicted": 0.258260836611525,
+          "upper": 0.30000000000000004
+        },
+        {
+          "bin": 3,
+          "count": 23,
+          "fraction_positive": 0.13043478260869565,
+          "gap": 0.1964642538501307,
+          "lower": 0.30000000000000004,
+          "mean_predicted": 0.32689903645882634,
+          "upper": 0.4
+        },
+        {
+          "bin": 4,
+          "count": 21,
+          "fraction_positive": 0.38095238095238093,
+          "gap": 0.07681757604838968,
+          "lower": 0.4,
+          "mean_predicted": 0.4577699570007706,
+          "upper": 0.5
+        },
+        {
+          "bin": 5,
+          "count": 9,
+          "fraction_positive": 0.6666666666666666,
+          "gap": 0.12873224064054933,
+          "lower": 0.5,
+          "mean_predicted": 0.5379344260261173,
+          "upper": 0.6000000000000001
+        },
+        {
+          "bin": 6,
+          "count": 14,
+          "fraction_positive": 0.9285714285714286,
+          "gap": 0.2861042460823652,
+          "lower": 0.6000000000000001,
+          "mean_predicted": 0.6424671824890634,
+          "upper": 0.7000000000000001
+        },
+        {
+          "bin": 7,
+          "count": 22,
+          "fraction_positive": 0.8636363636363636,
+          "gap": 0.10376731450728982,
+          "lower": 0.7000000000000001,
+          "mean_predicted": 0.7598690491290738,
+          "upper": 0.8
+        },
+        {
+          "bin": 8,
+          "count": 45,
+          "fraction_positive": 0.8666666666666667,
+          "gap": 0.010744160913405576,
+          "lower": 0.8,
+          "mean_predicted": 0.8559225057532611,
+          "upper": 0.9
+        },
+        {
+          "bin": 9,
+          "count": 14,
+          "fraction_positive": 1.0,
+          "gap": 0.07401104597470953,
+          "lower": 0.9,
+          "mean_predicted": 0.9259889540252905,
+          "upper": 1.0
+        }
+      ],
+      "brier_score": 0.12516507630764134,
+      "expected_calibration_error": 0.13225468122809883,
+      "n_bins": 10
+    },
+    "confusion_matrix": {
+      "fn": 11,
+      "fp": 13,
+      "n_negative": 82,
+      "n_positive": 102,
+      "n_samples": 184,
+      "tn": 69,
+      "tp": 91
+    },
+    "f1": 0.883495145631068,
+    "npv": 0.8625,
+    "pr_auc": 0.9278013526646633,
+    "precision": 0.875,
+    "prevalence": 0.5543478260869565,
+    "recall": 0.8921568627450981,
+    "roc_auc": 0.9236011477761836,
+    "specificity": 0.8414634146341463
+  },
+  "mlp_config": {
+    "activation": "relu",
+    "batch_norm": false,
+    "depth": 3,
+    "dropout": 0.2,
+    "hidden_sizes": [
+      64,
+      32
+    ],
+    "input_dim": 39,
+    "output_dim": 1,
+    "schema_version": "1"
+  },
+  "mode_name": "selected",
+  "n_features": 39,
+  "split_version": "v1",
+  "test_rows": 184,
+  "train_rows": 734,
+  "training_config": {
+    "batch_size": 32,
+    "early_stopping_patience": 2,
+    "epochs": 3,
+    "learning_rate": 0.001,
+    "min_delta": 0.0,
+    "pos_weight": null,
+    "seed": 42,
+    "shuffle": true,
+    "validation_fraction": 0.15,
+    "weight_decay": 0.0001
+  },
+  "used_gpu": false
+}

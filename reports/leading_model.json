@@ -1,0 +1,29 @@
+{
+  "family": "ensemble",
+  "generated_at": "2026-10-06T21:06:21+00:00",
+  "ledger_version": 1,
+  "model_name": "Random Forest",
+  "model_type": "random-forest",
+  "primary_metric": 0.9363940698230512,
+  "raw_params": {
+    "class_weight": "null",
+    "max_depth": "31",
+    "max_features": "sqrt",
+    "min_samples_leaf": "6",
+    "min_samples_split": "15",
+    "n_estimators": "218",
+    "random_state": "42"
+  },
+  "run_id": "f88d98f163d04fa1be11525abaf74e5a",
+  "run_name": "random-forest-v1",
+  "slice": "S04",
+  "split_version": "v1",
+  "tuned_params": {
+    "class_weight": null,
+    "max_depth": 31,
+    "max_features": "sqrt",
+    "min_samples_leaf": 6,
+    "min_samples_split": 15,
+    "n_estimators": 218
+  }
+}

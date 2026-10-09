@@ -1,0 +1,1710 @@
+[
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425719168,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 403 ()",
+    "timestamp": 1791425720864,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "log",
+    "text": "INITIAL -> (5, 0, ) -> RUNNING",
+    "timestamp": 1791425721240,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'ambient-light-sensor'.",
+    "timestamp": 1791425721244,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'battery'.",
+    "timestamp": 1791425721244,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'document-domain'.",
+    "timestamp": 1791425721244,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'layout-animations'.",
+    "timestamp": 1791425721244,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'legacy-image-formats'.",
+    "timestamp": 1791425721244,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'oversized-images'.",
+    "timestamp": 1791425721244,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'vr'.",
+    "timestamp": 1791425721244,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'wake-lock'.",
+    "timestamp": 1791425721244,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.",
+    "timestamp": 1791425721576,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425721628,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425723537,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425723556,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425723587,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425723618,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425731989,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425752353,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425782714,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425823079,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425846455,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425846455,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425846457,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425846479,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425846491,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425846521,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425846623,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425846629,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425846633,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847025,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847039,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847046,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847057,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847069,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847075,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847086,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847095,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847115,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847136,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847143,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847147,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847154,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847161,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847170,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847180,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847199,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847207,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847355,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847364,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847394,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425847666,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425848066,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425848074,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425848083,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425848100,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425848111,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425848122,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425848146,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425848163,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425848563,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425848576,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425848592,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425848592,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425848599,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425848600,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425861254,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425861254,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425865799,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425865810,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425865812,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425865986,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425866001,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425866010,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425866019,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425866233,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425866269,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425871680,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425871832,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425871837,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425872037,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425872046,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425874647,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425874653,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425874853,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425874862,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425874884,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875320,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875320,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875320,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875321,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875332,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875399,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875400,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875403,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875405,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875410,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875414,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875419,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875425,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875440,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875448,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425875456,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425875457,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875469,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875482,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875495,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875506,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875517,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875528,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875542,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875562,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875571,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425875582,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425875583,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875592,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875624,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875640,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875650,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875674,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875696,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875783,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875800,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875806,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875830,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425875857,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425875858,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425875869,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425876842,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425876842,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425891020,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425891020,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425891873,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425891874,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425896197,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "log",
+    "text": "INITIAL -> (5, 0, ) -> RUNNING",
+    "timestamp": 1791425896607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'ambient-light-sensor'.",
+    "timestamp": 1791425896607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'battery'.",
+    "timestamp": 1791425896607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'document-domain'.",
+    "timestamp": 1791425896607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'layout-animations'.",
+    "timestamp": 1791425896607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'legacy-image-formats'.",
+    "timestamp": 1791425896607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'oversized-images'.",
+    "timestamp": 1791425896607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'vr'.",
+    "timestamp": 1791425896607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'wake-lock'.",
+    "timestamp": 1791425896607,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.",
+    "timestamp": 1791425896778,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425896975,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425896977,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425896981,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425897717,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425898308,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425898308,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425898319,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425898346,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425898395,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901068,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901072,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901076,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901082,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901104,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901104,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901153,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901185,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901185,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901185,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901186,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901193,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901198,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901204,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901217,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901226,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901242,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901274,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901275,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901311,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901349,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901371,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901389,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425901401,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425901402,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901426,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901443,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901466,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425901495,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425901495,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425901509,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425901509,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901635,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425901648,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425902330,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425902643,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425902643,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425903115,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425903115,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425903472,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425903473,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425903942,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425903942,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425906866,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425906866,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425908704,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425908704,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425909738,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425909738,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425911315,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425911315,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425914677,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425914677,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425915746,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425915746,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Scale bindings are currently only supported for scales with unbinned, continuous domains.",
+    "timestamp": 1791425916083,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "WARN Dropping \"fit-y\" because spec has discrete height.",
+    "timestamp": 1791425916083,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425925316,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "log",
+    "text": "INITIAL -> (5, 0, ) -> RUNNING",
+    "timestamp": 1791425926369,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'ambient-light-sensor'.",
+    "timestamp": 1791425926370,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'battery'.",
+    "timestamp": 1791425926370,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'document-domain'.",
+    "timestamp": 1791425926370,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'layout-animations'.",
+    "timestamp": 1791425926370,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'legacy-image-formats'.",
+    "timestamp": 1791425926370,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'oversized-images'.",
+    "timestamp": 1791425926370,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'vr'.",
+    "timestamp": 1791425926370,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Unrecognized feature: 'wake-lock'.",
+    "timestamp": 1791425926370,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.",
+    "timestamp": 1791425926539,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425926742,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425926805,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425926819,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425927445,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425927461,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425927462,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425928058,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425928064,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425928071,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425928095,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425928104,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425928131,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791425928172,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425937102,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791425957468,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "timestamp": 1791426002842,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791426027866,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791426028022,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791426028022,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791426028118,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  },
+  {
+    "type": "warning",
+    "text": "Invalid color passed for textColor in theme.sidebar: \"\"",
+    "timestamp": 1791426028128,
+    "url": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+    "pageId": 1
+  }
+]

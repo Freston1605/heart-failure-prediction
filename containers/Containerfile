@@ -1,0 +1,64 @@
+# syntax=docker/dockerfile:1
+#
+# ROCm + PyTorch training image for the neural (MLP) slice — S05/T01.
+#
+# Base choice (decision D003): AMD's official rocm/pytorch image is the
+# canonical documented path and version-pins PyTorch and ROCm together, leaving
+# exactly one variable to debug (GPU visibility) rather than several. It is
+# pinned by its fully-versioned release tag so a moving `latest` tag can never
+# silently change the runtime under a published result.
+#
+#   pinned ref:   docker.io/rocm/pytorch:rocm7.2.4_ubuntu24.04_py3.12_pytorch_release_2.10.0
+#   digest:       sha256:4449f856653602317e4101a76fce599c7f58cdccec2e539951fce5f73083179e
+#   contents:     ROCm 7.2.4, PyTorch 2.10.0+rocm7.2.4, Python 3.12 (Ubuntu 24.04)
+#
+# Note: the versioned tag is the pin rather than `tag@digest` because Docker Hub
+# does not serve this manifest by bare digest (`manifest unknown`); the digest
+# above is recorded for audit and for a future registry that does.
+#
+# Dependency policy
+# -----------------
+# The base image already ships ROCm-built numpy 2.4.6, pandas 3.0.3 and scipy
+# 1.17.1. Force-upgrading numpy is the classic way to break a prebuilt torch
+# wheel's ABI, so this image deliberately does NOT re-pin numpy/pandas/scipy to
+# the versions in pyproject.toml. It inherits the base image's numerical stack
+# and installs only what the base lacks for the tracking/tuning stack
+# (scikit-learn, joblib, MLflow, Optuna, XGBoost, SHAP). The `heart` package
+# itself is installed with --no-deps so it cannot drag those versions back down.
+FROM docker.io/rocm/pytorch:rocm7.2.4_ubuntu24.04_py3.12_pytorch_release_2.10.0
+
+LABEL org.opencontainers.image.title="heart-failure-prediction-rocm" \
+      org.opencontainers.image.description="ROCm/PyTorch training image for the neural MLP sweep" \
+      org.opencontainers.image.base.name="docker.io/rocm/pytorch:rocm7.2.4_ubuntu24.04_py3.12_pytorch_release_2.10.0" \
+      org.opencontainers.image.base.digest="sha256:4449f856653602317e4101a76fce599c7f58cdccec2e539951fce5f73083179e"
+
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Extra Python deps the base image lacks, kept in sync with pyproject [ml].
+# Versions are pinned to match the host environment so a container run and a
+# host run produce comparable numbers.
+RUN python -m pip install --no-cache-dir \
+        "scikit-learn==1.9.1" \
+        "joblib==1.6.0" \
+        "mlflow==3.16.1" \
+        "optuna==5.0.0" \
+        "xgboost==3.4.1" \
+        "shap==0.52.0" \
+    && python - <<'PY'
+import sklearn, joblib, mlflow, optuna, xgboost, shap
+print("extra deps ok:", sklearn.__version__, mlflow.__version__, optuna.__version__, xgboost.__version__)
+PY
+
+# Install the project package itself (no deps: the numerical stack is provided
+# by the base image, see the dependency policy above).
+WORKDIR /opt/heart
+COPY pyproject.toml README.md ./
+COPY src ./src
+RUN python -m pip install --no-cache-dir --no-deps -e . \
+    && python -c "import heart; print('heart', heart.__version__, 'importable from image')"
+
+# Default workdir is the mounted repository; the device check is the entrypoint.
+WORKDIR /workspace
+ENTRYPOINT ["python", "-m", "heart.gpu.device_check"]

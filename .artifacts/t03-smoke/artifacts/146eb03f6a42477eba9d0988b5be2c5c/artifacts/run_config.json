@@ -1,0 +1,51 @@
+{
+  "experiment_name": "heart-failure-prediction",
+  "run_name": "logistic-regression-elasticnet-v1",
+  "model_name": "Logistic Regression (ElasticNet)",
+  "model_slug": "logistic-regression-elasticnet",
+  "split_version": "v1",
+  "metric_schema_version": "1",
+  "primary_metric": "roc_auc",
+  "metric_keys": [
+    "accuracy",
+    "precision",
+    "recall",
+    "f1",
+    "roc_auc",
+    "pr_auc",
+    "specificity",
+    "npv",
+    "prevalence",
+    "brier_score",
+    "confusion_matrix",
+    "calibration"
+  ],
+  "params": {
+    "max_iter": "2000",
+    "random_state": "42",
+    "solver": "saga",
+    "C": "0.017670169402947963",
+    "l1_ratio": "0.9507143064099162",
+    "class_weight": "null"
+  },
+  "tags": {
+    "model_name": "Logistic Regression (ElasticNet)",
+    "model_slug": "logistic-regression-elasticnet",
+    "split_version": "v1",
+    "metric_schema_version": "1",
+    "primary_metric": "roc_auc",
+    "source": "heart.tracking.run",
+    "n_samples": "184",
+    "run_kind": "final",
+    "model_type": "logistic-regression-elasticnet",
+    "family": "linear",
+    "battery_run_id": "battery-20261008T022609-99b79bc1",
+    "slice": "S03",
+    "cv_folds": "3",
+    "n_trials": "1",
+    "n_complete_trials": "1",
+    "best_trial_number": "0"
+  },
+  "tracking_uri": "sqlite:///.artifacts/t03-smoke/mlflow.db",
+  "source": "heart.tracking.run"
+}

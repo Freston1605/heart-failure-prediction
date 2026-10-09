@@ -1,0 +1,498 @@
+{
+  "config": {
+    "cv_folds": 5,
+    "direction": "maximize",
+    "n_startup_trials": 10,
+    "n_trials": 15,
+    "n_warmup_steps": 5,
+    "pruner": "median",
+    "sampler": "tpe",
+    "sampler_seed": 42,
+    "smoke_epochs": null,
+    "timeout": null
+  },
+  "cv_folds": 5,
+  "experiment_name": "heart-failure-prediction",
+  "failed_architectures": [],
+  "generated_at": "2026-10-06T22:12:45+00:00",
+  "n_failed": 0,
+  "n_models": 3,
+  "n_succeeded": 3,
+  "n_trials": 15,
+  "results": [
+    {
+      "best_params": {
+        "activation": "relu",
+        "batch_norm": false,
+        "batch_size": 32,
+        "dropout": 0.09983689107917987,
+        "early_stopping_patience": 10,
+        "epochs": 40,
+        "hidden_sizes": [
+          32
+        ],
+        "learning_rate": 0.000816845589476017,
+        "min_delta": 0.0,
+        "pos_weight": null,
+        "seed": 42,
+        "shuffle": true,
+        "validation_fraction": 0.15,
+        "weight_decay": 0.0013826232179369874
+      },
+      "device": "cuda:0",
+      "device_reason": "AMD Radeon RX 9070 XT usable by torch (gcnArchName=gfx1201).",
+      "duration_seconds": 45.984708,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "neural",
+      "metric_dict": {
+        "accuracy": 0.907608695652174,
+        "brier_score": 0.08774154627370119,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 44,
+              "fraction_positive": 0.022727272727272728,
+              "gap": 0.037151986037052595,
+              "lower": 0.0,
+              "mean_predicted": 0.05987925876432532,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 11,
+              "fraction_positive": 0.0,
+              "gap": 0.14925583816639276,
+              "lower": 0.1,
+              "mean_predicted": 0.14925583816639276,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 10,
+              "fraction_positive": 0.1,
+              "gap": 0.13077185134802138,
+              "lower": 0.2,
+              "mean_predicted": 0.2307718513480214,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 6,
+              "fraction_positive": 0.16666666666666666,
+              "gap": 0.17253397889690772,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.3392006455635744,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 6,
+              "fraction_positive": 0.5,
+              "gap": 0.04332023055244649,
+              "lower": 0.4,
+              "mean_predicted": 0.4566797694475535,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 9,
+              "fraction_positive": 0.8888888888888888,
+              "gap": 0.3349842555567477,
+              "lower": 0.5,
+              "mean_predicted": 0.5539046333321411,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 6,
+              "fraction_positive": 0.8333333333333334,
+              "gap": 0.18028175596596563,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6530515773673677,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 13,
+              "fraction_positive": 0.9230769230769231,
+              "gap": 0.17406036703066474,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7490165560462584,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 20,
+              "fraction_positive": 0.85,
+              "gap": 0.00642923173106047,
+              "lower": 0.8,
+              "mean_predicted": 0.8564292317310604,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 59,
+              "fraction_positive": 0.9152542372881356,
+              "gap": 0.03588447998135391,
+              "lower": 0.9,
+              "mean_predicted": 0.9511387172694895,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.08774154627370119,
+          "expected_calibration_error": 0.0787198257411045,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 6,
+          "fp": 11,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 71,
+          "tp": 96
+        },
+        "f1": 0.9186602870813397,
+        "npv": 0.922077922077922,
+        "pr_auc": 0.9246343666164408,
+        "precision": 0.897196261682243,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9411764705882353,
+        "roc_auc": 0.9328072692491631,
+        "specificity": 0.8658536585365854
+      },
+      "model_name": "MLP (shallow)",
+      "model_type": "mlp-shallow",
+      "n_complete": 15,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 15,
+      "run_id": "3d097145677a47a6ac2388cb6a62adc2",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "activation": "relu",
+        "batch_norm": false,
+        "batch_size": 64,
+        "dropout": 0.34211651325607845,
+        "early_stopping_patience": 10,
+        "epochs": 40,
+        "hidden_sizes": [
+          128
+        ],
+        "learning_rate": 0.0004066563313514797,
+        "min_delta": 0.0,
+        "pos_weight": null,
+        "seed": 42,
+        "shuffle": true,
+        "validation_fraction": 0.15,
+        "weight_decay": 2.4586032763280077e-06
+      },
+      "device": "cuda:0",
+      "device_reason": "AMD Radeon RX 9070 XT usable by torch (gcnArchName=gfx1201).",
+      "duration_seconds": 36.212754,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "neural",
+      "metric_dict": {
+        "accuracy": 0.9021739130434783,
+        "brier_score": 0.08996639639674066,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 44,
+              "fraction_positive": 0.022727272727272728,
+              "gap": 0.03613781061285655,
+              "lower": 0.0,
+              "mean_predicted": 0.05886508334012928,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 11,
+              "fraction_positive": 0.0,
+              "gap": 0.14065924460396997,
+              "lower": 0.1,
+              "mean_predicted": 0.14065924460396997,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 11,
+              "fraction_positive": 0.09090909090909091,
+              "gap": 0.1643960293806401,
+              "lower": 0.2,
+              "mean_predicted": 0.255305120289731,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 4,
+              "fraction_positive": 0.25,
+              "gap": 0.09589057082471075,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.34589057082471075,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 8,
+              "fraction_positive": 0.5,
+              "gap": 0.055878331331901954,
+              "lower": 0.4,
+              "mean_predicted": 0.44412166866809805,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 8,
+              "fraction_positive": 0.875,
+              "gap": 0.3259125069437112,
+              "lower": 0.5,
+              "mean_predicted": 0.5490874930562888,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 7,
+              "fraction_positive": 1.0,
+              "gap": 0.35057280523959367,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6494271947604063,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 12,
+              "fraction_positive": 0.8333333333333334,
+              "gap": 0.0831378665183895,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7501954668149439,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 21,
+              "fraction_positive": 0.8571428571428571,
+              "gap": 0.0016021729979236454,
+              "lower": 0.8,
+              "mean_predicted": 0.8555406841449334,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 58,
+              "fraction_positive": 0.9137931034482759,
+              "gap": 0.03733089320031324,
+              "lower": 0.9,
+              "mean_predicted": 0.9511239966485892,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.08996639639674066,
+          "expected_calibration_error": 0.07627207686832903,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 7,
+          "fp": 11,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 71,
+          "tp": 95
+        },
+        "f1": 0.9134615384615384,
+        "npv": 0.9102564102564102,
+        "pr_auc": 0.923094805577759,
+        "precision": 0.8962264150943396,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9313725490196079,
+        "roc_auc": 0.9295791487326639,
+        "specificity": 0.8658536585365854
+      },
+      "model_name": "MLP (wide)",
+      "model_type": "mlp-wide",
+      "n_complete": 15,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 15,
+      "run_id": "06dfb6f1e614408b98b52d722ec31ea9",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "activation": "relu",
+        "batch_norm": true,
+        "batch_size": 16,
+        "dropout": 0.3656135898476863,
+        "early_stopping_patience": 10,
+        "epochs": 40,
+        "hidden_sizes": [
+          64,
+          32,
+          16
+        ],
+        "learning_rate": 0.00032314530935986867,
+        "min_delta": 0.0,
+        "pos_weight": null,
+        "seed": 42,
+        "shuffle": true,
+        "validation_fraction": 0.15,
+        "weight_decay": 2.6933102168388272e-06
+      },
+      "device": "cuda:0",
+      "device_reason": "AMD Radeon RX 9070 XT usable by torch (gcnArchName=gfx1201).",
+      "duration_seconds": 96.478683,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "neural",
+      "metric_dict": {
+        "accuracy": 0.8913043478260869,
+        "brier_score": 0.08943305058366954,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 17,
+              "fraction_positive": 0.0,
+              "gap": 0.06481487927250229,
+              "lower": 0.0,
+              "mean_predicted": 0.06481487927250229,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 31,
+              "fraction_positive": 0.03225806451612903,
+              "gap": 0.11169004756904732,
+              "lower": 0.1,
+              "mean_predicted": 0.14394811208517636,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 13,
+              "fraction_positive": 0.0,
+              "gap": 0.24352125115997628,
+              "lower": 0.2,
+              "mean_predicted": 0.24352125115997628,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 7,
+              "fraction_positive": 0.14285714285714285,
+              "gap": 0.2032753713784588,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.34613251423560165,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 10,
+              "fraction_positive": 0.6,
+              "gap": 0.15340953575797145,
+              "lower": 0.4,
+              "mean_predicted": 0.44659046424202853,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 4,
+              "fraction_positive": 0.5,
+              "gap": 0.04671903571192115,
+              "lower": 0.5,
+              "mean_predicted": 0.5467190357119212,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 12,
+              "fraction_positive": 0.8333333333333334,
+              "gap": 0.17955272520163756,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6537806081316958,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 16,
+              "fraction_positive": 0.875,
+              "gap": 0.12452995778681464,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7504700422131854,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 22,
+              "fraction_positive": 0.9545454545454546,
+              "gap": 0.08279988169569263,
+              "lower": 0.8,
+              "mean_predicted": 0.871745572849762,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 52,
+              "fraction_positive": 0.9038461538461539,
+              "gap": 0.03767505830462625,
+              "lower": 0.9,
+              "mean_predicted": 0.9415212121507801,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.08943305058366954,
+          "expected_calibration_error": 0.10218332741078151,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 8,
+          "fp": 12,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 70,
+          "tp": 94
+        },
+        "f1": 0.9038461538461539,
+        "npv": 0.8974358974358975,
+        "pr_auc": 0.9241101067898017,
+        "precision": 0.8867924528301887,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9215686274509803,
+        "roc_auc": 0.9337637494022,
+        "specificity": 0.8536585365853658
+      },
+      "model_name": "MLP (deep)",
+      "model_type": "mlp-deep",
+      "n_complete": 15,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 15,
+      "run_id": "738a27c803cc42f4a401de12f2460a78",
+      "status": "succeeded"
+    }
+  ],
+  "run_ids": [
+    "3d097145677a47a6ac2388cb6a62adc2",
+    "06dfb6f1e614408b98b52d722ec31ea9",
+    "738a27c803cc42f4a401de12f2460a78"
+  ],
+  "split_version": "v1",
+  "sweep_run_id": "sweep-20261006T220945-63db71ef",
+  "test_rows": 184,
+  "train_rows": 734,
+  "tuning_experiment_name": "heart-failure-prediction-tuning"
+}

@@ -1,0 +1,261 @@
+{
+  "all_engineered_delta": 0.0014347202295552641,
+  "all_engineered_metric": 0.9300573888091823,
+  "all_engineered_mode_name": "all-engineered",
+  "baseline_metric": 0.928622668579627,
+  "baseline_mode_name": "baseline",
+  "config": {
+    "max_features": null,
+    "metric": "roc_auc",
+    "min_delta": 0.0005,
+    "mode_prefix": "add-"
+  },
+  "dropped": [
+    "age_band",
+    "max_hr_percent_predicted",
+    "hr_reserve",
+    "cholesterol_restingbp_ratio",
+    "rate_pressure_product",
+    "metabolic_risk_count"
+  ],
+  "evidence": [
+    {
+      "columns": [
+        "AgeBand"
+      ],
+      "decision": "dropped",
+      "delta": -0.00011956001912971637,
+      "mode_metric": 0.9285031085604973,
+      "mode_name": "add-age_band",
+      "reason": "marginal roc_auc -0.0001 is below the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "age_band"
+    },
+    {
+      "columns": [
+        "MaxHR_Pct_Predicted"
+      ],
+      "decision": "dropped",
+      "delta": 0.000358680057388705,
+      "mode_metric": 0.9289813486370158,
+      "mode_name": "add-max_hr_percent_predicted",
+      "reason": "marginal roc_auc +0.0004 is below the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "max_hr_percent_predicted"
+    },
+    {
+      "columns": [
+        "HR_Reserve"
+      ],
+      "decision": "dropped",
+      "delta": 0.00011956001912949432,
+      "mode_metric": 0.9287422285987565,
+      "mode_name": "add-hr_reserve",
+      "reason": "marginal roc_auc +0.0001 is below the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "hr_reserve"
+    },
+    {
+      "columns": [
+        "Cholesterol_Age_Ratio"
+      ],
+      "decision": "kept",
+      "delta": 0.0005978000956479157,
+      "mode_metric": 0.929220468675275,
+      "mode_name": "add-cholesterol_age_ratio",
+      "reason": "marginal roc_auc +0.0006 clears the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "cholesterol_age_ratio"
+    },
+    {
+      "columns": [
+        "Cholesterol_RestingBP_Ratio"
+      ],
+      "decision": "dropped",
+      "delta": -0.0017934002869440802,
+      "mode_metric": 0.926829268292683,
+      "mode_name": "add-cholesterol_restingbp_ratio",
+      "reason": "marginal roc_auc -0.0018 is below the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "cholesterol_restingbp_ratio"
+    },
+    {
+      "columns": [
+        "Rate_Pressure_Product"
+      ],
+      "decision": "dropped",
+      "delta": 0.0002391200382592107,
+      "mode_metric": 0.9288617886178863,
+      "mode_name": "add-rate_pressure_product",
+      "reason": "marginal roc_auc +0.0002 is below the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "rate_pressure_product"
+    },
+    {
+      "columns": [
+        "Oldpeak_Slope_Score"
+      ],
+      "decision": "kept",
+      "delta": 0.0017934002869440802,
+      "mode_metric": 0.9304160688665711,
+      "mode_name": "add-oldpeak_slope_interaction",
+      "reason": "marginal roc_auc +0.0018 clears the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "oldpeak_slope_interaction"
+    },
+    {
+      "columns": [
+        "Metabolic_Risk_Count"
+      ],
+      "decision": "dropped",
+      "delta": 0.000358680057388705,
+      "mode_metric": 0.9289813486370158,
+      "mode_name": "add-metabolic_risk_count",
+      "reason": "marginal roc_auc +0.0004 is below the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "metabolic_risk_count"
+    },
+    {
+      "columns": [
+        "Exercise_ECG_Group"
+      ],
+      "decision": "kept",
+      "delta": 0.0009564801530368428,
+      "mode_metric": 0.9295791487326639,
+      "mode_name": "add-exercise_ecg_group",
+      "reason": "marginal roc_auc +0.0010 clears the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "exercise_ecg_group"
+    },
+    {
+      "columns": [
+        "AgeBand_Sex"
+      ],
+      "decision": "kept",
+      "delta": 0.0015542802486847584,
+      "mode_metric": 0.9301769488283118,
+      "mode_name": "add-age_band_sex",
+      "reason": "marginal roc_auc +0.0016 clears the 0.0005 bar",
+      "threshold": 0.0005,
+      "transform": "age_band_sex"
+    }
+  ],
+  "fingerprint": {
+    "all_engineered_delta": 0.0014347202295552641,
+    "all_engineered_metric": 0.9300573888091823,
+    "baseline_metric": 0.928622668579627,
+    "baseline_mode_name": "baseline",
+    "dropped": [
+      "age_band",
+      "max_hr_percent_predicted",
+      "hr_reserve",
+      "cholesterol_restingbp_ratio",
+      "rate_pressure_product",
+      "metabolic_risk_count"
+    ],
+    "evidence": [
+      {
+        "decision": "dropped",
+        "delta": -0.00011956001912971637,
+        "transform": "age_band"
+      },
+      {
+        "decision": "dropped",
+        "delta": 0.000358680057388705,
+        "transform": "max_hr_percent_predicted"
+      },
+      {
+        "decision": "dropped",
+        "delta": 0.00011956001912949432,
+        "transform": "hr_reserve"
+      },
+      {
+        "decision": "kept",
+        "delta": 0.0005978000956479157,
+        "transform": "cholesterol_age_ratio"
+      },
+      {
+        "decision": "dropped",
+        "delta": -0.0017934002869440802,
+        "transform": "cholesterol_restingbp_ratio"
+      },
+      {
+        "decision": "dropped",
+        "delta": 0.0002391200382592107,
+        "transform": "rate_pressure_product"
+      },
+      {
+        "decision": "kept",
+        "delta": 0.0017934002869440802,
+        "transform": "oldpeak_slope_interaction"
+      },
+      {
+        "decision": "dropped",
+        "delta": 0.000358680057388705,
+        "transform": "metabolic_risk_count"
+      },
+      {
+        "decision": "kept",
+        "delta": 0.0009564801530368428,
+        "transform": "exercise_ecg_group"
+      },
+      {
+        "decision": "kept",
+        "delta": 0.0015542802486847584,
+        "transform": "age_band_sex"
+      }
+    ],
+    "kept": [
+      "cholesterol_age_ratio",
+      "oldpeak_slope_interaction",
+      "exercise_ecg_group",
+      "age_band_sex"
+    ],
+    "max_features": null,
+    "metric": "roc_auc",
+    "min_delta": 0.0005,
+    "mode_prefix": "add-"
+  },
+  "generated_at": "2026-10-06T21:05:15+00:00",
+  "kept": [
+    "cholesterol_age_ratio",
+    "oldpeak_slope_interaction",
+    "exercise_ecg_group",
+    "age_band_sex"
+  ],
+  "kept_columns": [
+    "Cholesterol_Age_Ratio",
+    "Oldpeak_Slope_Score",
+    "Exercise_ECG_Group",
+    "AgeBand_Sex"
+  ],
+  "ledger_path": null,
+  "n_dropped": 6,
+  "n_kept": 4,
+  "report_path": "reports/features.md",
+  "selected_mode": {
+    "description": "Selected engineered representation (S04/T03): 4 of 10 transforms kept when marginal roc_auc >= 0.0005.",
+    "engineered_columns": [
+      "Cholesterol_Age_Ratio",
+      "Oldpeak_Slope_Score",
+      "Exercise_ECG_Group",
+      "AgeBand_Sex"
+    ],
+    "engineered_transforms": [
+      "cholesterol_age_ratio",
+      "oldpeak_slope_interaction",
+      "exercise_ecg_group",
+      "age_band_sex"
+    ],
+    "exclude": [],
+    "include": [
+      "cholesterol_age_ratio",
+      "oldpeak_slope_interaction",
+      "exercise_ecg_group",
+      "age_band_sex"
+    ],
+    "is_baseline": false,
+    "n_engineered_columns": 4,
+    "name": "selected"
+  }
+}

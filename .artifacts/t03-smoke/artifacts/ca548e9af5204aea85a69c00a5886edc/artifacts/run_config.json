@@ -1,0 +1,48 @@
+{
+  "experiment_name": "heart-failure-prediction-tuning",
+  "run_name": "support-vector-machine-v1-trial-000",
+  "model_name": "Support Vector Machine",
+  "model_slug": "support-vector-machine",
+  "split_version": "v1",
+  "metric_schema_version": "1",
+  "primary_metric": "roc_auc",
+  "metric_keys": [
+    "accuracy",
+    "precision",
+    "recall",
+    "f1",
+    "roc_auc",
+    "pr_auc",
+    "specificity",
+    "npv",
+    "prevalence",
+    "brier_score",
+    "confusion_matrix",
+    "calibration"
+  ],
+  "params": {
+    "probability": "True",
+    "random_state": "42",
+    "C": "0.1767016940294795",
+    "kernel": "rbf",
+    "gamma": "0.039079671568228794",
+    "class_weight": "null"
+  },
+  "tags": {
+    "model_name": "Support Vector Machine",
+    "model_slug": "support-vector-machine",
+    "split_version": "v1",
+    "metric_schema_version": "1",
+    "primary_metric": "roc_auc",
+    "source": "heart.tracking.run",
+    "n_samples": "734",
+    "run_kind": "trial",
+    "trial_state": "complete",
+    "model_type": "svm",
+    "trial_number": "0",
+    "study_name": "tune-svm",
+    "cv_folds": "3"
+  },
+  "tracking_uri": "sqlite:///.artifacts/t03-smoke/mlflow.db",
+  "source": "heart.tracking.run"
+}

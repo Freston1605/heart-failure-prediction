@@ -1,0 +1,105 @@
+- log
+- log
+- list:
+  - listitem:
+    - link "Home":
+      - /url: https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/
+      - paragraph: Home
+  - listitem:
+    - link "Explore":
+      - /url: https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore
+      - paragraph: Explore
+  - listitem:
+    - link "Predict":
+      - /url: https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict
+      - paragraph: Predict
+- banner:
+  - button "Fork"
+  - button
+  - button "Main menu"
+- heading "🩺 Predict — risk probability" [level=1]:
+  - text: 🩺 Predict — risk probability
+  - link "Link to heading":
+    - /url: "#predict-risk-probability"
+- paragraph: The form's values are validated field-by-field, then fed to the exact serialized winning model — the same artifact the Explore banner describes, no re-fitting and no look-alike copy.
+- alert:
+  - paragraph:
+    - strong: "Selection verdict: NO-SHIP."
+    - text: "The winner-selection flow recorded flags for this artifact, so treat every number below as a technical demonstration rather than an endorsed operating point. Flags: not_significantly_better_than_baseline (corrected resampled t-test p=0.221 at alpha=0.05); calibration_did_not_improve_brier (delta -0.005274)"
+- heading "Audit trail" [level=2]:
+  - text: Audit trail
+  - link "Link to heading":
+    - /url: "#audit-trail"
+- paragraph: "Serving model: random-forest; decision threshold 0.33 (f1); calibration isotonic (applied). Predictions are the model's calibrated probability, plus the selected threshold's flag."
+- alert:
+  - paragraph:
+    - text: Research portfolio demonstration —
+    - strong: not a medical device
+    - text: . No output here is medical advice.
+- heading "Patient information" [level=3]:
+  - text: Patient information
+  - link "Link to heading":
+    - /url: "#patient-information"
+- button "Help for Age"
+- spinbutton "Age": "54"
+- button "Decrement"
+- button "Increment"
+- button "Help for Sex"
+- group:
+  - combobox "Sex": F
+  - button "Open"
+- button "Help for ChestPainType"
+- group:
+  - combobox "ChestPainType": ASY
+  - button "Open"
+- button "Help for RestingBP"
+- spinbutton "RestingBP": "130"
+- button "Decrement"
+- button "Increment"
+- button "Help for Cholesterol"
+- spinbutton "Cholesterol": "223"
+- button "Decrement"
+- button "Increment"
+- button "Help for FastingBS"
+- group:
+  - combobox "FastingBS": "0"
+  - button "Open"
+- button "Help for RestingECG"
+- group:
+  - combobox "RestingECG": Normal
+  - button "Open"
+- button "Help for MaxHR"
+- spinbutton "MaxHR": "138"
+- button "Decrement"
+- button "Increment"
+- button "Help for ExerciseAngina"
+- group:
+  - combobox "ExerciseAngina": "N"
+  - button "Open"
+- button "Help for Oldpeak"
+- spinbutton "Oldpeak": "0.6"
+- button "Decrement"
+- button "Increment"
+- button "Help for ST_Slope"
+- group:
+  - combobox "ST_Slope": Up
+  - button "Open"
+- button "Predict":
+  - paragraph: Predict
+- checkbox "I understand this tool is a research portfolio demonstration, **not a medical device**, and its output is not medical advice." [checked]
+- paragraph:
+  - text: I understand this tool is a research portfolio demonstration,
+  - strong: not a medical device
+  - text: ", and its output is not medical advice."
+- paragraph: Predicted probability of heart disease
+- paragraph: "0.1111"
+- paragraph: Selected threshold (f1)
+- paragraph: "0.33"
+- paragraph:
+  - text: The probability is
+  - strong: below
+  - text: the tuned threshold (0.33), which the selection flow chose by 'f1'.
+- alert:
+  - paragraph:
+    - strong: This is not a medical device, and this prediction is not medical advice.
+    - text: The number above comes from a statistical model trained on a public research dataset and reuses assumptions from that audit; it has no regulatory clearance, may be wrong in ways the dashboard cannot detect, and must never be used to diagnose or make any clinical decision alone. Consult a qualified clinician.

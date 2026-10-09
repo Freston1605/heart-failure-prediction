@@ -1,0 +1,15 @@
+# Deployment manifest for Streamlit Community Cloud (free tier).
+# Scoped to what the Streamlit app actually needs: the pickle serving path
+# (sklearn + joblib) and the Explore page's data loading (pandas). The app
+# plots with native `st.bar_chart` (built-in Altair), so seaborn/matplotlib
+# are deliberately NOT listed here — this keeps the free-tier install small
+# and the build fast.
+#
+# Pinned to the versions verified in development (CPython 3.11-style runtime;
+# the app itself requires >=3.11, see pyproject.toml).
+numpy==2.5.3
+pandas==3.0.6
+scipy==1.18.1
+scikit-learn==1.9.1
+joblib==1.6.0
+streamlit==1.65.0

@@ -1,0 +1,45 @@
+{
+  "experiment_name": "heart-failure-prediction-tuning",
+  "run_name": "k-nearest-neighbours-v1-trial-000",
+  "model_name": "k-Nearest Neighbours",
+  "model_slug": "k-nearest-neighbours",
+  "split_version": "v1",
+  "metric_schema_version": "1",
+  "primary_metric": "roc_auc",
+  "metric_keys": [
+    "accuracy",
+    "precision",
+    "recall",
+    "f1",
+    "roc_auc",
+    "pr_auc",
+    "specificity",
+    "npv",
+    "prevalence",
+    "brier_score",
+    "confusion_matrix",
+    "calibration"
+  ],
+  "params": {
+    "n_neighbors": "20",
+    "weights": "uniform",
+    "p": "2"
+  },
+  "tags": {
+    "model_name": "k-Nearest Neighbours",
+    "model_slug": "k-nearest-neighbours",
+    "split_version": "v1",
+    "metric_schema_version": "1",
+    "primary_metric": "roc_auc",
+    "source": "heart.tracking.run",
+    "n_samples": "734",
+    "run_kind": "trial",
+    "trial_state": "complete",
+    "model_type": "knn",
+    "trial_number": "0",
+    "study_name": "tune-knn",
+    "cv_folds": "3"
+  },
+  "tracking_uri": "sqlite:///.artifacts/t03-smoke/mlflow.db",
+  "source": "heart.tracking.run"
+}

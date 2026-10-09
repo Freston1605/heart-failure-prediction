@@ -1,0 +1,140 @@
+- button "keyboard_double_arrow_left"
+- list:
+  - listitem:
+    - link "Home":
+      - /url: https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/
+      - paragraph: Home
+  - listitem:
+    - link "Explore":
+      - /url: https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore
+      - paragraph: Explore
+  - listitem:
+    - link "Predict":
+      - /url: https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict
+      - paragraph: Predict
+- banner:
+  - button "Fork"
+  - button
+  - button "Main menu"
+- heading "📊 Explore — dataset insight" [level=1]:
+  - text: 📊 Explore — dataset insight
+  - link "Link to heading":
+    - /url: "#explore-dataset-insight"
+- paragraph: Figures are the audited S01 data-quality numbers; the dashboard never recomputes them with a different formula. Pinned dataset, checksum-verified.
+- heading "Distributions" [level=2]:
+  - text: Distributions
+  - link "Link to heading":
+    - /url: "#distributions"
+- paragraph: Value counts per feature, straight from the pinned dataset.
+- tablist:
+  - tab "Age" [selected]:
+    - paragraph: Age
+  - tab "RestingBP":
+    - paragraph: RestingBP
+  - tab "Cholesterol":
+    - paragraph: Cholesterol
+  - tab "MaxHR":
+    - paragraph: MaxHR
+  - tab "Oldpeak":
+    - paragraph: Oldpeak
+- tabpanel "Age":
+  - button "Show data"
+  - button "Download as PNG"
+  - button "Fullscreen"
+  - img: 0 5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95 100 105 110 115 120 27.951–30.45 30.45–32.9 32.9–35.35 35.35–37.8 37.8–40.25 40.25–42.7 42.7–45.15 45.15–47.6 47.6–50.05 50.05–52.5 52.5–54.95 54.95–57.4 57.4–59.85 59.85–62.3 62.3–64.75 64.75–67.2 67.2–69.65 69.65–72.1 72.1–74.55 74.55–77
+  - paragraph: "Age: 918 rows binned over 20 intervals."
+- tablist:
+  - tab "Sex" [selected]:
+    - paragraph: Sex
+  - tab "ChestPainType":
+    - paragraph: ChestPainType
+  - tab "FastingBS":
+    - paragraph: FastingBS
+  - tab "RestingECG":
+    - paragraph: RestingECG
+  - tab "ExerciseAngina":
+    - paragraph: ExerciseAngina
+  - tab "ST_Slope":
+    - paragraph: ST_Slope
+  - tab "HeartDisease":
+    - paragraph: HeartDisease
+- tabpanel "Sex":
+  - button "Show data"
+  - button "Download as PNG"
+  - button "Fullscreen"
+  - img: 0 50 100 150 200 250 300 350 400 450 500 550 600 650 700 750 800 F M
+  - paragraph: "Sex: 918 rows over 2 levels."
+- heading "Correlation view" [level=2]:
+  - text: Correlation view
+  - link "Link to heading":
+    - /url: "#correlation-view"
+- paragraph: Pearson correlation across continuous features and the target (HeartDisease). Binary flags appear in the categorical insight below instead of implying a spurious linear correlation.
+- button "Show/hide columns"
+- button "Download as CSV"
+- button "Search"
+- button "Fullscreen"
+- paragraph:
+  - strong: Strongest feature↔target correlations
+- button "Show/hide columns"
+- button "Download as CSV"
+- button "Search"
+- button "Fullscreen"
+- separator
+- heading "Class balance — audited S01 figures" [level=2]:
+  - text: Class balance — audited S01 figures
+  - link "Link to heading":
+    - /url: "#class-balance-audited-s01-figures"
+- paragraph: From heart.data.quality — the same code path that generated reports/data_quality.md. Numbers here are pinned to that report by the test suite, not recomputed ad-hoc.
+- paragraph: No disease (0)
+- paragraph: "410"
+- paragraph: Disease (1)
+- paragraph: "508"
+- paragraph: Positive prevalence
+- paragraph: "0.5534"
+- paragraph: Imbalance ratio
+- paragraph: "1.2390"
+- paragraph:
+  - text: "Total rows:"
+  - strong: "918"
+- heading "Impossible zeros (S01 sentinel audit)" [level=3]:
+  - text: Impossible zeros (S01 sentinel audit)
+  - link "Link to heading":
+    - /url: "#impossible-zeros-s01-sentinel-audit"
+- paragraph: A resting blood pressure or cholesterol of 0 is not a real measurement; the dataset uses it as a 'not recorded' sentinel.
+- button "Show/hide columns"
+- button "Download as CSV"
+- button "Search"
+- button "Fullscreen"
+- paragraph:
+  - text: "Rows carrying at least one impossible zero:"
+  - strong: "172"
+  - text: — the cost of a naive row-drop.
+- separator
+- heading "Per-feature insight" [level=2]:
+  - text: Per-feature insight
+  - link "Link to heading":
+    - /url: "#per-feature-insight"
+- paragraph: "Type, completeness, and how each feature splits the disease rate (numeric features: rates above/below the median; categorical features: highest vs. lowest per-level rate)."
+- button "Show/hide columns"
+- button "Download as CSV"
+- button "Search"
+- button "Fullscreen"
+- group "Per-level disease rates for categorical feature:":
+  - 'slider "Per-level disease rates for categorical feature: Per-level disease rates for categorical feature:"': "0"
+  - paragraph: Sex
+  - paragraph: Sex
+  - paragraph: HeartDisease
+- paragraph:
+  - text: Rates for
+  - strong: Sex
+  - text: — share of disease-present rows at each level, with the overall prevalence (55.34%) as baseline.
+- button "Show data"
+- button "Download as PNG"
+- button "Fullscreen"
+- img: 0.0 0.1 0.2 0.3 0.4 0.5 0.6 F M
+- button "Show/hide columns"
+- button "Download as CSV"
+- button "Search"
+- button "Fullscreen"
+- separator
+- paragraph: Research portfolio demonstration; not a medical device. Numbers are for educational use only.

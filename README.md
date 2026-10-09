@@ -58,6 +58,29 @@ pytest                                  # test suite (exit 0)
 python -c "import heart; print(heart.__version__)"
 ```
 
+## Reproduce the leaderboard from a clean environment
+
+One command regenerates `reports/leaderboard.md` from a clean checkout —
+fresh virtualenv, fully pinned dependencies, dataset integrity gate, full
+seeded battery + selection, leaderboard re-render:
+
+```bash
+make reproduce        # ~20 min; override the venv path with REPRO_VENV=/path
+```
+
+The run aborts before any training if the dataset integrity check fails
+(exit 2: raw dataset drift; exit 3: split drift) — it never silently
+downloads substitute data. `make check-data` runs the integrity gate alone,
+`make leaderboard` re-renders the report from an existing tracking store,
+and `make clean-repro` deletes the reproduction venv.
+
+The comparison of the regenerated numbers against the published ones (zero
+numeric deviation; only the generation timestamp and MLflow run IDs differ)
+is recorded in [`reports/reproduction.md`](reports/reproduction.md), and
+`tests/test_reproduction_contract.py` holds it as an executable contract.
+The same pinned stack is available containerized via
+`containers/Containerfile` (ROCm base image for GPU experiments).
+
 ## Reproducibility conventions
 
 - All randomness flows from `heart.config.RANDOM_SEED` (currently `42`).
@@ -68,5 +91,6 @@ python -c "import heart; print(heart.__version__)"
 
 ## Status
 
-Milestone M001 / Slice S01 in progress. This commit establishes project
-scaffolding, the pinned dependency manifest, and the test framework.
+Milestone M001 in progress (S08: free-tier deployment + reproducibility
+package). The app is live per `reports/deployment.md`; the clean-checkout
+leaderboard reproduction proof is in `reports/reproduction.md`.

@@ -1,0 +1,49 @@
+{
+  "cpu_fallback": false,
+  "generated_at": "2026-10-07T16:30:47+00:00",
+  "gfx_target": "gfx1201",
+  "gfx_target_visible": true,
+  "gpu_available": true,
+  "hostname": "326c2085f5aa",
+  "in_container": true,
+  "platform": "Linux x86_64",
+  "probes": [
+    {
+      "detail": "architectures: gfx1201, gfx12",
+      "name": "rocminfo",
+      "status": "found"
+    },
+    {
+      "detail": "architectures: gfx1201",
+      "name": "amd-smi static",
+      "status": "found"
+    },
+    {
+      "detail": "no gfx token in output",
+      "name": "rocm-smi",
+      "status": "skipped"
+    },
+    {
+      "detail": "target gfx1201 visible in ROCm tooling; all: gfx1201, gfx12",
+      "name": "rocm-architectures",
+      "status": "found"
+    }
+  ],
+  "rocm_version": "7.2.4",
+  "schema_version": "1",
+  "target_marketing_name": "AMD Radeon RX 9070 XT",
+  "torch": {
+    "cuda_available": true,
+    "device_count": 1,
+    "device_name": "AMD Radeon RX 9070 XT",
+    "error": null,
+    "gcn_arch_name": "gfx1201",
+    "gpu_available": true,
+    "hip_version": "7.2.53211",
+    "resolves_to": "cuda:0",
+    "torch_available": true,
+    "torch_version": "2.10.0+rocm7.2.4.git3d3aa833"
+  },
+  "torch_device": "cuda:0",
+  "warnings": []
+}

@@ -1,0 +1,43 @@
+{
+  "experiment_name": "heart-failure-prediction-tuning",
+  "run_name": "qda-v1-trial-000",
+  "model_name": "QDA",
+  "model_slug": "qda",
+  "split_version": "v1",
+  "metric_schema_version": "1",
+  "primary_metric": "roc_auc",
+  "metric_keys": [
+    "accuracy",
+    "precision",
+    "recall",
+    "f1",
+    "roc_auc",
+    "pr_auc",
+    "specificity",
+    "npv",
+    "prevalence",
+    "brier_score",
+    "confusion_matrix",
+    "calibration"
+  ],
+  "params": {
+    "reg_param": "0.33708610696262625"
+  },
+  "tags": {
+    "model_name": "QDA",
+    "model_slug": "qda",
+    "split_version": "v1",
+    "metric_schema_version": "1",
+    "primary_metric": "roc_auc",
+    "source": "heart.tracking.run",
+    "n_samples": "734",
+    "run_kind": "trial",
+    "trial_state": "complete",
+    "model_type": "qda",
+    "trial_number": "0",
+    "study_name": "tune-qda",
+    "cv_folds": "3"
+  },
+  "tracking_uri": "sqlite:///.artifacts/t03-smoke/mlflow.db",
+  "source": "heart.tracking.run"
+}

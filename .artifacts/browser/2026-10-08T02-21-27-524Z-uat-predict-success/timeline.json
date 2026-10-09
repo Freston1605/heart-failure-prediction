@@ -1,0 +1,107 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 7706,
+      "beforeUrl": "about:blank",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+      "line": "#1 | browser_navigate | success | 7706ms | url=\"https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.s...\" | URL changed to https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/; title changed to Heart Failure Prediction Portfolio · Streamlit; links 0→2; visible text changed | Warnings: JS: Failed to load resource: the server responded with a status of 404 () (x2) | Failed to load resource: the server responded with a status of 403 (); Network: POST xhr 403 | GET xhr 404\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 2,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 568,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "line": "#2 | browser_click | success | 568ms | selector=\"section.stSidebar a[href$=\\\"/Explore\\\"]\" | PASS (url_changed) | URL changed to https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore; title changed to 1 — Explore · Streamlit; focus changed; links 7→5"
+    },
+    {
+      "id": 3,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 142,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "line": "#3 | browser_click | success | 142ms | selector=\"section.stSidebar a[href$=\\\"/Predict\\\"]\" | SOFT-FAIL (no observable state change) | focus changed; visible text changed"
+    },
+    {
+      "id": 4,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 4875,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict",
+      "line": "#4 | browser_navigate | success | 4875ms | url=\"https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.s...\" | URL changed to https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict; title changed to 2 — Predict · Streamlit; focus changed; visible text changed | Warnings: JS: Failed to load resource: the server responded with a status of 404 () (x4)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 5,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 4849,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Explore",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#5 | browser_navigate | success | 4849ms | url=\"https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.s...\" | URL changed to https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1; title changed to 2 — Predict · Streamlit; focus changed; visible text changed | Warnings: JS: Failed to load resource: the server responded with a status of 404 () (x4)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 6,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 5147,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#6 | browser_click | success | 5147ms | selector=\"button[kind=\\\"primary\\\"][type=\\\"submit\\\"]\" | SOFT-FAIL (no observable state change) | focus changed; buttons 32→33; visible text changed"
+    },
+    {
+      "id": 7,
+      "tool": "browser_key_press",
+      "status": "success",
+      "durationMs": 98,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#7 | browser_key_press | success | 98ms | key=\"Escape\" | SOFT-FAIL (no observable state change) | buttons 33→32; visible text changed"
+    },
+    {
+      "id": 8,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 531,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#8 | browser_click | success | 531ms | selector=\"button.st-emotion-cache-1wh9gjz.e1w4kd626\" | SOFT-FAIL (no observable state change) | focus changed; landmarks 5→6; visible text changed"
+    },
+    {
+      "id": 9,
+      "tool": "browser_set_checked",
+      "status": "error",
+      "durationMs": 10002,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#9 | browser_set_checked | error | 10002ms | checked=true, selector=\"input[type=\\\"checkbox\\\"]\" | locator.setChecked: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"checkbox\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <input title=\"\" tabindex=\"0\" type=\"checkbox\" data-react-aria-pressable=\"true\" aria-label=\"I understand this tool is a research portfolio demonstration, **not a medical device**, and its output is not medical advice.\"/>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <label data-rac=\"\" data-react-aria-pressable=\"true\" class=\"st-emotion-cache-7tv5ne e1ap2qgk4\">…</label> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div data-testid=\"stMainBlockContainer\" class=\"stMainBlockContainer block-container st-emotion-cache-lhe5w4 e8oj7lc4\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <label data-rac=\"\" data-hovered=\"true\" data-react-aria-pressable=\"true\" class=\"st-emotion-cache-7tv5ne e1ap2qgk4\">…</label> intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"st-emotion-cache-q3kbi5 e1ap2qgk5\"></div> intercepts pointer events\u001b[22m\n\u001b[2m  4 × retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div data-testid=\"stMainBlockContainer\" class=\"stMainBlockContainer block-container st-emotion-cache-lhe5w4 e8oj7lc4\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <label data-rac=\"\" data-hovered=\"true\" data-react-aria-pressable=\"true\" class=\"st-emotion-cache-7tv5ne e1ap2qgk4\">…</label> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"st-emotion-cache-q3kbi5 e1ap2qgk5\"></div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"st-emotion-cache-q3kbi5 e1ap2qgk5\"></div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div data-testid=\"stMainBlockContainer\" class=\"stMainBlockContainer block-container st-emotion-cache-lhe5w4 e8oj7lc4\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <label data-rac=\"\" data-hovered=\"true\" data-react-aria-pressable=\"true\" class=\"st-emotion-cache-7tv5ne e1ap2qgk4\">…</label> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "id": 10,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 154,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#10 | browser_click | success | 154ms | selector=\"label.st-emotion-cache-7tv5ne.e1ap2qgk4\" | SOFT-FAIL (no observable state change) | focus changed"
+    },
+    {
+      "id": 11,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 143,
+      "beforeUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "afterUrl": "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/Predict?fresh=1",
+      "line": "#11 | browser_click | success | 143ms | selector=\"button.st-emotion-cache-1wh9gjz.e1w4kd626\" | SOFT-FAIL (no observable state change) | focus changed"
+    }
+  ],
+  "retained": 11,
+  "totalRecorded": 11,
+  "bounded": false,
+  "summary": "Timeline: 11 browser actions recorded."
+}

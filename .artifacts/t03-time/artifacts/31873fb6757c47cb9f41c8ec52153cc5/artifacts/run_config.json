@@ -1,0 +1,52 @@
+{
+  "experiment_name": "heart-failure-prediction",
+  "run_name": "random-forest-v1",
+  "model_name": "Random Forest",
+  "model_slug": "random-forest",
+  "split_version": "v1",
+  "metric_schema_version": "1",
+  "primary_metric": "roc_auc",
+  "metric_keys": [
+    "accuracy",
+    "precision",
+    "recall",
+    "f1",
+    "roc_auc",
+    "pr_auc",
+    "specificity",
+    "npv",
+    "prevalence",
+    "brier_score",
+    "confusion_matrix",
+    "calibration"
+  ],
+  "params": {
+    "random_state": "42",
+    "n_estimators": "54",
+    "max_depth": "23",
+    "min_samples_split": "17",
+    "min_samples_leaf": "8",
+    "max_features": "sqrt",
+    "class_weight": "balanced"
+  },
+  "tags": {
+    "model_name": "Random Forest",
+    "model_slug": "random-forest",
+    "split_version": "v1",
+    "metric_schema_version": "1",
+    "primary_metric": "roc_auc",
+    "source": "heart.tracking.run",
+    "n_samples": "184",
+    "run_kind": "final",
+    "model_type": "random-forest",
+    "family": "ensemble",
+    "battery_run_id": "battery-20261008T022624-66fda7dc",
+    "slice": "S03",
+    "cv_folds": "5",
+    "n_trials": "50",
+    "n_complete_trials": "50",
+    "best_trial_number": "11"
+  },
+  "tracking_uri": "sqlite:///.artifacts/t03-time/mlflow.db",
+  "source": "heart.tracking.run"
+}
