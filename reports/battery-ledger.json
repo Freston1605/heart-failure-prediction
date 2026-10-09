@@ -1,0 +1,1446 @@
+{
+  "battery_run_id": "battery-20261009T165100-06794121",
+  "config": {
+    "cv_folds": 5,
+    "direction": "maximize",
+    "n_startup_trials": 10,
+    "n_trials": 50,
+    "n_warmup_steps": 5,
+    "pruner": "median",
+    "sampler": "tpe",
+    "sampler_seed": 42,
+    "timeout": null
+  },
+  "cv_folds": 5,
+  "experiment_name": "heart-failure-prediction",
+  "failed_models": [],
+  "generated_at": "2026-10-09T17:10:02+00:00",
+  "n_failed": 0,
+  "n_models": 10,
+  "n_succeeded": 10,
+  "n_trials": 50,
+  "results": [
+    {
+      "best_params": {
+        "C": 0.06042899902433809,
+        "class_weight": "balanced",
+        "l1_ratio": 0.0,
+        "max_iter": 2000,
+        "random_state": 42,
+        "solver": "lbfgs"
+      },
+      "duration_seconds": 17.077143,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "linear",
+      "metric_dict": {
+        "accuracy": 0.8967391304347826,
+        "brier_score": 0.0999524866214044,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 31,
+              "fraction_positive": 0.0,
+              "gap": 0.06957340536271946,
+              "lower": 0.0,
+              "mean_predicted": 0.06957340536271946,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 20,
+              "fraction_positive": 0.05,
+              "gap": 0.08615561892451755,
+              "lower": 0.1,
+              "mean_predicted": 0.13615561892451755,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 13,
+              "fraction_positive": 0.07692307692307693,
+              "gap": 0.1697897429054818,
+              "lower": 0.2,
+              "mean_predicted": 0.24671281982855872,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 9,
+              "fraction_positive": 0.3333333333333333,
+              "gap": 0.00434764564039497,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.3376809789737283,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 8,
+              "fraction_positive": 0.5,
+              "gap": 0.05190571388910825,
+              "lower": 0.4,
+              "mean_predicted": 0.44809428611089175,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 11,
+              "fraction_positive": 1.0,
+              "gap": 0.4708346669734045,
+              "lower": 0.5,
+              "mean_predicted": 0.5291653330265955,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 9,
+              "fraction_positive": 1.0,
+              "gap": 0.354972187178869,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.645027812821131,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 21,
+              "fraction_positive": 0.8095238095238095,
+              "gap": 0.06627043651488274,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7432533730089268,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 24,
+              "fraction_positive": 0.875,
+              "gap": 0.018999187177,
+              "lower": 0.8,
+              "mean_predicted": 0.856000812823,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 38,
+              "fraction_positive": 0.9210526315789473,
+              "gap": 0.007561058748238314,
+              "lower": 0.9,
+              "mean_predicted": 0.9286136903271857,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.0999524866214044,
+          "expected_calibration_error": 0.09266543498474566,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 9,
+          "fp": 10,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 72,
+          "tp": 93
+        },
+        "f1": 0.9073170731707317,
+        "npv": 0.8888888888888888,
+        "pr_auc": 0.9276229655978308,
+        "precision": 0.9029126213592233,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9117647058823529,
+        "roc_auc": 0.9305356288857006,
+        "specificity": 0.8780487804878049
+      },
+      "model_name": "Logistic Regression (L2)",
+      "model_type": "logistic-regression-l2",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "d3962a5577124122b985cb62afe45aca",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "C": 0.5904857811026423,
+        "class_weight": "balanced",
+        "l1_ratio": 1.0,
+        "max_iter": 2000,
+        "random_state": 42,
+        "solver": "liblinear"
+      },
+      "duration_seconds": 16.299658,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "linear",
+      "metric_dict": {
+        "accuracy": 0.8695652173913043,
+        "brier_score": 0.09601797656350812,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 49,
+              "fraction_positive": 0.02040816326530612,
+              "gap": 0.031447629225701865,
+              "lower": 0.0,
+              "mean_predicted": 0.05185579249100798,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 7,
+              "fraction_positive": 0.0,
+              "gap": 0.15259469167500325,
+              "lower": 0.1,
+              "mean_predicted": 0.15259469167500325,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 13,
+              "fraction_positive": 0.07692307692307693,
+              "gap": 0.17310752898622928,
+              "lower": 0.2,
+              "mean_predicted": 0.2500306059093062,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 4,
+              "fraction_positive": 0.75,
+              "gap": 0.4075829438270017,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.3424170561729983,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 11,
+              "fraction_positive": 0.7272727272727273,
+              "gap": 0.2764043744836144,
+              "lower": 0.4,
+              "mean_predicted": 0.4508683527891129,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 5,
+              "fraction_positive": 0.8,
+              "gap": 0.25636737720640856,
+              "lower": 0.5,
+              "mean_predicted": 0.5436326227935915,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 7,
+              "fraction_positive": 1.0,
+              "gap": 0.3623330926760897,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6376669073239103,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 17,
+              "fraction_positive": 0.8235294117647058,
+              "gap": 0.07614479884807113,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7473846129166347,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 19,
+              "fraction_positive": 0.8421052631578947,
+              "gap": 0.0038237396566512816,
+              "lower": 0.8,
+              "mean_predicted": 0.845929002814546,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 52,
+              "fraction_positive": 0.9230769230769231,
+              "gap": 0.02513885419820716,
+              "lower": 0.9,
+              "mean_predicted": 0.9482157772751303,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.09601797656350812,
+          "expected_calibration_error": 0.08708030452281622,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 13,
+          "fp": 11,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 71,
+          "tp": 89
+        },
+        "f1": 0.8811881188118812,
+        "npv": 0.8452380952380952,
+        "pr_auc": 0.9272320960286716,
+        "precision": 0.89,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.8725490196078431,
+        "roc_auc": 0.9306551889048302,
+        "specificity": 0.8658536585365854
+      },
+      "model_name": "Logistic Regression (L1)",
+      "model_type": "logistic-regression-l1",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "09a4e51ca82848728b358664def5a35f",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "C": 0.14900170192685294,
+        "class_weight": null,
+        "l1_ratio": 0.641734905519235,
+        "max_iter": 2000,
+        "random_state": 42,
+        "solver": "saga"
+      },
+      "duration_seconds": 20.803833,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "linear",
+      "metric_dict": {
+        "accuracy": 0.8967391304347826,
+        "brier_score": 0.09553602501443513,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 31,
+              "fraction_positive": 0.0,
+              "gap": 0.06605704487053034,
+              "lower": 0.0,
+              "mean_predicted": 0.06605704487053034,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 21,
+              "fraction_positive": 0.047619047619047616,
+              "gap": 0.08579976712548523,
+              "lower": 0.1,
+              "mean_predicted": 0.13341881474453285,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 6,
+              "fraction_positive": 0.16666666666666666,
+              "gap": 0.0714449651694315,
+              "lower": 0.2,
+              "mean_predicted": 0.23811163183609815,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 14,
+              "fraction_positive": 0.14285714285714285,
+              "gap": 0.1950151040718166,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.33787224692895945,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 5,
+              "fraction_positive": 0.6,
+              "gap": 0.1307194415400894,
+              "lower": 0.4,
+              "mean_predicted": 0.46928055845991057,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 11,
+              "fraction_positive": 0.8181818181818182,
+              "gap": 0.2737269971304246,
+              "lower": 0.5,
+              "mean_predicted": 0.5444548210513936,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 7,
+              "fraction_positive": 1.0,
+              "gap": 0.35833244130033937,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6416675586996606,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 16,
+              "fraction_positive": 0.875,
+              "gap": 0.11628662442711124,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7587133755728888,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 20,
+              "fraction_positive": 0.8,
+              "gap": 0.04074592672771826,
+              "lower": 0.8,
+              "mean_predicted": 0.8407459267277183,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 53,
+              "fraction_positive": 0.9245283018867925,
+              "gap": 0.014949210109062916,
+              "lower": 0.9,
+              "mean_predicted": 0.9394775119958554,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.09553602501443513,
+          "expected_calibration_error": 0.09048466671222621,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 7,
+          "fp": 12,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 70,
+          "tp": 95
+        },
+        "f1": 0.9090909090909091,
+        "npv": 0.9090909090909091,
+        "pr_auc": 0.9273178504134798,
+        "precision": 0.8878504672897196,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9313725490196079,
+        "roc_auc": 0.9301769488283119,
+        "specificity": 0.8536585365853658
+      },
+      "model_name": "Logistic Regression (ElasticNet)",
+      "model_type": "logistic-regression-elasticnet",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "c50fd2ec3c434140968dce6fb5cca072",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "var_smoothing": 0.09326741181990136
+      },
+      "duration_seconds": 15.526493,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "bayes",
+      "metric_dict": {
+        "accuracy": 0.875,
+        "brier_score": 0.10396801246475147,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 70,
+              "fraction_positive": 0.07142857142857142,
+              "gap": 0.060138856542128624,
+              "lower": 0.0,
+              "mean_predicted": 0.0112897148864428,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 4,
+              "fraction_positive": 0.25,
+              "gap": 0.09733475778853809,
+              "lower": 0.1,
+              "mean_predicted": 0.1526652422114619,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 4,
+              "fraction_positive": 0.75,
+              "gap": 0.5026627158415583,
+              "lower": 0.2,
+              "mean_predicted": 0.24733728415844167,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 1,
+              "fraction_positive": 0.0,
+              "gap": 0.3094802122114065,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.3094802122114065,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 4,
+              "fraction_positive": 0.75,
+              "gap": 0.30180850048595365,
+              "lower": 0.4,
+              "mean_predicted": 0.44819149951404635,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 2,
+              "fraction_positive": 0.5,
+              "gap": 0.0700721750421468,
+              "lower": 0.5,
+              "mean_predicted": 0.5700721750421468,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 2,
+              "fraction_positive": 1.0,
+              "gap": 0.34467781406956743,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6553221859304326,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 5,
+              "fraction_positive": 1.0,
+              "gap": 0.2409810290816885,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7590189709183115,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 4,
+              "fraction_positive": 1.0,
+              "gap": 0.12352543973176933,
+              "lower": 0.8,
+              "mean_predicted": 0.8764745602682307,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 88,
+              "fraction_positive": 0.8863636363636364,
+              "gap": 0.10230667836604967,
+              "lower": 0.9,
+              "mean_predicted": 0.988670314729686,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.10396801246475147,
+          "expected_calibration_error": 0.10683651437715179,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 12,
+          "fp": 11,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 71,
+          "tp": 90
+        },
+        "f1": 0.8866995073891626,
+        "npv": 0.8554216867469879,
+        "pr_auc": 0.9231235579350978,
+        "precision": 0.8910891089108911,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.8823529411764706,
+        "roc_auc": 0.928024868483979,
+        "specificity": 0.8658536585365854
+      },
+      "model_name": "Naive Bayes",
+      "model_type": "naive-bayes",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "9901db47d5904dd79044ad001ddfb54c",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "shrinkage": 0.08357274449901927,
+        "solver": "lsqr"
+      },
+      "duration_seconds": 14.470392,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "discriminant",
+      "metric_dict": {
+        "accuracy": 0.8913043478260869,
+        "brier_score": 0.09109414674909544,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 54,
+              "fraction_positive": 0.018518518518518517,
+              "gap": 0.007825709986949071,
+              "lower": 0.0,
+              "mean_predicted": 0.02634422850546759,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 7,
+              "fraction_positive": 0.0,
+              "gap": 0.1539660362326861,
+              "lower": 0.1,
+              "mean_predicted": 0.1539660362326861,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 9,
+              "fraction_positive": 0.1111111111111111,
+              "gap": 0.11921157363659057,
+              "lower": 0.2,
+              "mean_predicted": 0.23032268474770168,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 3,
+              "fraction_positive": 1.0,
+              "gap": 0.6617759744723046,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.3382240255276954,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 3,
+              "fraction_positive": 0.6666666666666666,
+              "gap": 0.20847645442846285,
+              "lower": 0.4,
+              "mean_predicted": 0.4581902122382038,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 11,
+              "fraction_positive": 0.7272727272727273,
+              "gap": 0.1727237911379489,
+              "lower": 0.5,
+              "mean_predicted": 0.5545489361347784,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 3,
+              "fraction_positive": 1.0,
+              "gap": 0.35285549651777925,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6471445034822207,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 6,
+              "fraction_positive": 1.0,
+              "gap": 0.25062784148642514,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7493721585135749,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 15,
+              "fraction_positive": 0.8666666666666667,
+              "gap": 0.0008914271592034284,
+              "lower": 0.8,
+              "mean_predicted": 0.8657752395074633,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 73,
+              "fraction_positive": 0.8904109589041096,
+              "gap": 0.0829237243798634,
+              "lower": 0.9,
+              "mean_predicted": 0.973334683283973,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.09109414674909544,
+          "expected_calibration_error": 0.08539734005686453,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 7,
+          "fp": 13,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 69,
+          "tp": 95
+        },
+        "f1": 0.9047619047619048,
+        "npv": 0.9078947368421053,
+        "pr_auc": 0.924531199666649,
+        "precision": 0.8796296296296297,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9313725490196079,
+        "roc_auc": 0.9288617886178863,
+        "specificity": 0.8414634146341463
+      },
+      "model_name": "LDA",
+      "model_type": "lda",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "38eb8013505349c7aca1b1344890eba2",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "reg_param": 0.20848923483175424
+      },
+      "duration_seconds": 15.703913,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "discriminant",
+      "metric_dict": {
+        "accuracy": 0.8967391304347826,
+        "brier_score": 0.0853366508928557,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 53,
+              "fraction_positive": 0.018867924528301886,
+              "gap": 0.0027827244808439483,
+              "lower": 0.0,
+              "mean_predicted": 0.021650649009145834,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 9,
+              "fraction_positive": 0.0,
+              "gap": 0.15596300680535646,
+              "lower": 0.1,
+              "mean_predicted": 0.15596300680535646,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 10,
+              "fraction_positive": 0.3,
+              "gap": 0.06321976999600576,
+              "lower": 0.2,
+              "mean_predicted": 0.23678023000399423,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 4,
+              "fraction_positive": 0.25,
+              "gap": 0.09231181783085451,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.3423118178308545,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 3,
+              "fraction_positive": 1.0,
+              "gap": 0.5170884584674744,
+              "lower": 0.4,
+              "mean_predicted": 0.4829115415325256,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 4,
+              "fraction_positive": 1.0,
+              "gap": 0.47145062312611996,
+              "lower": 0.5,
+              "mean_predicted": 0.52854937687388,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 5,
+              "fraction_positive": 0.6,
+              "gap": 0.031073732584593228,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6310737325845932,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 11,
+              "fraction_positive": 0.8181818181818182,
+              "gap": 0.067521782055185,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7506600361266332,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 17,
+              "fraction_positive": 0.8823529411764706,
+              "gap": 0.03842086421954671,
+              "lower": 0.8,
+              "mean_predicted": 0.8439320769569238,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 68,
+              "fraction_positive": 0.9264705882352942,
+              "gap": 0.050936725896296275,
+              "lower": 0.9,
+              "mean_predicted": 0.9774073141315904,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.0853366508928557,
+          "expected_calibration_error": 0.05980774247898782,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 8,
+          "fp": 11,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 71,
+          "tp": 94
+        },
+        "f1": 0.9082125603864735,
+        "npv": 0.8987341772151899,
+        "pr_auc": 0.9189706290534235,
+        "precision": 0.8952380952380953,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9215686274509803,
+        "roc_auc": 0.9350789096126256,
+        "specificity": 0.8658536585365854
+      },
+      "model_name": "QDA",
+      "model_type": "qda",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "15b439c9ae4b4a8a8f0f3793c3163cee",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "n_neighbors": 45,
+        "p": 1,
+        "weights": "distance"
+      },
+      "duration_seconds": 17.681339,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "distance",
+      "metric_dict": {
+        "accuracy": 0.8967391304347826,
+        "brier_score": 0.08907920885172568,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 38,
+              "fraction_positive": 0.0,
+              "gap": 0.042904527682484206,
+              "lower": 0.0,
+              "mean_predicted": 0.042904527682484206,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 19,
+              "fraction_positive": 0.05263157894736842,
+              "gap": 0.09310215358413415,
+              "lower": 0.1,
+              "mean_predicted": 0.14573373253150257,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 10,
+              "fraction_positive": 0.1,
+              "gap": 0.15047027371855667,
+              "lower": 0.2,
+              "mean_predicted": 0.2504702737185567,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 5,
+              "fraction_positive": 0.2,
+              "gap": 0.15653146195425838,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.3565314619542584,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 7,
+              "fraction_positive": 0.7142857142857143,
+              "gap": 0.25546769299058897,
+              "lower": 0.4,
+              "mean_predicted": 0.45881802129512533,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 8,
+              "fraction_positive": 0.875,
+              "gap": 0.32408945746683737,
+              "lower": 0.5,
+              "mean_predicted": 0.5509105425331626,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 5,
+              "fraction_positive": 1.0,
+              "gap": 0.3450438365944424,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6549561634055576,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 16,
+              "fraction_positive": 0.875,
+              "gap": 0.12410810132080963,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7508918986791904,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 29,
+              "fraction_positive": 0.896551724137931,
+              "gap": 0.035898896532702174,
+              "lower": 0.8,
+              "mean_predicted": 0.8606528276052289,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 47,
+              "fraction_positive": 0.8936170212765957,
+              "gap": 0.0559045774582847,
+              "lower": 0.9,
+              "mean_predicted": 0.9495215987348804,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.08907920885172568,
+          "expected_calibration_error": 0.09482170908560618,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 8,
+          "fp": 11,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 71,
+          "tp": 94
+        },
+        "f1": 0.9082125603864735,
+        "npv": 0.8987341772151899,
+        "pr_auc": 0.9175358630500694,
+        "precision": 0.8952380952380953,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9215686274509803,
+        "roc_auc": 0.9307747489239598,
+        "specificity": 0.8658536585365854
+      },
+      "model_name": "k-Nearest Neighbours",
+      "model_type": "knn",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "c00b240311434089bae3526a38e7f2ee",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "C": 191.26962038235087,
+        "class_weight": "balanced",
+        "gamma": 0.0024563567857059224,
+        "kernel": "linear",
+        "probability": true,
+        "random_state": 42
+      },
+      "duration_seconds": 435.507958,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "kernel",
+      "metric_dict": {
+        "accuracy": 0.8858695652173914,
+        "brier_score": 0.09846924910331711,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 52,
+              "fraction_positive": 0.019230769230769232,
+              "gap": 0.046127515634984975,
+              "lower": 0.0,
+              "mean_predicted": 0.06535828486575421,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 0,
+              "fraction_positive": null,
+              "gap": null,
+              "lower": 0.1,
+              "mean_predicted": null,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 21,
+              "fraction_positive": 0.19047619047619047,
+              "gap": 0.055709038162767455,
+              "lower": 0.2,
+              "mean_predicted": 0.24618522863895792,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 0,
+              "fraction_positive": null,
+              "gap": null,
+              "lower": 0.30000000000000004,
+              "mean_predicted": null,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 0,
+              "fraction_positive": null,
+              "gap": null,
+              "lower": 0.4,
+              "mean_predicted": null,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 22,
+              "fraction_positive": 0.8181818181818182,
+              "gap": 0.2700269468628542,
+              "lower": 0.5,
+              "mean_predicted": 0.548154871318964,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 0,
+              "fraction_positive": null,
+              "gap": null,
+              "lower": 0.6000000000000001,
+              "mean_predicted": null,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 0,
+              "fraction_positive": null,
+              "gap": null,
+              "lower": 0.7000000000000001,
+              "mean_predicted": null,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 41,
+              "fraction_positive": 0.8536585365853658,
+              "gap": 0.03520036491369616,
+              "lower": 0.8,
+              "mean_predicted": 0.8184581716716697,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 48,
+              "fraction_positive": 0.9166666666666666,
+              "gap": 0.03465032799847023,
+              "lower": 0.9,
+              "mean_predicted": 0.9513169946651369,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.09846924910331711,
+          "expected_calibration_error": 0.06856273995004479,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 10,
+          "fp": 11,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 71,
+          "tp": 92
+        },
+        "f1": 0.8975609756097561,
+        "npv": 0.8765432098765432,
+        "pr_auc": 0.9211796594057755,
+        "precision": 0.8932038834951457,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9019607843137255,
+        "roc_auc": 0.9249163079866093,
+        "specificity": 0.8658536585365854
+      },
+      "model_name": "Support Vector Machine",
+      "model_type": "svm",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "b4b7b8c6be4246bf814e0513bead3bbf",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "class_weight": "balanced",
+        "max_depth": 23,
+        "max_features": "sqrt",
+        "min_samples_leaf": 8,
+        "min_samples_split": 17,
+        "n_estimators": 54,
+        "random_state": 42
+      },
+      "duration_seconds": 79.037804,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "ensemble",
+      "metric_dict": {
+        "accuracy": 0.8858695652173914,
+        "brier_score": 0.09399376284374687,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 32,
+              "fraction_positive": 0.0,
+              "gap": 0.05026283276551749,
+              "lower": 0.0,
+              "mean_predicted": 0.05026283276551749,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 18,
+              "fraction_positive": 0.05555555555555555,
+              "gap": 0.09485203222355837,
+              "lower": 0.1,
+              "mean_predicted": 0.15040758777911392,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 12,
+              "fraction_positive": 0.0,
+              "gap": 0.2405815258110208,
+              "lower": 0.2,
+              "mean_predicted": 0.2405815258110208,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 6,
+              "fraction_positive": 0.16666666666666666,
+              "gap": 0.16697693059136223,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.3336435972580289,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 15,
+              "fraction_positive": 0.6,
+              "gap": 0.1422535466077744,
+              "lower": 0.4,
+              "mean_predicted": 0.4577464533922256,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 6,
+              "fraction_positive": 1.0,
+              "gap": 0.44250232343663665,
+              "lower": 0.5,
+              "mean_predicted": 0.5574976765633634,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 14,
+              "fraction_positive": 0.7857142857142857,
+              "gap": 0.14072955616667615,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6449847295476095,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 16,
+              "fraction_positive": 0.875,
+              "gap": 0.13042376657877508,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7445762334212249,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 29,
+              "fraction_positive": 0.9310344827586207,
+              "gap": 0.0812949603130888,
+              "lower": 0.8,
+              "mean_predicted": 0.8497395224455319,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 36,
+              "fraction_positive": 0.9166666666666666,
+              "gap": 0.020027025081186034,
+              "lower": 0.9,
+              "mean_predicted": 0.9366936917478527,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.09399376284374687,
+          "expected_calibration_error": 0.10396154926703048,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 11,
+          "fp": 10,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 72,
+          "tp": 91
+        },
+        "f1": 0.896551724137931,
+        "npv": 0.8674698795180723,
+        "pr_auc": 0.929391610820709,
+        "precision": 0.900990099009901,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.8921568627450981,
+        "roc_auc": 0.9353180296508847,
+        "specificity": 0.8780487804878049
+      },
+      "model_name": "Random Forest",
+      "model_type": "random-forest",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "152d7d0aa82b4eb988c63ed4caccefcf",
+      "status": "succeeded"
+    },
+    {
+      "best_params": {
+        "colsample_bytree": 0.521851513019136,
+        "eval_metric": "logloss",
+        "learning_rate": 0.00785812762656449,
+        "max_depth": 4,
+        "n_estimators": 385,
+        "random_state": 42,
+        "reg_lambda": 0.002709298070441012,
+        "subsample": 0.5660285623208059
+      },
+      "duration_seconds": 505.274701,
+      "error": null,
+      "error_category": null,
+      "error_type": null,
+      "experiment_name": "heart-failure-prediction",
+      "family": "gradient-boosting",
+      "metric_dict": {
+        "accuracy": 0.9184782608695652,
+        "brier_score": 0.08237887063925342,
+        "calibration": {
+          "bins": [
+            {
+              "bin": 0,
+              "count": 31,
+              "fraction_positive": 0.0,
+              "gap": 0.07180421895557834,
+              "lower": 0.0,
+              "mean_predicted": 0.07180421895557834,
+              "upper": 0.1
+            },
+            {
+              "bin": 1,
+              "count": 24,
+              "fraction_positive": 0.041666666666666664,
+              "gap": 0.1042695228631298,
+              "lower": 0.1,
+              "mean_predicted": 0.14593618952979645,
+              "upper": 0.2
+            },
+            {
+              "bin": 2,
+              "count": 9,
+              "fraction_positive": 0.0,
+              "gap": 0.24682982431517708,
+              "lower": 0.2,
+              "mean_predicted": 0.24682982431517708,
+              "upper": 0.30000000000000004
+            },
+            {
+              "bin": 3,
+              "count": 5,
+              "fraction_positive": 0.2,
+              "gap": 0.14326336979866028,
+              "lower": 0.30000000000000004,
+              "mean_predicted": 0.3432633697986603,
+              "upper": 0.4
+            },
+            {
+              "bin": 4,
+              "count": 4,
+              "fraction_positive": 0.25,
+              "gap": 0.19839631766080856,
+              "lower": 0.4,
+              "mean_predicted": 0.44839631766080856,
+              "upper": 0.5
+            },
+            {
+              "bin": 5,
+              "count": 11,
+              "fraction_positive": 0.7272727272727273,
+              "gap": 0.171934263272719,
+              "lower": 0.5,
+              "mean_predicted": 0.5553384640000083,
+              "upper": 0.6000000000000001
+            },
+            {
+              "bin": 6,
+              "count": 7,
+              "fraction_positive": 1.0,
+              "gap": 0.35745392526899067,
+              "lower": 0.6000000000000001,
+              "mean_predicted": 0.6425460747310093,
+              "upper": 0.7000000000000001
+            },
+            {
+              "bin": 7,
+              "count": 17,
+              "fraction_positive": 0.7647058823529411,
+              "gap": 0.014902626766877924,
+              "lower": 0.7000000000000001,
+              "mean_predicted": 0.7498032555860632,
+              "upper": 0.8
+            },
+            {
+              "bin": 8,
+              "count": 28,
+              "fraction_positive": 0.9642857142857143,
+              "gap": 0.11846041466508594,
+              "lower": 0.8,
+              "mean_predicted": 0.8458252996206284,
+              "upper": 0.9
+            },
+            {
+              "bin": 9,
+              "count": 48,
+              "fraction_positive": 0.9166666666666666,
+              "gap": 0.009299928943316216,
+              "lower": 0.9,
+              "mean_predicted": 0.9259665956099828,
+              "upper": 1.0
+            }
+          ],
+          "brier_score": 0.08237887063925342,
+          "expected_calibration_error": 0.09168400599256808,
+          "n_bins": 10
+        },
+        "confusion_matrix": {
+          "fn": 3,
+          "fp": 12,
+          "n_negative": 82,
+          "n_positive": 102,
+          "n_samples": 184,
+          "tn": 70,
+          "tp": 99
+        },
+        "f1": 0.9295774647887324,
+        "npv": 0.958904109589041,
+        "pr_auc": 0.9402680330894679,
+        "precision": 0.8918918918918919,
+        "prevalence": 0.5543478260869565,
+        "recall": 0.9705882352941176,
+        "roc_auc": 0.9432089909134386,
+        "specificity": 0.8536585365853658
+      },
+      "model_name": "XGBoost",
+      "model_type": "xgboost",
+      "n_complete": 50,
+      "n_failed_trials": 0,
+      "n_pruned": 0,
+      "n_trials": 50,
+      "run_id": "b0f504ce71ef4256a3fb3228c2355cf3",
+      "status": "succeeded"
+    }
+  ],
+  "run_ids": [
+    "d3962a5577124122b985cb62afe45aca",
+    "09a4e51ca82848728b358664def5a35f",
+    "c50fd2ec3c434140968dce6fb5cca072",
+    "9901db47d5904dd79044ad001ddfb54c",
+    "38eb8013505349c7aca1b1344890eba2",
+    "15b439c9ae4b4a8a8f0f3793c3163cee",
+    "c00b240311434089bae3526a38e7f2ee",
+    "b4b7b8c6be4246bf814e0513bead3bbf",
+    "152d7d0aa82b4eb988c63ed4caccefcf",
+    "b0f504ce71ef4256a3fb3228c2355cf3"
+  ],
+  "split_version": "v1",
+  "test_rows": 184,
+  "train_rows": 734,
+  "tuning_experiment_name": "heart-failure-prediction-tuning"
+}
