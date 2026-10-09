@@ -21,6 +21,9 @@ for _p in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "src")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+import logging
+import time
+
 import streamlit as st
 
 from app.lib.plots import (
@@ -28,6 +31,15 @@ from app.lib.plots import (
     insight_groups,
     load_explore_data,
 )
+from heart.observability import (
+    configure_logging,
+    log_event,
+    record_metric,
+    timed_event,
+)
+
+logger = logging.getLogger("heart.app")
+configure_logging()
 
 st.set_page_config(
     page_title="1 — Explore",
@@ -42,16 +54,29 @@ st.caption(
     "checksum-verified."
 )
 
-data = load_explore_data()
+with timed_event(logger, "app.dataset_load", "heart.dashboard.dataset_load_ms") as event_fields:
+    data = load_explore_data()
+    if data.ok:
+        event_fields["sha256"] = data.sha256
+        event_fields["rows"] = data.rows
 
 if not data.ok:
     st.error(
         f"**Dataset could not be loaded ({data.error_kind}).** "
         f"{data.error_message}"
     )
+    log_event(
+        logger, "app.dataset_load", "error", level=logging.ERROR,
+        message=f"dataset load failed ({data.error_kind})",
+        error_kind=data.error_kind,
+    )
+    record_metric(logger, "heart.dashboard.dataset_load_failures", 1, kind="counter",
+                  error_kind=str(data.error_kind))
     st.stop()
 
-groups = insight_groups(data.frame)
+with timed_event(logger, "app.explore_render", "heart.dashboard.render_ms",
+                 message="explore groups rendered"):
+    groups = insight_groups(data.frame)
 balance = groups["class_balance"]
 
 # ---------------------------------------------------------------------------
