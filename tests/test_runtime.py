@@ -58,7 +58,7 @@ def test_atomic_write_text_creates_parents_and_no_part_residue(tmp_path) -> None
     returned = atomic_write_text(destination, "hello\n")
     assert returned == destination
     assert destination.read_text(encoding="utf-8") == "hello\n"
-    assert not destination.with_name(destination.name + ".part").exists()
+    assert not list(destination.parent.glob(destination.name + ".part*"))
 
 
 def test_atomic_write_is_not_interleaved(tmp_path) -> None:

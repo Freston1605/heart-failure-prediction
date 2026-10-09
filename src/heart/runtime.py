@@ -27,6 +27,7 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import threading
 import uuid
 from collections.abc import Callable, Mapping
 from pathlib import Path
@@ -66,13 +67,19 @@ def json_default(value: object) -> object:
 def atomic_write_text(path: str | Path, content: str) -> Path:
     """Write ``content`` to ``path`` atomically and return the destination.
 
-    Creates parent directories, writes to ``<name>.part``, then ``os.replace``
-    onto the destination so readers never observe a partial file. Raises
-    ``OSError`` (callers wrap into their own error types).
+    Creates parent directories, writes to a writer-unique ``<name>.part-<pid>``
+    temporary file, then ``os.replace``s onto the destination so readers never
+    observe a partial file. The per-writer suffix also makes concurrent writes
+    to the *same* destination safe: each writer replaces its own complete
+    temporary, so the destination atomically ends up with whichever writer's
+    payload finished last and never a torn mix. Raises ``OSError`` (callers
+    wrap into their own error types).
     """
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    tmp = destination.with_name(destination.name + ".part")
+    tmp = destination.with_name(
+        f"{destination.name}.part-{os.getpid()}-{id(threading.current_thread())}"
+    )
     tmp.write_text(content, encoding="utf-8")
     os.replace(tmp, destination)
     return destination
