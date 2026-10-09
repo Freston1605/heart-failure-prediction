@@ -45,18 +45,14 @@ persists the machine-readable result JSON atomically.
 from __future__ import annotations
 
 import argparse
-import json
 import logging
-import os
 import sys
 import time
-import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Sequence
 
-import numpy as np
 import pandas as pd
 
 from heart.config import RANDOM_SEED
@@ -84,6 +80,13 @@ from heart.tracking.mlflow_store import (
     TrackingConfig,
     TrackingError,
     configure_tracking,
+)
+from heart.runtime import (
+    classify_error,
+    error_message,
+    merge_effective_params,
+    timestamped_run_id,
+    write_json_document,
 )
 from heart.tracking.run import log_evaluation_run
 from heart.tuning.runner import (
@@ -528,38 +531,17 @@ def _require_frame(frame: object, *, role: str) -> pd.DataFrame:
     return frame
 
 
-def _effective_params(
-    spec: ModelSpec, best_params: Mapping[str, object] | None
-) -> dict[str, object]:
-    merged = dict(spec.fixed_params)
-    if best_params:
-        merged.update(best_params)
-    return merged
-
-
-def _error_message(exc: BaseException) -> str:
-    return f"{type(exc).__name__}: {exc}"
-
-
-def _classify_error(exc: BaseException) -> str:
-    if isinstance(exc, ModelDependencyError):
-        return ERROR_CATEGORY_DEPENDENCY
-    if isinstance(exc, NoCompletedTrialError):
-        return ERROR_CATEGORY_NO_COMPLETED_TRIAL
-    if isinstance(exc, (TuningError, TuningRunnerError)):
-        return ERROR_CATEGORY_TUNING
-    if isinstance(exc, MetricContractError):
-        return ERROR_CATEGORY_EVALUATION
-    if isinstance(exc, TrackingError):
-        return ERROR_CATEGORY_TRACKING
-    if isinstance(exc, RegistryError):
-        return ERROR_CATEGORY_REGISTRY
-    return ERROR_CATEGORY_UNEXPECTED
-
-
-def _battery_run_id() -> str:
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
-    return f"battery-{stamp}-{uuid.uuid4().hex[:8]}"
+#: Ordered exception-to-category map for fail-soft model records. First match
+#: wins; subclass-before-parent order matters.
+ERROR_MAP: tuple[tuple[type[BaseException], str], ...] = (
+    (ModelDependencyError, ERROR_CATEGORY_DEPENDENCY),
+    (NoCompletedTrialError, ERROR_CATEGORY_NO_COMPLETED_TRIAL),
+    (TuningError, ERROR_CATEGORY_TUNING),
+    (TuningRunnerError, ERROR_CATEGORY_TUNING),
+    (MetricContractError, ERROR_CATEGORY_EVALUATION),
+    (TrackingError, ERROR_CATEGORY_TRACKING),
+    (RegistryError, ERROR_CATEGORY_REGISTRY),
+)
 
 
 # ---------------------------------------------------------------------------
@@ -619,7 +601,7 @@ def _run_one_model(
 
         pipeline = build_best_pipeline(tuning_result, spec, train_frame)
         metrics = evaluate(pipeline, test_split)
-        params = _effective_params(spec, tuning_result.best_params)
+        params = merge_effective_params(spec.fixed_params, tuning_result.best_params)
 
         run_id: str | None = None
         if log_to_mlflow:
@@ -672,7 +654,7 @@ def _run_one_model(
     except BatteryError:
         raise
     except Exception as exc:  # noqa: BLE001 - every model failure is recorded
-        category = _classify_error(exc)
+        category = classify_error(exc, ERROR_MAP, default=ERROR_CATEGORY_UNEXPECTED)
         record = BatteryModelResult(
             model_type=spec.model_type,
             model_name=spec.model_name,
@@ -685,7 +667,7 @@ def _run_one_model(
             n_complete=counts["n_complete"],
             n_pruned=counts["n_pruned"],
             n_failed_trials=counts["n_failed"],
-            error=_error_message(exc),
+            error=error_message(exc),
             error_type=type(exc).__name__,
             error_category=category,
         )
@@ -753,7 +735,7 @@ def run_battery(
     train = _require_frame(train_frame, role="train_frame")
     test = _require_frame(test_frame, role="test_frame")
 
-    request_id = battery_id or _battery_run_id()
+    request_id = battery_id or timestamped_run_id("battery")
     test_split = evaluation_split_from_frames(
         test, name=f"{split_version}/test"
     )
@@ -859,14 +841,6 @@ def _with_ledger_path(result: BatteryResult, path: Path) -> BatteryResult:
 # ---------------------------------------------------------------------------
 
 
-def _json_default(value: object) -> object:
-    if isinstance(value, np.generic):
-        return value.item()
-    raise TypeError(
-        f"Object of type {type(value).__name__} is not JSON serializable"
-    )
-
-
 def battery_ledger(result: BatteryResult) -> dict[str, object]:
     """Return the battery's durable, JSON-serialisable ledger payload."""
     if not isinstance(result, BatteryResult):
@@ -878,24 +852,12 @@ def battery_ledger(result: BatteryResult) -> dict[str, object]:
 
 def write_battery_ledger(result: BatteryResult, path: str | Path) -> Path:
     """Atomically write the battery ledger JSON for ``result`` to ``path``."""
-    destination = Path(path)
-    try:
-        payload = json.dumps(
-            battery_ledger(result), indent=2, sort_keys=True, default=_json_default
-        )
-    except TypeError as exc:
-        raise BatteryLedgerError(
-            f"Could not serialise the battery ledger: {exc}"
-        ) from exc
-    try:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        tmp = destination.with_name(destination.name + ".part")
-        tmp.write_text(payload + "\n", encoding="utf-8")
-        os.replace(tmp, destination)
-    except OSError as exc:
-        raise BatteryLedgerError(
-            f"Could not write the battery ledger to {destination}: {exc}"
-        ) from exc
+    destination = write_json_document(
+        path,
+        battery_ledger(result),
+        error_factory=BatteryLedgerError,
+        label="battery ledger",
+    )
     logger.info(
         "Wrote battery ledger to %s (%d model(s), %d/%d succeeded)",
         destination,

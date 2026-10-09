@@ -64,9 +64,7 @@ machine-readable result JSON atomically.
 from __future__ import annotations
 
 import argparse
-import json
 import logging
-import os
 import sys
 import time
 from dataclasses import dataclass, replace
@@ -74,7 +72,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
-import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
@@ -82,6 +79,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from heart.config import REPORTS_DIR
+from heart.runtime import atomic_write_text, write_json_document
 from heart.data.pipeline import (
     PIPELINE_CATEGORICAL_COLUMNS,
     PIPELINE_NUMERIC_COLUMNS,
@@ -1028,38 +1026,18 @@ def run_ablation(
 # ---------------------------------------------------------------------------
 
 
-def _json_default(value: object) -> object:
-    if isinstance(value, np.generic):
-        return value.item()
-    raise TypeError(
-        f"Object of type {type(value).__name__} is not JSON serializable"
-    )
-
-
 def write_ablation_ledger(result: AblationResult, path: str | Path) -> Path:
     """Atomically write the machine-readable ablation result JSON to ``path``."""
     if not isinstance(result, AblationResult):
         raise AblationLedgerError(
             f"result must be an AblationResult, got {type(result).__name__}."
         )
-    destination = Path(path)
-    try:
-        payload = json.dumps(
-            result.to_dict(), indent=2, sort_keys=True, default=_json_default
-        )
-    except TypeError as exc:
-        raise AblationLedgerError(
-            f"Could not serialise the ablation ledger: {exc}"
-        ) from exc
-    try:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        tmp = destination.with_name(destination.name + ".part")
-        tmp.write_text(payload + "\n", encoding="utf-8")
-        os.replace(tmp, destination)
-    except OSError as exc:
-        raise AblationLedgerError(
-            f"Could not write the ablation ledger to {destination}: {exc}"
-        ) from exc
+    destination = write_json_document(
+        path,
+        result.to_dict(),
+        error_factory=AblationLedgerError,
+        label="ablation ledger",
+    )
     logger.info(
         "Wrote ablation ledger to %s (%d mode(s), %d/%d succeeded)",
         destination,
@@ -1173,10 +1151,8 @@ def render_ablation_report(result: AblationResult) -> str:
 
 
 def _write_text_atomic(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".part")
-    tmp.write_text(content, encoding="utf-8")
-    os.replace(tmp, path)
+    """Thin wrapper delegating to heart.runtime.atomic_write_text."""
+    atomic_write_text(path, content)
 
 
 # ---------------------------------------------------------------------------

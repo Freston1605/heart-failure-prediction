@@ -50,9 +50,7 @@ MLflow runs carry the same information in the tracking store.
 
 from __future__ import annotations
 
-import json
 import logging
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping, Sequence
@@ -96,6 +94,7 @@ from heart.tracking.run import (
     normalise_params,
     slugify,
 )
+from heart.runtime import write_json_document
 from heart.tuning.study import (
     TuningConfig,
     TuningError,
@@ -929,36 +928,19 @@ def tuning_ledger(result: TuningResult) -> dict[str, object]:
     return result.to_dict()
 
 
-def _json_default(value: object) -> object:
-    if isinstance(value, np.generic):
-        return value.item()
-    raise TypeError(
-        f"Object of type {type(value).__name__} is not JSON serializable"
-    )
-
-
 def write_tuning_ledger(
     result: TuningResult, path: str | Path
 ) -> Path:
     """Atomically write the tuning ledger JSON for ``result`` to ``path``."""
-    destination = Path(path)
-    try:
-        payload = json.dumps(
-            tuning_ledger(result), indent=2, sort_keys=True, default=_json_default
-        )
-    except TypeError as exc:
-        raise TuningLedgerError(
-            f"Could not serialise the tuning ledger for {result.model_type!r}: {exc}"
-        ) from exc
-    try:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        tmp = destination.with_name(destination.name + ".part")
-        tmp.write_text(payload + "\n", encoding="utf-8")
-        os.replace(tmp, destination)
-    except OSError as exc:
-        raise TuningLedgerError(
-            f"Could not write the tuning ledger to {destination}: {exc}"
-        ) from exc
+    destination = write_json_document(
+        path,
+        tuning_ledger(result),
+        error_factory=TuningLedgerError,
+        label=f"tuning ledger for {result.model_type!r}",
+        # The original fs-failure message had no model qualifier; keep it
+        # byte-exact.
+        write_label="tuning ledger",
+    )
     logger.info(
         "Wrote tuning ledger for %s to %s (%d trial(s))",
         result.model_type,
