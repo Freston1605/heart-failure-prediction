@@ -1302,6 +1302,9 @@ def write_training_json(result: TrainingResult, path: str | Path) -> Path:
         result.to_dict(),
         error_factory=TorchReportError,
         label="training result",
+        # The original shared writer raised the report-flavoured message on
+        # the file-system failure path; keep it byte-exact.
+        write_label="MLP training report",
     )
     logger.info("Wrote MLP training JSON to %s", destination)
     return destination

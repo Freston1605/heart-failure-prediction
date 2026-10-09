@@ -79,11 +79,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from heart.config import REPORTS_DIR
-from heart.runtime import (
-    atomic_write_text,
-    json_default,
-    write_json_document,
-)
+from heart.runtime import atomic_write_text, write_json_document
 from heart.data.pipeline import (
     PIPELINE_CATEGORICAL_COLUMNS,
     PIPELINE_NUMERIC_COLUMNS,

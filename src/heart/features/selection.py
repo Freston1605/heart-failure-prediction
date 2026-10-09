@@ -56,22 +56,16 @@ import argparse
 import json
 import logging
 import math
-import os
 import sys
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Mapping, Sequence
 
-import numpy as np
 
 from heart.config import PROJECT_ROOT, REPORTS_DIR
 from heart.eval.contract import PRIMARY_METRIC
-from heart.runtime import (
-    atomic_write_text,
-    json_default,
-    write_json_document,
-)
+from heart.runtime import atomic_write_text, write_json_document
 from heart.features.ablation import (
     AblationError,
     AblationResult,

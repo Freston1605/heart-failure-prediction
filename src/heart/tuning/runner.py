@@ -94,7 +94,7 @@ from heart.tracking.run import (
     normalise_params,
     slugify,
 )
-from heart.runtime import atomic_write_text, json_default, write_json_document
+from heart.runtime import write_json_document
 from heart.tuning.study import (
     TuningConfig,
     TuningError,
@@ -937,6 +937,9 @@ def write_tuning_ledger(
         tuning_ledger(result),
         error_factory=TuningLedgerError,
         label=f"tuning ledger for {result.model_type!r}",
+        # The original fs-failure message had no model qualifier; keep it
+        # byte-exact.
+        write_label="tuning ledger",
     )
     logger.info(
         "Wrote tuning ledger for %s to %s (%d trial(s))",

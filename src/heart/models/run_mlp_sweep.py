@@ -562,8 +562,9 @@ def _require_frame(frame: object, *, role: str) -> pd.DataFrame:
 
 
 #: Ordered exception-to-category map for fail-soft architecture records.
-#: First match wins; MLPSpaceError / TorchTrainingError are tuning-layer
-#: failures for the sweep and must precede entries that would shadow them.
+#: First match wins; MLPSpaceError / TorchTrainingError subclass only
+#: ``Exception``, so they match nothing earlier in the map and keep the
+#: original chain's outcomes.
 ERROR_MAP: tuple[tuple[type[BaseException], str], ...] = (
     (NoCompletedTrialError, ERROR_CATEGORY_NO_COMPLETED_TRIAL),
     (TuningError, ERROR_CATEGORY_TUNING),

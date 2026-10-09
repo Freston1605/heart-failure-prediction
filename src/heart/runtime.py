@@ -48,8 +48,8 @@ _E = TypeVar("_E", bound=Exception)
 def json_default(value: object) -> object:
     """Return a JSON-serialisable form of numpy scalars, else raise ``TypeError``.
 
-    Behaviour is byte-compatible with the four private ``_json_default`` hooks
-    this replaces: only ``np.generic`` values are coerced (via ``.item()``);
+    Behaviour is byte-compatible with the seven private ``_json_default`` hooks
+    this replaces (plus two variant copies retained deliberately): only ``np.generic`` values are coerced (via ``.item()``);
     anything else raises, so silent type loss is impossible.
     """
     # Imported lazily so heart.runtime itself stays importable in
@@ -84,14 +84,15 @@ def write_json_document(
     *,
     error_factory: Callable[[str], _E],
     label: str,
+    write_label: str | None = None,
 ) -> Path:
     """Atomically write ``payload`` as a pretty (indent 2, key-sorted) JSON doc.
 
     On serialisation failure raises ``error_factory(f"Could not serialise the
     {label}: {exc}")``; on file-system failure ``error_factory(f"Could not
-    write the {label} to {destination}: {exc}")`` - the exact message shapes
-    the four ledger writers originally produced. Logging stays at the call
-    site so each writer keeps its own wording.
+    write the {write_label or label} to {destination}: {exc}")`` - the exact
+    message shapes the original ledger writers produced. Logging stays at the
+    call site so each writer keeps its own wording.
     """
     destination = Path(path)
     try:
@@ -102,7 +103,7 @@ def write_json_document(
         atomic_write_text(destination, content + "\n")
     except OSError as exc:
         raise error_factory(
-            f"Could not write the {label} to {destination}: {exc}"
+            f"Could not write the {write_label or label} to {destination}: {exc}"
         ) from exc
     return destination
 
