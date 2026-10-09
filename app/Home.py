@@ -18,10 +18,20 @@ for _p in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "src")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+import logging
+
 import streamlit as st
 
 from app.lib.artifact_loader import load_winning_artifact
 from app.lib.errors import AppError
+from heart.observability import (
+    configure_logging,
+    log_event,
+    timed_event,
+)
+
+logger = logging.getLogger("heart.app")
+configure_logging()
 
 st.set_page_config(
     page_title="Heart Failure Prediction Portfolio",
@@ -37,7 +47,15 @@ def show_artifact_status() -> None:
     A failed load renders the named, friendly error and *no* confusing
     model claims — the rest of the app can rely on this banner as the gate.
     """
-    result = load_winning_artifact()
+    with timed_event(logger, "app.artifact_load", "heart.serving.artifact_load_ms") as event_fields:
+        result = load_winning_artifact()
+        _show_banner(result)
+        if result.ok:
+            event_fields["path"] = str(result.path)
+
+
+def _show_banner(result) -> None:
+    """Render the success / friendly-failure banner (extracted for logging)."""
     if result.ok and result.artifact is not None:
         metadata = result.artifact.metadata
         st.success("Model artifact loaded and validated. The app can serve predictions.")
@@ -66,6 +84,11 @@ def show_artifact_status() -> None:
     st.caption(
         "Tip: after re-training, use the sidebar or reload the page to retry. "
         f"(Attempted path: `{result.path}`.)"
+    )
+    log_event(
+        logger, "app.artifact_load", "error", level=logging.ERROR,
+        message=f"artifact load failed ({error.kind})",
+        error_kind=error.kind, path=str(result.path),
     )
 
 

@@ -13,7 +13,10 @@ enforced ones here:
 * metrics are `record_metric` JSON lines (`heart.<area>.<what>_<unit>`),
 * **clinical-data denylist:** field keys matching `heart.data.schema.FEATURE_COLUMNS`
   or `TARGET_COLUMN` (case-insensitive) raise `ValueError` at the call site —
-  submitted patient-style values are health data and must never reach a log.
+  submitted patient-style values are health data and must never be a field key.
+  (User-typed values inside hand-written messages cannot be mechanically
+  detected; CONVENTIONS binds authors to never reference them there; messages
+  over public could-not-load errors use aggregate/error kinds only.)
 
 Env knobs: ``HEART_LOG_LEVEL`` (default INFO), ``HEART_LOG_FORMAT``
 (``json`` default ``text``; set to ``json`` for deployment drains).
