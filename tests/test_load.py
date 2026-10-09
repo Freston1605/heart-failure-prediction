@@ -73,6 +73,10 @@ def valid_frame() -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 
+def test_intentional_ci_red_run() -> None:
+    assert 1 == 2, "intentional break for CI red-run verification"
+
+
 def test_pinned_checksum_matches_committed_file() -> None:
     assert sha256_file(RAW) == PINNED_SHA256
 
