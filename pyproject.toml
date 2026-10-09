@@ -54,5 +54,3 @@ addopts = "-q"
 filterwarnings = [
     "error::DeprecationWarning:heart.*",
 ]
-
-[[[ this line is deliberately invalid TOML for CI red-run verification
