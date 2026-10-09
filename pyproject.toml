@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "heart-failure-prediction"
+version = "0.1.0"
+description = "Reproducible heart-failure prediction portfolio on the fedesoriano UCI combined dataset"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Franco" }]
+dependencies = [
+    # Classical / scikit-learn stack (pinned for reproducibility)
+    "numpy==2.5.3",
+    "pandas==3.0.6",
+    "scipy==1.18.1",
+    "scikit-learn==1.9.1",
+    "joblib==1.6.0",
+]
+
+[project.optional-dependencies]
+# Test + quality tooling
+dev = [
+    "pytest==9.1.1",
+]
+# Experiment tracking and tuning (used from S03 onward)
+ml = [
+    "mlflow==3.16.1",
+    "optuna==5.0.0",
+    "xgboost==3.4.1",
+    "shap==0.52.0",
+]
+# Dashboard / reporting (used from S04/S07 onward)
+app = [
+    "streamlit==1.65.0",
+    "matplotlib==3.11.2",
+    "seaborn==0.13.2",
+]
+
+[project.urls]
+Repository = "https://example.invalid/heart-failure-prediction"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
+filterwarnings = [
+    "error::DeprecationWarning:heart.*",
+]
+
+[[[ this line is deliberately invalid TOML for CI red-run verification
