@@ -100,10 +100,10 @@ st.caption(
 correlation = groups["correlation"]
 left, right = st.columns([2, 1])
 with left:
-    st.dataframe(correlation["matrix"], use_container_width=True)
+    st.dataframe(correlation["matrix"], width="stretch")
 with right:
     st.markdown("**Strongest feature↔target correlations**")
-    st.dataframe(correlation["strongest"], use_container_width=True)
+    st.dataframe(correlation["strongest"], width="stretch")
 
 st.divider()
 
@@ -131,7 +131,7 @@ st.caption(
     "A resting blood pressure or cholesterol of 0 is not a real "
     "measurement; the dataset uses it as a 'not recorded' sentinel."
 )
-st.dataframe(balance["zero_table"], use_container_width=True)
+st.dataframe(balance["zero_table"], width="stretch")
 st.caption(
     f"Rows carrying at least one impossible zero: "
     f"**{balance['affected_zero_rows']}** — the cost of a naive row-drop."
@@ -150,7 +150,7 @@ st.caption(
     "features: highest vs. lowest per-level rate)."
 )
 
-st.dataframe(groups["per_feature"], use_container_width=True)
+st.dataframe(groups["per_feature"], width="stretch")
 
 categorical_features = [
     feature
@@ -171,7 +171,7 @@ c1, c2 = st.columns([1, 2])
 with c1:
     st.bar_chart(rates_frame, horizontal=True)
 with c2:
-    st.dataframe(rates_frame.T, use_container_width=True)
+    st.dataframe(rates_frame.T, width="stretch")
 
 st.divider()
 st.caption(
