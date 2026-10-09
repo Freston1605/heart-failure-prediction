@@ -67,6 +67,11 @@ import numpy as np
 
 from heart.config import PROJECT_ROOT, REPORTS_DIR
 from heart.eval.contract import PRIMARY_METRIC
+from heart.runtime import (
+    atomic_write_text,
+    json_default,
+    write_json_document,
+)
 from heart.features.ablation import (
     AblationError,
     AblationResult,
@@ -931,18 +936,8 @@ def render_features_report(selection: FeatureSelection) -> str:
 
 
 def _write_text_atomic(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".part")
-    tmp.write_text(content, encoding="utf-8")
-    os.replace(tmp, path)
-
-
-def _json_default(value: object) -> object:
-    if isinstance(value, np.generic):
-        return value.item()
-    raise TypeError(
-        f"Object of type {type(value).__name__} is not JSON serializable"
-    )
+    """Thin wrapper delegating to heart.runtime.atomic_write_text."""
+    atomic_write_text(path, content)
 
 
 def write_features_report(selection: FeatureSelection, path: str | Path) -> Path:
@@ -975,24 +970,12 @@ def write_selection_ledger(selection: FeatureSelection, path: str | Path) -> Pat
             f"selection must be a FeatureSelection, got "
             f"{type(selection).__name__}."
         )
-    destination = Path(path)
-    try:
-        payload = json.dumps(
-            selection.to_dict(), indent=2, sort_keys=True, default=_json_default
-        )
-    except TypeError as exc:
-        raise SelectionLedgerError(
-            f"Could not serialise the selection ledger: {exc}"
-        ) from exc
-    try:
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        tmp = destination.with_name(destination.name + ".part")
-        tmp.write_text(payload + "\n", encoding="utf-8")
-        os.replace(tmp, destination)
-    except OSError as exc:
-        raise SelectionLedgerError(
-            f"Could not write the selection ledger to {destination}: {exc}"
-        ) from exc
+    destination = write_json_document(
+        path,
+        selection.to_dict(),
+        error_factory=SelectionLedgerError,
+        label="selection ledger",
+    )
     logger.info(
         "Wrote selection ledger to %s (%d kept transform(s))",
         destination,
