@@ -56,3 +56,6 @@ coverage/
 .cache/
 tmp/
 .artifacts/
+
+# bare MLflow tracking db created in CWD when tracking URI is unset (see heart.tracking)
+mlflow.db
