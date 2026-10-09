@@ -199,8 +199,14 @@ def load_explore_data() -> ExploreData:
 
 
 def clear_explore_cache() -> None:
-    """Drop the cached dataset load (e.g. after data re-download)."""
+    """Drop the cached dataset load (e.g. after data re-download).
+
+    Also drops the derived-frame caches: with the dataset gone, cached
+    insight groups and per-level rates would be stale against new data.
+    """
     _cached_load.clear()
+    insight_groups.clear()
+    categorical_target_rates.clear()
 
 
 def _require_frame(df: object) -> pd.DataFrame:
@@ -387,6 +393,7 @@ def feature_insight_table(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+@st.cache_data(show_spinner=False)
 def categorical_target_rates(
     df: pd.DataFrame, feature: str
 ) -> pd.DataFrame | None:
@@ -407,8 +414,13 @@ def categorical_target_rates(
     return out
 
 
+@st.cache_data(show_spinner=False)
 def insight_groups(df: pd.DataFrame) -> dict[str, object]:
     """All four insight groups in one dictionary, in render order.
+
+    Cached by dataframe content hash: group frames are re-rendered every
+    interaction but recomputed only when the underlying dataset changes.
+
 
     Group names are stable keys the page and tests share:
     ``distributions``, ``per_feature``, ``correlation``, ``class_balance``.
