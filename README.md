@@ -81,6 +81,31 @@ is recorded in [`reports/reproduction.md`](reports/reproduction.md), and
 The same pinned stack is available containerized via
 `containers/Containerfile` (ROCm base image for GPU experiments).
 
+## Operating the app & pipeline (observability)
+
+Events are structured JSON lines on **stderr** of the app / pipeline processes.
+`HEART_LOG_FORMAT=json` (default `text` locally) selects the schema'd stream;
+`HEART_LOG_LEVEL` (default `INFO`) selects verbosity.
+
+```bash
+HEART_LOG_FORMAT=json streamlit run app/Home.py          # one JSON record per line
+HEART_LOG_LEVEL=DEBUG PYTHONPATH=src make leaderboard    # debug verboseness
+```
+
+Record schema: `ts, level, service, logger, event, status, message, ...fields`.
+Key events: `app.artifact_load`, `app.predict_submit`, `app.dataset_load`,
+`battery.complete`, `leaderboard.complete`; metrics ride along as
+`event:"metric"` records (`heart.serving.predict_latency_ms`,
+`heart.serving.predict_count{outcome}`, `heart.battery.duration_ms`, ...).
+
+Healthy ranges: warm page renders < 1.5 s, artifact load p95 < 100 ms
+(reference CPU), predicting p95 < 250 ms, battery `n_failed == 0`.
+Alert on: any `status:error` in `app.*` events; leaderboard missing-experiment
+failure; `served` share of `predict_count` below 70%.
+
+Privacy rule (enforced): patient-style feature values are never logged —
+`log_event` refuses field keys matching clinical columns.
+
 ## Reproducibility conventions
 
 - All randomness flows from `heart.config.RANDOM_SEED` (currently `42`).
