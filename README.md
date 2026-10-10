@@ -106,6 +106,47 @@ failure; `served` share of `predict_count` below 70%.
 Privacy rule (enforced): patient-style feature values are never logged —
 `log_event` refuses field keys matching clinical columns.
 
+## Viewing the training runs
+
+Every training run (battery runs, tuning trials, the final per-model run) is
+logged to the one local MLflow tracking store, `experiments/mlruns/mlflow.db`.
+The store stays **gitignored** (it is evidence, not source) and is regenerated
+from scratch by `make reproduce`. There is one entry point for both viewing
+paths, `scripts/mlflow_ui.py`, exposed as two make targets:
+
+```bash
+make mlflow-ui       # launch the MLflow UI against the local store
+make mlflow-status   # print store status + run counts, no server started
+```
+
+- `make mlflow-ui` prefights the store and launches MLflow's own UI in the
+  foreground. When the store is missing or contains zero logged runs, the
+  launcher refuses to open a blank UI: it prints the named problem plus the
+  populate hint (`make reproduce`) and exits with code `2` instead of
+  starting a server that would show nothing.
+- `make mlflow-status` is the same preflight without any server: it prints a
+  one-line status (e.g. `tracking store ok: ... — 12 run(s), 7 final`) and
+  exits `0` on a populated store, or `2` with the populate hint when the
+  store is missing or empty.
+
+Exit codes are machine-readable (`0` ok, `2` missing/empty store, `10`
+unexpected error) so `make` targets and CI can branch on them.
+
+The UI default port is `5000`; override it with `MLFLOW_UI_PORT`:
+
+```bash
+MLFLOW_UI_PORT=7113 make mlflow-ui
+```
+
+The UI is then served at `http://localhost:7113` (with the default port:
+`http://localhost:5000`).
+
+A third viewer lives in the Streamlit app: `streamlit run app/Home.py` and
+pick the **Runs** page in the sidebar — it mirrors
+[`reports/leaderboard.md`](reports/leaderboard.md) and refuses the same
+friendly way (naming `make reproduce`) when the store has no runs yet. It is
+part of this repository's viewer set alongside the MLflow UI above.
+
 ## Reproducibility conventions
 
 - All randomness flows from `heart.config.RANDOM_SEED` (currently `42`).
