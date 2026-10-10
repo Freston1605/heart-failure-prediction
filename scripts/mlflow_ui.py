@@ -210,7 +210,13 @@ def launch(tracking_dir: str | Path | None = None, *, port: int | None = None) -
         print(f"warning: {problem}")
 
     resolved_port = port if port is not None else resolve_port()
-    from heart.tracking.mlflow_store import default_artifact_root, default_tracking_uri
+    from heart.tracking.mlflow_store import resolve_artifact_root, resolve_tracking_uri
+
+    # Bind the UI to the same store that was preflighted, not the project
+    # default: honouring tracking_dir here is what makes the launcher usable
+    # against any local store.
+    backend_store_uri = resolve_tracking_uri(tracking_dir=tracking_dir)
+    artifact_root_uri = resolve_artifact_root(tracking_dir=tracking_dir).resolve().as_uri()
 
     cmd = [
         sys.executable,
@@ -218,9 +224,9 @@ def launch(tracking_dir: str | Path | None = None, *, port: int | None = None) -
         "mlflow",
         "ui",
         "--backend-store-uri",
-        default_tracking_uri(),
+        backend_store_uri,
         "--default-artifact-root",
-        default_artifact_root().resolve().as_uri(),
+        artifact_root_uri,
         "--port",
         str(resolved_port),
     ]
