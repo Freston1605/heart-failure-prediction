@@ -1,0 +1,708 @@
+{
+  "empirical_logit": {
+    "Age": {
+      "bins": [
+        {
+          "bin_high": 40.0,
+          "bin_low": 27.999,
+          "logit": -0.637797,
+          "n": 93,
+          "negatives": 61,
+          "positives": 32
+        },
+        {
+          "bin_high": 45.0,
+          "bin_low": 40.0,
+          "logit": -0.926409,
+          "n": 103,
+          "negatives": 74,
+          "positives": 29
+        },
+        {
+          "bin_high": 49.0,
+          "bin_low": 45.0,
+          "logit": 0.104261,
+          "n": 95,
+          "negatives": 45,
+          "positives": 50
+        },
+        {
+          "bin_high": 52.0,
+          "bin_low": 49.0,
+          "logit": 0.0,
+          "n": 96,
+          "negatives": 48,
+          "positives": 48
+        },
+        {
+          "bin_high": 54.0,
+          "bin_low": 52.0,
+          "logit": -0.188794,
+          "n": 84,
+          "negatives": 46,
+          "positives": 38
+        },
+        {
+          "bin_high": 57.0,
+          "bin_low": 54.0,
+          "logit": 0.574629,
+          "n": 117,
+          "negatives": 42,
+          "positives": 75
+        },
+        {
+          "bin_high": 59.0,
+          "bin_low": 57.0,
+          "logit": 0.664437,
+          "n": 77,
+          "negatives": 26,
+          "positives": 51
+        },
+        {
+          "bin_high": 62.0,
+          "bin_low": 59.0,
+          "logit": 1.167132,
+          "n": 98,
+          "negatives": 23,
+          "positives": 75
+        },
+        {
+          "bin_high": 65.0,
+          "bin_low": 62.0,
+          "logit": 0.959257,
+          "n": 73,
+          "negatives": 20,
+          "positives": 53
+        },
+        {
+          "bin_high": 77.0,
+          "bin_low": 65.0,
+          "logit": 0.813106,
+          "n": 82,
+          "negatives": 25,
+          "positives": 57
+        }
+      ],
+      "smoothing": 0.5
+    },
+    "Cholesterol": {
+      "bins": [
+        {
+          "bin_high": 134.8,
+          "bin_low": -0.001,
+          "logit": 1.833365,
+          "n": 184,
+          "negatives": 25,
+          "positives": 159
+        },
+        {
+          "bin_high": 190.0,
+          "bin_low": 134.8,
+          "logit": -0.365725,
+          "n": 93,
+          "negatives": 55,
+          "positives": 38
+        },
+        {
+          "bin_high": 209.0,
+          "bin_low": 190.0,
+          "logit": -0.471714,
+          "n": 94,
+          "negatives": 58,
+          "positives": 36
+        },
+        {
+          "bin_high": 223.0,
+          "bin_low": 209.0,
+          "logit": -0.22544,
+          "n": 97,
+          "negatives": 54,
+          "positives": 43
+        },
+        {
+          "bin_high": 238.2,
+          "bin_low": 223.0,
+          "logit": -0.119189,
+          "n": 83,
+          "negatives": 44,
+          "positives": 39
+        },
+        {
+          "bin_high": 257.0,
+          "bin_low": 238.2,
+          "logit": -0.259511,
+          "n": 92,
+          "negatives": 52,
+          "positives": 40
+        },
+        {
+          "bin_high": 276.0,
+          "bin_low": 257.0,
+          "logit": 0.08426,
+          "n": 94,
+          "negatives": 45,
+          "positives": 49
+        },
+        {
+          "bin_high": 305.0,
+          "bin_low": 276.0,
+          "logit": 0.400888,
+          "n": 90,
+          "negatives": 36,
+          "positives": 54
+        },
+        {
+          "bin_high": 603.0,
+          "bin_low": 305.0,
+          "logit": 0.19628,
+          "n": 91,
+          "negatives": 41,
+          "positives": 50
+        }
+      ],
+      "smoothing": 0.5
+    },
+    "MaxHR": {
+      "bins": [
+        {
+          "bin_high": 103.0,
+          "bin_low": 59.999,
+          "logit": 1.406362,
+          "n": 93,
+          "negatives": 18,
+          "positives": 75
+        },
+        {
+          "bin_high": 115.0,
+          "bin_low": 103.0,
+          "logit": 1.307704,
+          "n": 100,
+          "negatives": 21,
+          "positives": 79
+        },
+        {
+          "bin_high": 122.0,
+          "bin_low": 115.0,
+          "logit": 0.934983,
+          "n": 93,
+          "negatives": 26,
+          "positives": 67
+        },
+        {
+          "bin_high": 130.0,
+          "bin_low": 122.0,
+          "logit": 1.086417,
+          "n": 108,
+          "negatives": 27,
+          "positives": 81
+        },
+        {
+          "bin_high": 138.0,
+          "bin_low": 130.0,
+          "logit": -0.195061,
+          "n": 71,
+          "negatives": 39,
+          "positives": 32
+        },
+        {
+          "bin_high": 144.0,
+          "bin_low": 138.0,
+          "logit": 0.087969,
+          "n": 90,
+          "negatives": 43,
+          "positives": 47
+        },
+        {
+          "bin_high": 151.0,
+          "bin_low": 144.0,
+          "logit": 0.087969,
+          "n": 90,
+          "negatives": 43,
+          "positives": 47
+        },
+        {
+          "bin_high": 160.0,
+          "bin_low": 151.0,
+          "logit": -0.478302,
+          "n": 97,
+          "negatives": 60,
+          "positives": 37
+        },
+        {
+          "bin_high": 170.0,
+          "bin_low": 160.0,
+          "logit": -0.77179,
+          "n": 86,
+          "negatives": 59,
+          "positives": 27
+        },
+        {
+          "bin_high": 202.0,
+          "bin_low": 170.0,
+          "logit": -1.507439,
+          "n": 90,
+          "negatives": 74,
+          "positives": 16
+        }
+      ],
+      "smoothing": 0.5
+    },
+    "Oldpeak": {
+      "bins": [
+        {
+          "bin_high": 0.0,
+          "bin_low": -2.601,
+          "logit": -0.621341,
+          "n": 381,
+          "negatives": 248,
+          "positives": 133
+        },
+        {
+          "bin_high": 0.6,
+          "bin_low": 0.0,
+          "logit": -0.70131,
+          "n": 91,
+          "negatives": 61,
+          "positives": 30
+        },
+        {
+          "bin_high": 1.0,
+          "bin_low": 0.6,
+          "logit": 0.71295,
+          "n": 113,
+          "negatives": 37,
+          "positives": 76
+        },
+        {
+          "bin_high": 1.4,
+          "bin_low": 1.0,
+          "logit": 0.863493,
+          "n": 58,
+          "negatives": 17,
+          "positives": 41
+        },
+        {
+          "bin_high": 1.8,
+          "bin_low": 1.4,
+          "logit": 1.142097,
+          "n": 92,
+          "negatives": 22,
+          "positives": 70
+        },
+        {
+          "bin_high": 2.3,
+          "bin_low": 1.8,
+          "logit": 1.393028,
+          "n": 92,
+          "negatives": 18,
+          "positives": 74
+        },
+        {
+          "bin_high": 6.2,
+          "bin_low": 2.3,
+          "logit": 2.421849,
+          "n": 91,
+          "negatives": 7,
+          "positives": 84
+        }
+      ],
+      "smoothing": 0.5
+    },
+    "RestingBP": {
+      "bins": [
+        {
+          "bin_high": 110.0,
+          "bin_low": -0.001,
+          "logit": 0.070826,
+          "n": 112,
+          "negatives": 54,
+          "positives": 58
+        },
+        {
+          "bin_high": 120.0,
+          "bin_low": 110.0,
+          "logit": -0.121027,
+          "n": 181,
+          "negatives": 96,
+          "positives": 85
+        },
+        {
+          "bin_high": 128.0,
+          "bin_low": 120.0,
+          "logit": 0.523855,
+          "n": 81,
+          "negatives": 30,
+          "positives": 51
+        },
+        {
+          "bin_high": 130.0,
+          "bin_low": 128.0,
+          "logit": -0.251314,
+          "n": 119,
+          "negatives": 67,
+          "positives": 52
+        },
+        {
+          "bin_high": 135.2,
+          "bin_low": 130.0,
+          "logit": 0.204095,
+          "n": 58,
+          "negatives": 26,
+          "positives": 32
+        },
+        {
+          "bin_high": 140.0,
+          "bin_low": 135.2,
+          "logit": 0.17613,
+          "n": 147,
+          "negatives": 67,
+          "positives": 80
+        },
+        {
+          "bin_high": 145.0,
+          "bin_low": 140.0,
+          "logit": 1.55463,
+          "n": 42,
+          "negatives": 7,
+          "positives": 35
+        },
+        {
+          "bin_high": 160.0,
+          "bin_low": 145.0,
+          "logit": 0.49517,
+          "n": 135,
+          "negatives": 51,
+          "positives": 84
+        },
+        {
+          "bin_high": 200.0,
+          "bin_low": 160.0,
+          "logit": 0.924259,
+          "n": 43,
+          "negatives": 12,
+          "positives": 31
+        }
+      ],
+      "smoothing": 0.5
+    }
+  },
+  "figures": [
+    "stage4_empirical_logit_Age.png",
+    "stage4_empirical_logit_RestingBP.png",
+    "stage4_empirical_logit_Cholesterol.png",
+    "stage4_empirical_logit_MaxHR.png",
+    "stage4_empirical_logit_Oldpeak.png"
+  ],
+  "outlier_impact": {
+    "columns": {
+      "Age": {
+        "declared_median_impute": null,
+        "declared_policy_applies": false,
+        "raw": {
+          "corr_with_target": 0.282039,
+          "mean": 53.510893,
+          "n": 918,
+          "std": 9.432617
+        },
+        "trim_iqr": {
+          "corr_with_target": 0.282039,
+          "mean": 53.510893,
+          "n": 918,
+          "rows_dropped": 0,
+          "std": 9.432617
+        },
+        "winsorize_iqr": {
+          "corr_with_target": 0.282039,
+          "mean": 53.510893,
+          "n": 918,
+          "std": 9.432617
+        }
+      },
+      "Cholesterol": {
+        "declared_median_impute": {
+          "cells_replaced": 172,
+          "corr_with_target": 0.076114,
+          "fill_value": 237.0,
+          "mean": 243.204793,
+          "n": 918,
+          "note": "descriptive raw-frame analogue of the declared policy; production imputation fits the training-fold median via heart.data.quality.ZeroMedianImputer",
+          "std": 53.401297
+        },
+        "declared_policy_applies": true,
+        "raw": {
+          "corr_with_target": -0.232741,
+          "mean": 198.799564,
+          "n": 918,
+          "std": 109.384145
+        },
+        "trim_iqr": {
+          "corr_with_target": 0.106488,
+          "mean": 241.038095,
+          "n": 735,
+          "rows_dropped": 183,
+          "std": 51.16473
+        },
+        "winsorize_iqr": {
+          "corr_with_target": -0.225304,
+          "mean": 203.985158,
+          "n": 918,
+          "std": 95.922341
+        }
+      },
+      "MaxHR": {
+        "declared_median_impute": null,
+        "declared_policy_applies": false,
+        "raw": {
+          "corr_with_target": -0.400421,
+          "mean": 136.809368,
+          "n": 918,
+          "std": 25.460334
+        },
+        "trim_iqr": {
+          "corr_with_target": -0.398797,
+          "mean": 136.973799,
+          "n": 916,
+          "rows_dropped": 2,
+          "std": 25.243154
+        },
+        "winsorize_iqr": {
+          "corr_with_target": -0.400519,
+          "mean": 136.819172,
+          "n": 918,
+          "std": 25.432057
+        }
+      },
+      "Oldpeak": {
+        "declared_median_impute": null,
+        "declared_policy_applies": false,
+        "raw": {
+          "corr_with_target": 0.403951,
+          "mean": 0.887364,
+          "n": 918,
+          "std": 1.06657
+        },
+        "trim_iqr": {
+          "corr_with_target": 0.410111,
+          "mean": 0.833481,
+          "n": 902,
+          "rows_dropped": 16,
+          "std": 0.965986
+        },
+        "winsorize_iqr": {
+          "corr_with_target": 0.410211,
+          "mean": 0.877778,
+          "n": 918,
+          "std": 1.031693
+        }
+      },
+      "RestingBP": {
+        "declared_median_impute": {
+          "cells_replaced": 1,
+          "corr_with_target": 0.117798,
+          "fill_value": 130.0,
+          "mean": 132.538126,
+          "n": 918,
+          "note": "descriptive raw-frame analogue of the declared policy; production imputation fits the training-fold median via heart.data.quality.ZeroMedianImputer",
+          "std": 17.990127
+        },
+        "declared_policy_applies": true,
+        "raw": {
+          "corr_with_target": 0.107589,
+          "mean": 132.396514,
+          "n": 918,
+          "std": 18.514154
+        },
+        "trim_iqr": {
+          "corr_with_target": 0.110064,
+          "mean": 131.113483,
+          "n": 890,
+          "rows_dropped": 28,
+          "std": 15.839732
+        },
+        "winsorize_iqr": {
+          "corr_with_target": 0.113191,
+          "mean": 132.125272,
+          "n": 918,
+          "std": 16.993314
+        }
+      }
+    },
+    "declared_sentinel_columns": [
+      "RestingBP",
+      "Cholesterol"
+    ],
+    "fence_definition": "q1 - 1.5*IQR / q3 + 1.5*IQR",
+    "table": [
+      {
+        "column": "Age",
+        "corr_with_target": 0.282039,
+        "delta_mean": 0.0,
+        "delta_std": 0.0,
+        "mean": 53.510893,
+        "n": 918,
+        "policy": "raw",
+        "std": 9.432617
+      },
+      {
+        "column": "Age",
+        "corr_with_target": 0.282039,
+        "delta_mean": 0.0,
+        "delta_std": 0.0,
+        "mean": 53.510893,
+        "n": 918,
+        "policy": "trim_iqr",
+        "std": 9.432617
+      },
+      {
+        "column": "Age",
+        "corr_with_target": 0.282039,
+        "delta_mean": 0.0,
+        "delta_std": 0.0,
+        "mean": 53.510893,
+        "n": 918,
+        "policy": "winsorize_iqr",
+        "std": 9.432617
+      },
+      {
+        "column": "RestingBP",
+        "corr_with_target": 0.107589,
+        "delta_mean": 0.0,
+        "delta_std": 0.0,
+        "mean": 132.396514,
+        "n": 918,
+        "policy": "raw",
+        "std": 18.514154
+      },
+      {
+        "column": "RestingBP",
+        "corr_with_target": 0.110064,
+        "delta_mean": -1.283031,
+        "delta_std": -2.674422,
+        "mean": 131.113483,
+        "n": 890,
+        "policy": "trim_iqr",
+        "std": 15.839732
+      },
+      {
+        "column": "RestingBP",
+        "corr_with_target": 0.113191,
+        "delta_mean": -0.271242,
+        "delta_std": -1.52084,
+        "mean": 132.125272,
+        "n": 918,
+        "policy": "winsorize_iqr",
+        "std": 16.993314
+      },
+      {
+        "column": "RestingBP",
+        "corr_with_target": 0.117798,
+        "delta_mean": 0.141612,
+        "delta_std": -0.524027,
+        "mean": 132.538126,
+        "n": 918,
+        "policy": "declared_median_impute",
+        "std": 17.990127
+      },
+      {
+        "column": "Cholesterol",
+        "corr_with_target": -0.232741,
+        "delta_mean": 0.0,
+        "delta_std": 0.0,
+        "mean": 198.799564,
+        "n": 918,
+        "policy": "raw",
+        "std": 109.384145
+      },
+      {
+        "column": "Cholesterol",
+        "corr_with_target": 0.106488,
+        "delta_mean": 42.238531,
+        "delta_std": -58.219414,
+        "mean": 241.038095,
+        "n": 735,
+        "policy": "trim_iqr",
+        "std": 51.16473
+      },
+      {
+        "column": "Cholesterol",
+        "corr_with_target": -0.225304,
+        "delta_mean": 5.185594,
+        "delta_std": -13.461804,
+        "mean": 203.985158,
+        "n": 918,
+        "policy": "winsorize_iqr",
+        "std": 95.922341
+      },
+      {
+        "column": "Cholesterol",
+        "corr_with_target": 0.076114,
+        "delta_mean": 44.405229,
+        "delta_std": -55.982848,
+        "mean": 243.204793,
+        "n": 918,
+        "policy": "declared_median_impute",
+        "std": 53.401297
+      },
+      {
+        "column": "MaxHR",
+        "corr_with_target": -0.400421,
+        "delta_mean": 0.0,
+        "delta_std": 0.0,
+        "mean": 136.809368,
+        "n": 918,
+        "policy": "raw",
+        "std": 25.460334
+      },
+      {
+        "column": "MaxHR",
+        "corr_with_target": -0.398797,
+        "delta_mean": 0.164431,
+        "delta_std": -0.217181,
+        "mean": 136.973799,
+        "n": 916,
+        "policy": "trim_iqr",
+        "std": 25.243154
+      },
+      {
+        "column": "MaxHR",
+        "corr_with_target": -0.400519,
+        "delta_mean": 0.009804,
+        "delta_std": -0.028277,
+        "mean": 136.819172,
+        "n": 918,
+        "policy": "winsorize_iqr",
+        "std": 25.432057
+      },
+      {
+        "column": "Oldpeak",
+        "corr_with_target": 0.403951,
+        "delta_mean": 0.0,
+        "delta_std": 0.0,
+        "mean": 0.887364,
+        "n": 918,
+        "policy": "raw",
+        "std": 1.06657
+      },
+      {
+        "column": "Oldpeak",
+        "corr_with_target": 0.410111,
+        "delta_mean": -0.053883,
+        "delta_std": -0.100584,
+        "mean": 0.833481,
+        "n": 902,
+        "policy": "trim_iqr",
+        "std": 0.965986
+      },
+      {
+        "column": "Oldpeak",
+        "corr_with_target": 0.410211,
+        "delta_mean": -0.009586,
+        "delta_std": -0.034877,
+        "mean": 0.877778,
+        "n": 918,
+        "policy": "winsorize_iqr",
+        "std": 1.031693
+      }
+    ]
+  }
+}

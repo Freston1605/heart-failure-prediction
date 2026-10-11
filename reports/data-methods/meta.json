@@ -1,0 +1,25 @@
+{
+  "categorical_columns": [
+    "Sex",
+    "ChestPainType",
+    "FastingBS",
+    "RestingECG",
+    "ExerciseAngina",
+    "ST_Slope"
+  ],
+  "column_count": 12,
+  "declared_zero_as_missing_columns": [
+    "RestingBP",
+    "Cholesterol"
+  ],
+  "numeric_columns": [
+    "Age",
+    "RestingBP",
+    "Cholesterol",
+    "MaxHR",
+    "Oldpeak"
+  ],
+  "row_count": 918,
+  "seed": 42,
+  "target_column": "HeartDisease"
+}

@@ -48,7 +48,7 @@ for _p in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "src")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-_DEPLOYED_URL = "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app"
+_DEPLOYED_URL = "https://heart-failure-prediction-krwy4etmtavrqd233mteym.streamlit.app"
 _AUTH_HOST = "share.streamlit.io"
 _TIMEOUT_S = 10
 # Free-tier cold-start blips: retry a few times with backoff before giving up.

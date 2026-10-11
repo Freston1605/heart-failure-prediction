@@ -15,11 +15,14 @@ to regenerate the leaderboard with one documented command.
 .
 ├── pyproject.toml          # pinned dependency manifest + tool config
 ├── README.md
+├── app/                    # Streamlit dashboard + prediction app
+│   ├── Home.py
+│   ├── lib/                # non-Streamlit contract modules (runs_view, data_methods_view)
+│   └── pages/              # sidebar pages (1_Explore.py, 3_Runs.py, 4_Data_Methods.py)
 ├── src/heart/              # importable package (src layout)
-│   ├── __init__.py
 │   ├── config.py           # paths, RANDOM_SEED, shared constants
-│   └── data/               # loaders, schema, quality, splits (S01)
-├── app/                    # Streamlit dashboard + prediction app (S07)
+│   ├── reporting/data_methods/  # four-stage pre-split EDA engine + report renderer
+│   └── ...
 ├── experiments/            # ad-hoc experiment scripts / notebooks
 ├── reports/                # generated, human-inspectable reports
 ├── tests/                  # pytest suite
@@ -146,6 +149,46 @@ pick the **Runs** page in the sidebar — it mirrors
 [`reports/leaderboard.md`](reports/leaderboard.md) and refuses the same
 friendly way (naming `make reproduce`) when the store has no runs yet. It is
 part of this repository's viewer set alongside the MLflow UI above.
+
+## Data and Methods report
+
+`reports/data-methods.md` (part A) is the four-stage **pre-split** EDA over the
+raw dataset, plus a takeaways checklist. Every stage runs before any train/test
+split, so no finding can leak target knowledge into the pipeline:
+
+1. **Data hygiene** — schema, dataset provenance (pinned-digest verification),
+   missingness (declared zero-as-missing columns), near-duplicate rows,
+   impossible values, missingness-pattern clustering.
+2. **Univariate** — per-column skewness, outliers (IQR fences), histograms and
+   categorical bars.
+3. **Bivariate** — feature/target chi-square tests, high-correlation pairs,
+   VIF, correlation heatmap.
+4. **Pre-split assumptions** — outlier-policy comparison (mean/median/empirical
+   logit) and the resulting imputation decision.
+
+**Regenerate with one command:**
+
+```bash
+PYTHONPATH=src python -m heart.reporting.data_methods
+```
+
+Two runs produce byte-identical output (seeded, deterministic). The machine
+artifacts land in `reports/data-methods/` (`meta.json`, four stage JSONs, PNG
+figures) and the rendered report is `reports/data-methods.md`. Do not
+hand-edit either — they are generated.
+
+**SHA-256 provenance lock:** `reports/data-methods/manifest.json` pins the
+digest of every artifact. Any tampering (or an edited report) fails
+`verify_manifest` at regeneration time and fails the provenance tests
+(`tests/test_data_methods_provenance.py`) — the artifacts can only be replaced
+by rerunning the command above.
+
+**View it in the app:** run `streamlit run app/Home.py` and pick **Data
+Methods** in the sidebar. The page renders exactly the generated artifacts
+under `reports/data-methods/`, with every table and figure caption citing its
+artifact path. When the artifacts are missing (or the provenance check fails)
+the page shows a named friendly empty-state — what is missing plus the
+regeneration command above — never a stack trace.
 
 ## Reproducibility conventions
 
