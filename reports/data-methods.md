@@ -1,6 +1,6 @@
-# Pre-Split Data Methods (EDA) — Part A
+# Data Methods — Parts A-F
 
-This report is rendered by `heart.reporting.data_methods` from the four-stage pre-split EDA over the raw dataset — every stage runs entirely before any train/test split. Regenerate deterministically with `PYTHONPATH=src python -m heart.reporting.data_methods`.
+This report is rendered by `heart.reporting.data_methods`. Part A is the four-stage pre-split EDA over the raw dataset — every stage runs entirely before any train/test split. Parts B-F document the per-model treatment audit, the logistic-regression preparation methodology, the pre-declared class-imbalance ladder, the validation/calibration strategy, and the pre-declared severity gate. Regenerate deterministically with `PYTHONPATH=src python -m heart.reporting.data_methods`.
 
 ## Dataset provenance
 
@@ -203,6 +203,331 @@ Largest absolute mean shift under the declared median-impute policy: 0.0000.
 - [ ] **Bivariate:** chi-square-significant categorical features `ChestPainType`, `ExerciseAngina`, `FastingBS`, `RestingECG`, `ST_Slope`, `Sex` (p < 0.05); 0 pair(s) with |r| > 0.8; highest VIF 1.2858 on `Age` (artifact: `stage3_bivariate.json`).
 - [ ] **Assumptions:** empirical logit over 10 decile bins per numeric feature (add-0.5 smoothing); the declared median-impute policy's largest absolute mean shift is 0.0000, benchmarked against trim and Winsorize (artifact: `stage4_assumptions.json`).
 
+## Part B — Per-Model Treatment Audit
+
+The audit follows the **Model-Specific Pipeline Pattern** (decision D033): one pinned raw dataset, split first, per-model pipelines fit on training rows only, unified evaluate() scoring. Depth policy is decision D028: the linear family is audited deep, the robust families light with written justifications.
+
+Provenance: the loader pins SHA-256 `948420b084d8a3a0ca42b8419fce9aee175879e43f8aedf712377899a67aa49b`; the committed split is version `v1` (5 stratified folds, test fold 0); fail-closed: heart.data.split.assert_no_group_straddle raises SplitLeakageError if any near-duplicate group spans the train/test boundary.
+
+Preprocessing chain (fit on training rows only): declared zero policy `median_impute` on `RestingBP`, `Cholesterol` (sentinel 0), then a ColumnTransformer with StandardScaler on the numeric columns and OneHotEncoder with handle_unknown='ignore' on the categorical columns.
+
+### Summary table (whole battery)
+
+| model | family | pipeline treatment chain | tuned keys | fixed params |
+|---|---|---|---|---|
+| `knn` | distance | `zero_policy -> features` -> `knn` | `n_neighbors`, `p`, `weights` | none |
+| `lda` | discriminant | `zero_policy -> features` -> `lda` | `shrinkage`, `solver` | none |
+| `logistic-regression-elasticnet` | linear | `zero_policy -> features` -> `logistic-regression-elasticnet` | `C`, `class_weight`, `l1_ratio` | max_iter=2000, random_state=42, solver='saga' |
+| `logistic-regression-l1` | linear | `zero_policy -> features` -> `logistic-regression-l1` | `C`, `class_weight` | l1_ratio=1.0, max_iter=2000, random_state=42, solver='liblinear' |
+| `logistic-regression-l2` | linear | `zero_policy -> features` -> `logistic-regression-l2` | `C`, `class_weight` | l1_ratio=0.0, max_iter=2000, random_state=42, solver='lbfgs' |
+| `naive-bayes` | bayes | `zero_policy -> features` -> `naive-bayes` | `var_smoothing` | none |
+| `qda` | discriminant | `zero_policy -> features` -> `qda` | `reg_param` | none |
+| `random-forest` | ensemble | `zero_policy -> features` -> `random-forest` | `class_weight`, `max_depth`, `max_features`, `min_samples_leaf`, `min_samples_split`, `n_estimators` | random_state=42 |
+| `svm` | kernel | `zero_policy -> features` -> `svm` | `C`, `class_weight`, `gamma`, `kernel` | probability=True, random_state=42 |
+| `xgboost` | gradient-boosting | `zero_policy -> features` -> `xgboost` | `colsample_bytree`, `learning_rate`, `max_depth`, `n_estimators`, `reg_lambda`, `subsample` | eval_metric='logloss', random_state=42 |
+
+*Artifact:* `treatment_audit.json`
+
+### Deep audit — the linear family (decision D028)
+
+The linear-family members `lda`, `logistic-regression-elasticnet`, `logistic-regression-l1`, `logistic-regression-l2`, `qda` are audited at deep depth: the shared preprocessing chain is rendered step by step from the actual sklearn objects (`heart.data.pipeline`), followed by the fitted train-side statistics.
+
+#### Shared preprocessing chain (actual sklearn objects)
+
+| step | transformer | columns | parameters |
+|---|---|---|---|
+| `zero_policy` | ZeroMedianImputer | n/a | columns=['RestingBP', 'Cholesterol'], sentinel=0 |
+| `features` | ColumnTransformer | n/a (sub-transformers below) | n_jobs=None, remainder='drop', sparse_threshold=0.3, verbose=False, verbose_feature_names_out=True |
+| `features:numeric` | StandardScaler | `Age`, `RestingBP`, `Cholesterol`, `MaxHR`, `Oldpeak` | copy=True, with_mean=True, with_std=True |
+| `features:categorical` | OneHotEncoder | `Sex`, `ChestPainType`, `FastingBS`, `RestingECG`, `ExerciseAngina`, `ST_Slope` | categories='auto', drop=None, dtype='float', feature_name_combiner='concat', handle_unknown='ignore', max_categories=None, min_frequency=None, sparse_output=False |
+
+*Artifact:* `treatment_audit.json`
+
+#### Fitted train-side statistics (fit on the 734 training rows only)
+
+Declared zero policy and fitted medians:
+
+| column | declared sentinel | fitted median |
+|---|---|---|
+| `Cholesterol` | 0 | 239.5 |
+| `RestingBP` | 0 | 130.0 |
+
+*Artifact:* `treatment_audit.json`
+
+StandardScaler on the numeric columns (fitted mean/spread):
+
+| numeric column | fitted mean | fitted scale |
+|---|---|---|
+| `Age` | 53.483651 | 9.469678 |
+| `RestingBP` | 132.726158 | 18.252392 |
+| `Cholesterol` | 244.26158 | 52.543278 |
+| `MaxHR` | 137.531335 | 25.394403 |
+| `Oldpeak` | 0.895095 | 1.085891 |
+
+*Artifact:* `treatment_audit.json`
+
+OneHotEncoder on the categorical columns (observed categories):
+
+| categorical column | observed categories |
+|---|---|
+| `Sex` | `F`, `M` |
+| `ChestPainType` | `ASY`, `ATA`, `NAP`, `TA` |
+| `FastingBS` | `0`, `1` |
+| `RestingECG` | `LVH`, `Normal`, `ST` |
+| `ExerciseAngina` | `N`, `Y` |
+| `ST_Slope` | `Down`, `Flat`, `Up` |
+
+Expanded-feature count after the chain: **21** — the count the declared `one-hot-drop-first` candidate would shrink (part C).
+
+*Artifact:* `treatment_audit.json`
+
+#### Deep member: LDA (lda)
+
+- family: discriminant
+- estimator: Linear discriminant analysis; solver and shrinkage are tuned (shrinkage only applies to the lsqr solver).
+- tuned space keys: `shrinkage`, `solver`
+- fixed params: none
+- expanded-feature count this member trains on: 21
+
+*Artifact:* `treatment_audit.json`
+
+#### Deep member: Logistic Regression (ElasticNet) (logistic-regression-elasticnet)
+
+- family: linear
+- estimator: logistic regression with elastic-net mixing weight tuned in (0, 1) (solver saga); the tuned strength is C and the class-weight policy.
+- tuned space keys: `C`, `class_weight`, `l1_ratio`
+- fixed params: max_iter=2000, random_state=42, solver='saga'
+- expanded-feature count this member trains on: 21
+
+*Artifact:* `treatment_audit.json`
+
+#### Deep member: Logistic Regression (L1) (logistic-regression-l1)
+
+- family: linear
+- estimator: logistic regression with l1_ratio=1 (solver liblinear); the tuned strength is C and the class-weight policy.
+- tuned space keys: `C`, `class_weight`
+- fixed params: l1_ratio=1.0, max_iter=2000, random_state=42, solver='liblinear'
+- expanded-feature count this member trains on: 21
+
+*Artifact:* `treatment_audit.json`
+
+#### Deep member: Logistic Regression (L2) (logistic-regression-l2)
+
+- family: linear
+- estimator: logistic regression with l1_ratio=0 (solver lbfgs); the tuned strength is C and the class-weight policy.
+- tuned space keys: `C`, `class_weight`
+- fixed params: l1_ratio=0.0, max_iter=2000, random_state=42, solver='lbfgs'
+- expanded-feature count this member trains on: 21
+
+*Artifact:* `treatment_audit.json`
+
+#### Deep member: QDA (qda)
+
+- family: discriminant
+- estimator: Quadratic discriminant analysis; covariance regularisation is tuned.
+- tuned space keys: `reg_param`
+- fixed params: none
+- expanded-feature count this member trains on: 21
+
+*Artifact:* `treatment_audit.json`
+
+### Light audit — robust families (decision D028)
+
+The robust-family members `knn`, `naive-bayes`, `random-forest`, `svm`, `xgboost` are audited at light depth. Each carries a declared robustness justification — a written declaration of why the transform/imputation/encoding candidates do not bind for the family, not a measured claim; a battery change that adds an unjustified robust member fails the audit build loudly.
+
+#### Light member: k-Nearest Neighbours (knn)
+
+- family: distance
+- estimator: k-nearest neighbours on the scaled feature space; neighbourhood size, weighting, and Minkowski power are tuned.
+- tuned space keys: `n_neighbors`, `p`, `weights`
+- fixed params: none
+
+Robustness justification: The k-nearest-neighbour vote is taken on distances computed in the standardized space the shared chain produces, so the metric the model uses is already the scaled one; a monotone transform preserves neighbour orderings up to scale and the committed median imputation is what the distances actually see, so the transform and imputation rungs are not re-measured for this family.
+
+*Artifact:* `treatment_audit.json`
+
+#### Light member: Naive Bayes (naive-bayes)
+
+- family: bayes
+- estimator: Gaussian Naive Bayes; only the variance-smoothing floor is tuned.
+- tuned space keys: `var_smoothing`
+- fixed params: none
+
+Robustness justification: Gaussian naive Bayes estimates one mean and one variance per feature, so a monotone power transform would shift those estimates but cannot change the model's shape; the committed median imputation already keeps every row usable, and the one-hot keep-all encoding matches the independent-feature assumption the model declares, so the transform, imputation, and encoding rungs are not re-measured for this family.
+
+*Artifact:* `treatment_audit.json`
+
+#### Light member: Random Forest (random-forest)
+
+- family: ensemble
+- estimator: Random forest of pruned trees; ensemble size, tree depth, split counts, feature sampling, and class weighting are tuned.
+- tuned space keys: `class_weight`, `max_depth`, `max_features`, `min_samples_leaf`, `min_samples_split`, `n_estimators`
+- fixed params: random_state=42
+
+Robustness justification: Axis-aligned leaf splits are invariant to any monotone transform of a single feature, so the power-transform rungs cannot change the trees this family grows; the trees never scale features and the committed median imputation is the only missing-value policy the chain applies, so the transform and encoding rungs are not re-measured for this family.
+
+*Artifact:* `treatment_audit.json`
+
+#### Light member: Support Vector Machine (svm)
+
+- family: kernel
+- estimator: Support-vector classifier with calibrated probabilities; C, kernel, and gamma are tuned.
+- tuned space keys: `C`, `class_weight`, `gamma`, `kernel`
+- fixed params: probability=True, random_state=42
+
+Robustness justification: Kernel evaluations happen in the standardized space the shared chain produces, and the tuned C/gamma budget already absorbs any feature-shape change a transform would introduce; the committed median imputation feeds the same standardized features regardless, so the transform, imputation, and encoding rungs are not re-measured for this family.
+
+*Artifact:* `treatment_audit.json`
+
+#### Light member: XGBoost (xgboost)
+
+- family: gradient-boosting
+- estimator: Gradient-boosted trees (XGBoost); boosting rounds, depth, learning rate, subsampling, and L2 regularisation are tuned.
+- tuned space keys: `colsample_bytree`, `learning_rate`, `max_depth`, `n_estimators`, `reg_lambda`, `subsample`
+- fixed params: eval_metric='logloss', random_state=42
+
+Robustness justification: Split-gain trees are invariant to monotone per-feature transforms and the booster handles whatever the shared imputer hands it, so the power-transform rungs cannot change the learned structure; the committed one-hot keep-all encoding already feeds the booster numeric columns only, so the transform and encoding rungs are not re-measured for this family.
+
+*Artifact:* `treatment_audit.json`
+
+## Part C — Logistic-Regression Preparation Methodology (six-checklist)
+
+The logistic-regression family is prepared through a fixed six-point checklist. Every number in this part is cited from a generated part A artifact or from code constants — nothing is hand-assembled (D025).
+
+### Categorical encoding: one-hot keep-all with handle_unknown=ignore, and the drop-first candidate
+
+The implemented encoding is one-hot *keep-all*: `heart.data.pipeline.build_preprocessing_pipeline` builds `OneHotEncoder(handle_unknown="ignore", sparse_output=False, dtype=float)` over the categorical columns, so an unseen level at predict time degrades to an all-zero row instead of crashing and no observed category is dropped. The classic dummy-trap argument (a redundant level collinear with the intercept) targets unpenalized OLS; the linear family here is regularized, so the redundant column's coefficient is shrunk by the same penalty as every other feature. The drop-first alternative is not discarded, though: it is pre-declared as the `one-hot-drop-first` candidate (part D's register) and will be measured, not assumed.
+
+### Standardization under regularization
+
+Standardization sits *inside* the pipeline (the `features` step of the same module), so the regularization penalty applies equally to every feature regardless of raw scale, and the StandardScaler is fit on training rows only (`heart.data.pipeline.fit_preprocessing`); the fitted mean and spread per numeric column are recorded in part B (`treatment_audit.json`), not re-derived here.
+
+### Skew and polynomial handling reconciled with already-engineered features
+
+Part of the skew/shape story is already answered by the engineered features from M001/S04 (`heart/features/engineering.py`): `age_band`, `age_band_sex`, `cholesterol_age_ratio`, `cholesterol_restingbp_ratio`, `exercise_ecg_group`, `hr_reserve`, `max_hr_percent_predicted`, `metabolic_risk_count`, `oldpeak_slope_interaction`, `rate_pressure_product`. The remaining raw skew is not hand-corrected either: the power-transform rungs are pre-declared as the `yeo-johnson-power-transform` and `box-cox-power-transform` candidates and measured through the part F gate. The stage-2 skew table records the raw skews; the largest absolute skews are:
+
+| column | skew (raw, stage 2) |
+|---|---|
+| `Oldpeak` | 1.0229 |
+| `Cholesterol` | -0.6101 |
+| `Age` | -0.1959 |
+
+*Artifact:* `stage2_univariate.json`
+
+The empirical-logit decile check over 5 numeric feature(s) is the linearity-of-logit diagnostic behind the same transform candidates.
+
+*Artifact:* `stage4_assumptions.json`
+
+### Imputation toolbox incl. missingness flags
+
+Imputation is the committed `ZeroMedianImputer` (`heart/data/quality.py`): the declared sentinel zeros become missing and are filled with the fit-frame median (the declared policy is recorded in part A stage 1; the fitted medians are in part B). The declared toolbox next rungs are `knn-imputer` (a K-nearest-neighbours imputer fit on training rows only) and `missingness-flag-columns` (one binary missing-indicator column per feature with any observed missing value) — both pre-declared in part D's register, measured rather than assumed.
+
+### Class imbalance runs through the part D ladder
+
+Class imbalance is not handled here: every imbalance action runs through the ordered pre-declared ladder in part D.
+
+### Validation and calibration honesty
+
+Validation and calibration honesty live in part E, including the recorded `calibration_did_not_improve_brier` honesty flag.
+
+## Part D — Pre-Declared Class-Imbalance Ladder
+
+The ladder is rendered strictly from the declared plan artifact (`treatment_plan.json`), which mirrors `heart/eval/treatment_declared.py` 1:1 (decision D032). Rung 0 is the documented incumbent and is not re-measured; every later rung is one declared imbalance candidate, applied inside the training fold only (never before the split).
+
+| rung | ladder label | candidate key | mechanism | applies to |
+|---|---|---|---|---|
+| 0 | none -- incumbent pipeline with its tuned class-weight policy (documented, not re-measured) | — | none (documented, not re-measured) | whole battery (incumbent pipeline with its tuned class-weight policy) |
+| 1 | class weights pinned | `class-weight-balanced` | estimator-param | `logistic-regression-l2`, `logistic-regression-l1`, `logistic-regression-elasticnet` |
+| 2 | random undersampling | `random-undersampling` | sampling | `logistic-regression-l2`, `logistic-regression-l1`, `logistic-regression-elasticnet`, `lda`, `qda` |
+| 3 | random oversampling | `random-oversampling` | sampling | `logistic-regression-l2`, `logistic-regression-l1`, `logistic-regression-elasticnet`, `lda`, `qda` |
+| 4 | SMOTE | `smote-oversampling` | sampling | `logistic-regression-l2`, `logistic-regression-l1`, `logistic-regression-elasticnet`, `lda`, `qda` |
+| 5 | ADASYN | `adasyn-oversampling` | sampling | `logistic-regression-l2`, `logistic-regression-l1`, `logistic-regression-elasticnet`, `lda`, `qda` |
+
+*Artifact:* `treatment_plan.json`
+
+### Gate dispositions (measured)
+
+Gate-measured dispositions from `treatment_gate_verdicts.json` (one line per measured pair; the incumbent rung keeps its documented-not-re-measured status):
+
+- rung 0 (incumbent): documented-not-re-measured — no gate outcome recorded.
+- gate-measured: `treatment:yeo-johnson-power-transform/lda` — delta -0.0019 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:yeo-johnson-power-transform/logistic-regression-elasticnet` — delta -0.0018 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:yeo-johnson-power-transform/logistic-regression-l1` — delta -0.0016 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:yeo-johnson-power-transform/logistic-regression-l2` — delta -0.0026 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:yeo-johnson-power-transform/qda` — delta +0.0020 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:box-cox-power-transform/lda` — delta +0.0005 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:box-cox-power-transform/logistic-regression-elasticnet` — delta -0.0001 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:box-cox-power-transform/logistic-regression-l1` — delta +0.0003 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:box-cox-power-transform/logistic-regression-l2` — delta +0.0005 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:box-cox-power-transform/qda` — delta +0.0009 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:knn-imputer/lda` — delta -0.0000 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:knn-imputer/logistic-regression-elasticnet` — delta +0.0001 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:knn-imputer/logistic-regression-l1` — delta -0.0001 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:knn-imputer/logistic-regression-l2` — delta -0.0002 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:knn-imputer/qda` — delta -0.0001 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:missingness-flag-columns/lda` — delta +0.0061 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:missingness-flag-columns/logistic-regression-elasticnet` — delta +0.0053 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:missingness-flag-columns/logistic-regression-l1` — delta +0.0056 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:missingness-flag-columns/logistic-regression-l2` — delta +0.0051 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:missingness-flag-columns/qda` — delta -0.0014 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:one-hot-drop-first/lda` — delta -0.0019 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:one-hot-drop-first/logistic-regression-elasticnet` — delta -0.0052 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:one-hot-drop-first/logistic-regression-l1` — delta -0.0011 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:one-hot-drop-first/logistic-regression-l2` — delta -0.0069 on roc_auc, significance significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:one-hot-drop-first/qda` — delta -0.0046 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:class-weight-balanced/logistic-regression-elasticnet` — delta +0.0001 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:class-weight-balanced/logistic-regression-l1` — delta +0.0000 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:class-weight-balanced/logistic-regression-l2` — delta +0.0000 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-undersampling/lda` — delta -0.0009 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-undersampling/logistic-regression-elasticnet` — delta +0.0001 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-undersampling/logistic-regression-l1` — delta +0.0001 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-undersampling/logistic-regression-l2` — delta -0.0004 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-undersampling/qda` — delta -0.0007 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-oversampling/lda` — delta -0.0012 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-oversampling/logistic-regression-elasticnet` — delta -0.0006 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-oversampling/logistic-regression-l1` — delta -0.0012 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-oversampling/logistic-regression-l2` — delta -0.0009 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:random-oversampling/qda` — delta +0.0001 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:smote-oversampling/lda` — delta -0.0008 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:smote-oversampling/logistic-regression-elasticnet` — delta +0.0001 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:smote-oversampling/logistic-regression-l1` — delta -0.0003 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:smote-oversampling/logistic-regression-l2` — delta -0.0004 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:smote-oversampling/qda` — delta -0.0004 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:adasyn-oversampling/lda` — delta -0.0017 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:adasyn-oversampling/logistic-regression-elasticnet` — delta -0.0004 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:adasyn-oversampling/logistic-regression-l1` — delta -0.0015 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:adasyn-oversampling/logistic-regression-l2` — delta -0.0004 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+- gate-measured: `treatment:adasyn-oversampling/qda` — delta -0.0014 on roc_auc, significance not significant at alpha=0.05, standing ok, verdict rejected.
+
+## Part E — Validation and Calibration Strategy
+
+Every declared candidate is scored with repeated stratified cross-validation (`heart/eval/repeated_cv.py`): the committed split's 5 folds re-drawn across 5 differently-seeded repeats, every fold model fit on its training fold only, so a candidate's repeated-CV fold deltas stay paired across the same fold structure.
+
+The significance layer reads those paired deltas with the Nadeau-Bengio corrected resampled t-test (`heart/eval/significance.py`, `corrected_resampled_t_test`) at alpha=0.05; the same alpha is fixed in the part F gate constants.
+
+Probability calibration is measured, not assumed: when the calibrated model fails to improve the Brier score, the pipeline records the honesty flag `calibration_did_not_improve_brier` instead of shipping the calibration silently.
+
+The current committed selection report (`reports/selection.md`) carries that flag; this part cites it textually and copies none of its numbers (D025) — MLflow-derived numbers stay in their own reports.
+
+Gate-measured dispositions (artifact `treatment_gate_verdicts.json`): 48 measured pair(s), 0 accepted, 48 rejected at split_version `v1`; every rejection keeps the incumbent pipeline. The committed selection report's winner standing is unchanged by the gate (no acceptance re-ran the battery).
+
+## Part F — Pre-Declared Severity Gate (fixed before any candidate number exists)
+
+Severity gate, pre-declared before any candidate number existed: a candidate treatment is accepted only if (a) its delta on repeated-CV roc_auc against the incumbent is at least +0.0100, (b) the paired significance layer reads that delta as significant at alpha=0.05, and (c) the treated model's standing versus the baseline and the runner-up on the leaderboard does not worsen; every candidate that fails any of the three keeps the incumbent pipeline and is recorded as rejected.
+
+The significance layer reads the delta through the paired significance layer at alpha=0.05: a delta the corrected resampled t-test does not read as significant keeps the incumbent, regardless of size.
+
+| declared constant | value |
+|---|---|
+| gate metric | `roc_auc` |
+| minimum repeated-CV ROC-AUC delta | +0.0100 |
+| winner-standing rule | the treated model's standing versus the baseline and the runner-up on the leaderboard does not worsen |
+| paired significance alpha | 0.05 |
+
+*Artifact:* `treatment_plan.json`
+
+Declaration of antecedence: the gate metric, the delta threshold, the significance alpha, and the winner-standing rule above were fixed in `heart/eval/treatment_declared.py` (decision D032) before any candidate was measured; the declared plan artifact records `declared_before_any_candidate_number: true`.
+
 ## Technical appendix
 
 ### Parameters
@@ -258,4 +583,7 @@ All tables and figures above are traceable to these generated artifacts; digests
 | `stage4_empirical_logit_MaxHR.png` | `538ad56be7f8727bcffbd4b22227b53228ad2e5b53dc370b05a0befb17643161` |
 | `stage4_empirical_logit_Oldpeak.png` | `79862a1a561616da7e45ccc1b7f20358b0a6e8676934afa3e329daa6d3dd844d` |
 | `stage4_empirical_logit_RestingBP.png` | `abca66783065885a57b1b8dad9e0a51a9a3d11d75268b1dded1e73a7edc1686b` |
+| `treatment_audit.json` | `791d878939bc5ed6985089f96d2560c0af29a2d929db078d5c58d425cd6e90a6` |
+| `treatment_gate_verdicts.json` | `110a10f5db6f04f3cfd7d67284c970bd6840f81e7e24b08d322827f52c0f8811` |
+| `treatment_plan.json` | `fa082296e28f95a9345d857c494e4df65295cec8e6746e0ddf223cfb6d711ed0` |
 

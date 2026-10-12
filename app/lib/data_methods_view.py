@@ -68,7 +68,13 @@ from heart.reporting.data_methods.provenance import (
     ProvenanceDigestMismatchError,
     ProvenanceManifestError,
 )
-from heart.reporting.data_methods.report import DATAMETHODS_DIR, STAGE_ARTIFACTS
+from heart.reporting.data_methods.report import (
+    AUDIT_FILENAME,
+    DATAMETHODS_DIR,
+    GATE_VERDICTS_FILENAME,
+    PLAN_FILENAME,
+    STAGE_ARTIFACTS,
+)
 
 __all__ = [
     "DATA_METHODS_DIR_ENV",
@@ -116,6 +122,13 @@ class DataMethodsView:
             ``provenance.verify_manifest`` (``None`` unless clean).
         error_kind: Named error bucket (``None`` on success).
         error_message: Friendly, plain-language failure message.
+        treatment_audit: ``treatment_audit.json`` payload (per-model audit:
+            models/pattern/split/zero_policy) or ``None`` when the committed
+            split was absent at generation time (part B degrades to n/a).
+        treatment_plan: ``treatment_plan.json`` payload (declared candidates,
+            imbalance ladder, gate text).
+        gate_verdicts: ``treatment_gate_verdicts.json`` payload (MLflow-derived
+            outcomes table) or ``None`` when the verdicts step has not run.
         ok: Derived — no error kind recorded and meta loaded.
     """
 
@@ -125,6 +138,9 @@ class DataMethodsView:
     figure_paths: tuple[Path, ...] = field(default_factory=tuple)
     manifest: dict[str, Any] | None = field(default=None)
     verified_digests: dict[str, str] | None = field(default=None)
+    treatment_audit: dict[str, Any] | None = field(default=None)
+    treatment_plan: dict[str, Any] | None = field(default=None)
+    gate_verdicts: dict[str, Any] | None = field(default=None)
     error_kind: str | None = field(default=None)
     error_message: str | None = field(default=None)
 
@@ -366,10 +382,79 @@ def _load_attempt(artifact_dir: Path) -> DataMethodsView:
             ),
         )
 
+    # --- treatment artifacts (parts B-F; M006/S04/T01) ----------------------
+    # ``treatment_plan.json`` is always written by the report generator, so a
+    # verified directory without it is stale/corrupt (fail closed). The audit
+    # (absent when the committed split is missing — part B degrades to n/a)
+    # and the MLflow-derived gate verdicts (written by a separate step) are
+    # optional: absent files yield ``None`` so the page can degrade, while a
+    # present-but-unreadable file is corrupt. Tampering with any listed file
+    # already failed closed above in ``verify_manifest`` (manifest-covered).
+    try:
+        treatment_plan = json.loads((artifact_dir / PLAN_FILENAME).read_text(encoding="utf-8"))
+        if not isinstance(treatment_plan, dict):
+            raise ValueError("treatment plan payload is not a JSON object")
+    except FileNotFoundError:
+        return DataMethodsView(
+            attempted_dir=display,
+            error_kind=ERROR_KIND_ARTIFACTS_CORRUPT,
+            error_message=_artifacts_corrupt_message(
+                f"The expected treatment artifact `{PLAN_FILENAME}` is missing from the "
+                "artifact directory.",
+                "",
+            ),
+        )
+    except (json.JSONDecodeError, ValueError, OSError) as exc:
+        return DataMethodsView(
+            attempted_dir=display,
+            error_kind=ERROR_KIND_ARTIFACTS_CORRUPT,
+            error_message=_artifacts_corrupt_message(
+                f"The treatment artifact `{PLAN_FILENAME}` is unreadable:",
+                f"{type(exc).__name__}: {str(exc)[:200]}",
+            ),
+        )
+
+    treatment_audit: dict[str, Any] | None = None
+    audit_path = artifact_dir / AUDIT_FILENAME
+    if audit_path.is_file():
+        try:
+            treatment_audit = json.loads(audit_path.read_text(encoding="utf-8"))
+            if not isinstance(treatment_audit, dict):
+                raise ValueError("treatment audit payload is not a JSON object")
+        except (json.JSONDecodeError, ValueError, OSError) as exc:
+            return DataMethodsView(
+                attempted_dir=display,
+                error_kind=ERROR_KIND_ARTIFACTS_CORRUPT,
+                error_message=_artifacts_corrupt_message(
+                    f"The treatment artifact `{AUDIT_FILENAME}` is unreadable:",
+                    f"{type(exc).__name__}: {str(exc)[:200]}",
+                ),
+            )
+
+    gate_verdicts: dict[str, Any] | None = None
+    verdicts_path = artifact_dir / GATE_VERDICTS_FILENAME
+    if verdicts_path.is_file():
+        try:
+            gate_verdicts = json.loads(verdicts_path.read_text(encoding="utf-8"))
+            if not isinstance(gate_verdicts, dict):
+                raise ValueError("gate verdicts payload is not a JSON object")
+        except (json.JSONDecodeError, ValueError, OSError) as exc:
+            return DataMethodsView(
+                attempted_dir=display,
+                error_kind=ERROR_KIND_ARTIFACTS_CORRUPT,
+                error_message=_artifacts_corrupt_message(
+                    f"The treatment artifact `{GATE_VERDICTS_FILENAME}` is unreadable:",
+                    f"{type(exc).__name__}: {str(exc)[:200]}",
+                ),
+            )
+
     return DataMethodsView(
         attempted_dir=display,
         meta=meta,
         stages=stages,
+        treatment_audit=treatment_audit,
+        treatment_plan=treatment_plan,
+        gate_verdicts=gate_verdicts,
         figure_paths=existing_figure_paths(artifact_dir),
         manifest=manifest,
         verified_digests=verified,
@@ -387,7 +472,9 @@ def load_data_methods_view(
     (``heart.reporting.data_methods.report.DATAMETHODS_DIR``).
 
     On success the returned view carries the ``meta.json`` payload, the four
-    stage payloads, the existing PNG figure paths, the loaded manifest and
+    stage payloads, the treatment payloads (audit/plan/verdicts, with audit
+    and verdicts ``None`` when those generation steps did not run), the
+    existing PNG figure paths, the loaded manifest and
     the verified digest mapping produced by the S01 engine's
     ``verify_manifest``. On failure ``ok`` is ``False`` with a named
     ``error_kind`` and a plain-language message naming the documented

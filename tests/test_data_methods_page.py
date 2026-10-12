@@ -254,8 +254,14 @@ class TestDataMethodsPageRenderEmpty:
         assert "Traceback" not in texts
         # The attempted directory is shown for diagnosis.
         assert str(missing) in texts
-        # Nothing else rendered — the page stopped.
+        # Nothing else rendered — the page stopped (stages and
+        # M006 transformation Parts B-F alike).
         assert "Stage 1 — Data hygiene" not in texts
+        assert "Part B — Per-model treatment audit" not in texts
+        assert "Part C — Logistic-regression preparation methodology" not in texts
+        assert "Part D — Pre-declared class-imbalance ladder" not in texts
+        assert "Part E — Validation and calibration" not in texts
+        assert "Part F — Severity-gate verdicts" not in texts
 
 
 # ---------------------------------------------------------------------------
@@ -284,6 +290,55 @@ class TestDataMethodsPageRenderCorrupt:
         assert REGENERATION_COMMAND in texts
         assert "Traceback" not in texts
         assert "Stage 1 — Data hygiene" not in texts
+
+
+# ---------------------------------------------------------------------------
+# 3b. Transformation sections: real provenance-verified artifacts render
+#     Parts B-F (M006/S04/T02 review pin). Read-only use of the real
+#     reports/data-methods tree: the fixture generator cannot produce the
+#     MLflow-derived gate verdicts, so only the real directory exercises
+#     the populated transformation tables (48 gate pairs, split v1).
+# ---------------------------------------------------------------------------
+
+
+class TestDataMethodsPageRenderTransformations:
+    """Real artifacts render every transformation section, zero exceptions."""
+
+    def test_real_artifacts_render_all_transformation_parts(self, monkeypatch) -> None:
+        real_dir = PROJECT_ROOT / "reports" / "data-methods"
+        for name in (
+            "manifest.json",
+            "treatment_audit.json",
+            "treatment_plan.json",
+            "treatment_gate_verdicts.json",
+        ):
+            if not (real_dir / name).exists():
+                pytest.skip(f"real artifact {name} unavailable")
+        test = _run_page(monkeypatch, {DATA_METHODS_DIR_ENV: str(real_dir)})
+
+        assert test.exception == [], str(test.exception)
+        texts = _page_texts(test)
+        assert "Part B — Per-model treatment audit" in texts
+        assert "Part C — Logistic-regression preparation methodology" in texts
+        assert "Part D — Pre-declared class-imbalance ladder" in texts
+        assert "Part E — Validation and calibration" in texts
+        assert "Part F — Severity-gate verdicts" in texts
+        assert "Traceback" not in texts
+        # Audit + ladder content comes from the real payloads.
+        assert "logistic-regression-l2" in texts
+        assert "class-weight-balanced" in texts
+        assert "v1" in texts
+        # The verdicts table renders verbatim: 48 measured pairs,
+        # all rejected, split v1.
+        verdict_frames = [
+            df_el.value
+            for df_el in test.dataframe
+            if "Verdict" in list(getattr(df_el.value, "columns", []))
+        ]
+        assert verdict_frames, "no verdicts dataframe rendered"
+        verdicts = verdict_frames[0]
+        assert len(verdicts) == 48
+        assert set(verdicts["Verdict"].astype(str)) == {"rejected"}
 
 
 # ---------------------------------------------------------------------------

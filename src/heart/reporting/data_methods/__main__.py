@@ -41,7 +41,8 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Run the four-stage pre-split EDA on the pinned dataset, lock the "
             "artifacts with a SHA-256 manifest, and render reports/data-methods.md "
-            "part A."
+            "parts A-F (stage tables, per-model treatment audit, and the "
+            "pre-declared treatment plan)."
         ),
     )
     parser.add_argument(

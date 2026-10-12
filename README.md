@@ -190,6 +190,24 @@ artifact path. When the artifacts are missing (or the provenance check fails)
 the page shows a named friendly empty-state — what is missing plus the
 regeneration command above — never a stack trace.
 
+**Transformation sections (parts B-F):** the same page also renders the
+post-split treatment audit from the same provenance-verified artifacts —
+`treatment_audit.json`, `treatment_plan.json`, and
+`treatment_gate_verdicts.json` — with no statistic recomputed in the page:
+
+- **Part B — Per-model treatment audit** — per-model audit (pattern, split,
+  zero policy) from `treatment_audit.json`.
+- **Part C — Logistic-regression preparation methodology** — the six-checklist
+  LR narrative.
+- **Part D — Pre-declared class-imbalance ladder** — the imbalance ladder
+  with final dispositions from `treatment_plan.json`.
+- **Part E — Validation and calibration** — validation/calibration narrative.
+- **Part F — Severity-gate verdicts** — the gate-verdicts table
+  (`candidate_key`, delta, significance reading, standing, verdict) built
+  verbatim from `treatment_gate_verdicts.json` outcomes (48 pairs, all
+  rejected, split v1). The named friendly empty-state above still covers
+  missing/unreadable/corrupt treatment artifacts instead of any stack trace.
+
 ## Reproducibility conventions
 
 - All randomness flows from `heart.config.RANDOM_SEED` (currently `42`).

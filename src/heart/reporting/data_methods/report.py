@@ -43,9 +43,19 @@ import os
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 from heart.config import PROJECT_ROOT, REPORTS_DIR
 from heart.data.load import PINNED_SHA256
 from heart.data.schema import TARGET_COLUMN
+from heart.data.split import SPLIT_VERSION, SplitError, load_split_artifacts
+from heart.reporting.data_methods.audit import (
+    AUDIT_FILENAME,
+    PLAN_FILENAME,
+    build_declared_plan,
+    build_treatment_audit,
+    write_treatment_artifacts,
+)
 from heart.reporting.data_methods.eda import (
     EMPIRICAL_LOGIT_BINS,
     HIGH_CORRELATION_THRESHOLD,
@@ -55,6 +65,14 @@ from heart.reporting.data_methods.eda import (
     RARE_CATEGORY_FLOOR,
     DataMethodsError,
     run_eda,
+)
+from heart.reporting.data_methods.narrative import (
+    render_part_b,
+    render_part_c,
+    render_part_d,
+    render_part_e,
+    render_part_f,
+    selection_carries_calibration_flag,
 )
 from heart.reporting.data_methods.provenance import (
     MANIFEST_NAME,
@@ -79,8 +97,46 @@ STAGE_ARTIFACTS: dict[str, str] = {
     "stage4_assumptions": "stage4_assumptions.json",
 }
 
+#: The two treatment artifacts (M006/S01) join the stage artifacts under the
+#: same directory; ``write_manifest`` scans the directory, so they join the
+#: provenance manifest automatically. ``treatment_audit.json`` is written only
+#: when the committed split is present (part B degrades to the benign n/a
+#: notice otherwise); ``treatment_plan.json`` is always written.
+TREATMENT_ARTIFACT_NAMES: tuple[str, str] = (AUDIT_FILENAME, PLAN_FILENAME)
+
 #: Significance floor quoted in the chi-square table and takeaways.
 CHI_SQUARE_ALPHA: float = 0.05
+
+#: Basename of the MLflow-derived gate-verdicts artifact (canonical constant:
+#: ``heart.reporting.data_methods.gate_verdicts.GATE_VERDICTS_ARTIFACT``,
+#: repeated here as a literal so the report generator never imports the
+#: gate-verdicts store machinery at render time).
+GATE_VERDICTS_FILENAME: str = "treatment_gate_verdicts.json"
+
+
+def load_gate_verdicts(artifact_dir: str | Path) -> dict[str, Any] | None:
+    """Load the MLflow-derived gate-verdicts artifact when it exists.
+
+    Pure read of ``<artifact_dir>/treatment_gate_verdicts.json`` (T04):
+    returns the parsed dict when the file exists, else None so the
+    pre-declared Part D/E wording stands. Invalid JSON fails loudly as a
+    named :class:`DataMethodsError` (never a silent empty disposition).
+    """
+    path = Path(artifact_dir) / GATE_VERDICTS_FILENAME
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise DataMethodsError(
+            f"gate verdicts artifact is not valid JSON: {path}: {exc}."
+        ) from exc
+    if not isinstance(payload, dict):
+        raise DataMethodsError(
+            f"gate verdicts artifact must be a mapping, got "
+            f"{type(payload).__name__}: {path}."
+        )
+    return payload
 
 
 # ---------------------------------------------------------------------------
@@ -130,6 +186,52 @@ def _display_path(path: str | Path) -> str:
         return str(candidate.resolve().relative_to(PROJECT_ROOT.resolve()))
     except ValueError:
         return str(candidate)
+
+
+# ---------------------------------------------------------------------------
+# Treatment plan / audit emission (M006/S01)
+# ---------------------------------------------------------------------------
+
+
+def load_train_rows(version: str | None = None) -> pd.DataFrame | None:
+    """Load the committed split's training rows, or ``None`` if it is absent.
+
+    This is the seam between the report generator and the committed split
+    artifacts (``data/processed/splits/<version>/train.csv``), re-verified
+    against the split manifest by :func:`heart.data.split.load_split_artifacts`.
+    A missing split is *not* an error for the report: parts D and F render
+    from the declared plan regardless, and part B degrades to the benign
+    n/a notice naming the populate command. Only split-level failures
+    (:class:`heart.data.split.SplitError` family) degrade; anything else
+    (e.g. an unreadable verified CSV) propagates.
+    """
+    version = SPLIT_VERSION if version is None else version
+    try:
+        artifacts = load_split_artifacts(version)
+    except SplitError as exc:
+        logger.warning("report: no committed split v%r for the audit: %s", version, exc)
+        return None
+    return pd.read_csv(artifacts.train_path)
+
+
+def write_treatment_plan_artifact(plan_payload: dict[str, Any], output_dir: Path) -> str:
+    """Serialize-then-atomically write ``treatment_plan.json`` (plan-only path).
+
+    Used when the committed split is absent, so ``treatment_audit.json`` is
+    not written: the plan mirrors the declarations module (D032) and needs no
+    frame. Mirrors ``write_treatment_artifacts``' atomic contract.
+    """
+    try:
+        text = (
+            json.dumps(plan_payload, indent=2, sort_keys=True, ensure_ascii=False)
+            + "\n"
+        )
+    except (TypeError, ValueError) as exc:
+        raise DataMethodsError(
+            f"treatment_plan payload is not JSON-serializable: {exc}"
+        ) from exc
+    _atomic_write_text(output_dir / PLAN_FILENAME, text)
+    return PLAN_FILENAME
 
 
 # ---------------------------------------------------------------------------
@@ -566,8 +668,19 @@ def render_report(
     dataset_source: str | None,
     output_dir: Path,
     manifest: dict[str, Any],
+    audit: dict[str, Any] | None,
+    declared_plan: dict[str, Any],
+    verdicts: dict[str, Any] | None = None,
 ) -> str:
-    """Render part A of the data-methods report as deterministic markdown."""
+    """Render the data-methods report as deterministic markdown.
+
+    Part A (the four-stage pre-split EDA, plus its takeaways checklist) is
+    rendered exactly as before; parts B-F are appended after it and before
+    the Technical Appendix, in the fixed order B, C, D, E, F. When the
+    MLflow-derived gate-verdicts artifact is supplied, parts D/E gain their
+    final gate-measured dispositions; when absent the pre-declared wording
+    stands (T04).
+    """
     meta = eda["meta"]
     if dataset_sha256 is None:
         digest_line = "n/a (fixture run — no committed dataset digest to verify)"
@@ -579,12 +692,16 @@ def render_report(
         )
     return "\n".join(
         [
-            "# Pre-Split Data Methods (EDA) — Part A",
+            "# Data Methods — Parts A-F",
             "",
             (
-                "This report is rendered by `heart.reporting.data_methods` from the "
-                "four-stage pre-split EDA over the raw dataset — every stage runs "
-                "entirely before any train/test split. Regenerate deterministically "
+                "This report is rendered by `heart.reporting.data_methods`. "
+                "Part A is the four-stage pre-split EDA over the raw dataset — "
+                "every stage runs entirely before any train/test split. Parts "
+                "B-F document the per-model treatment audit, the logistic-"
+                "regression preparation methodology, the pre-declared class-"
+                "imbalance ladder, the validation/calibration strategy, and "
+                "the pre-declared severity gate. Regenerate deterministically "
                 "with `PYTHONPATH=src python -m heart.reporting.data_methods`."
             ),
             "",
@@ -615,6 +732,14 @@ def render_report(
             "",
             *_takeaways(eda),
             "",
+            *render_part_b(audit),
+            *render_part_c(eda, audit),
+            *render_part_d(declared_plan, verdicts),
+            *render_part_e(
+                selection_carries_flag=selection_carries_calibration_flag(),
+                verdicts=verdicts,
+            ),
+            *render_part_f(declared_plan),
             "## Technical appendix",
             "",
             "### Parameters",
@@ -660,8 +785,9 @@ def generate_report(
     output_dir: str | Path | None = None,
     report_path: str | Path | None = None,
     target: str = TARGET_COLUMN,
+    train_frame: pd.DataFrame | None = None,
 ) -> Path:
-    """Run the four-stage EDA, lock artifacts, and render the part A report.
+    """Run the four-stage EDA, lock artifacts, and render the full report.
 
     Parameters
     ----------
@@ -678,6 +804,13 @@ def generate_report(
         (default ``reports/data-methods.md``).
     target:
         Target column name (default :data:`heart.data.schema.TARGET_COLUMN`).
+    train_frame:
+        Optional override for the training rows the treatment audit fits
+        over (M006/S01). When ``None`` the committed split's train rows are
+        loaded through :func:`load_train_rows`; if the committed split is
+        absent, part B renders the benign n/a notice naming the populate
+        command and ``treatment_audit.json`` is not written, while parts
+        D/F still render from the declared plan.
 
     Returns
     -------
@@ -689,6 +822,10 @@ def generate_report(
     DataMethodsError
         For a non-frame dataset or any engine-stage failure; the report file is
         never partially written (atomic replace), so callers may retry safely.
+    TreatmentAuditError
+        When ``train_frame`` is given but unusable (non-frame argument, or a
+        frame that fails the preprocessing fit). Nothing has been written at
+        that point — the audit is built before any artifact lands on disk.
     """
     artifact_dir = Path(output_dir) if output_dir is not None else DATAMETHODS_DIR
     report_target = Path(report_path) if report_path is not None else REPORT_PATH
@@ -701,6 +838,22 @@ def generate_report(
             f"got {type(dataset).__name__}"
         )
 
+    # Treatment plan + audit are built *before* anything is written, so an
+    # unusable training frame fails with zero bytes on disk.
+    declared_plan = build_declared_plan()
+    rows = train_frame if train_frame is not None else load_train_rows()
+    audit = None if rows is None else build_treatment_audit(rows)
+    if audit is not None:
+        logger.info(
+            "report: treatment audit built over %d training row(s)",
+            audit["preprocessing"]["fitted"]["row_count"],
+        )
+    else:
+        logger.info(
+            "report: no committed split; rendering part B as n/a "
+            "(populate with `python -m heart.data.split`)"
+        )
+
     logger.info(
         "report: writing pre-split EDA artifacts for %d row(s) into %s",
         len(frame),
@@ -709,19 +862,37 @@ def generate_report(
     artifact_dir.mkdir(parents=True, exist_ok=True)
     eda = run_eda(frame, artifact_dir=artifact_dir, target=target)
     stage_files = write_stage_artifacts(eda, artifact_dir)
+    if audit is not None:
+        treatment_files = write_treatment_artifacts(audit, declared_plan, artifact_dir)
+    else:
+        treatment_files = [write_treatment_plan_artifact(declared_plan, artifact_dir)]
     manifest = write_manifest(artifact_dir)
+    verdicts = load_gate_verdicts(artifact_dir)
+    if verdicts is not None:
+        logger.info(
+            "report: gate verdicts loaded with %d outcome(s); "
+            "rendering Parts D/E final dispositions",
+            len(verdicts.get("outcomes", [])),
+        )
+    else:
+        logger.info("report: no gate verdicts artifact; Parts D/E pre-declared")
     rendered = render_report(
         eda,
         dataset_sha256=dataset_sha256,
         dataset_source=str(dataset_source) if dataset_source is not None else None,
         output_dir=artifact_dir,
         manifest=manifest,
+        audit=audit,
+        declared_plan=declared_plan,
+        verdicts=verdicts,
     )
     _atomic_write_text(report_target, rendered + "\n")
     logger.info(
-        "report: wrote %s with %d stage artifact(s) and %d manifested artifact(s)",
+        "report: wrote %s with %d stage artifact(s), %d treatment "
+        "artifact(s) and %d manifested artifact(s)",
         report_target,
         len(stage_files),
+        len(treatment_files),
         manifest["artifact_count"],
     )
     return report_target

@@ -437,6 +437,221 @@ for column in numeric:
     )
 
 # ---------------------------------------------------------------------------
+# Part B — per-model treatment audit (M006 transformation sections)
+# ---------------------------------------------------------------------------
+
+st.subheader("Part B — Per-model treatment audit")
+st.caption("Artifact: treatment_audit.json · verified against manifest.json (SHA-256)")
+_audit = view.treatment_audit
+if _audit is None:
+    st.info(
+        "Per-model treatment audit unavailable for this split "
+        "(`treatment_audit.json` absent): Part B renders as n/a. The EDA "
+        "stages above are unaffected."
+    )
+else:
+    _pattern = _audit.get("pattern", {}) if isinstance(_audit.get("pattern", {}), dict) else {}
+    _split = _audit.get("split", {}) if isinstance(_audit.get("split", {}), dict) else {}
+    _zero = _audit.get("zero_policy", {}) if isinstance(_audit.get("zero_policy", {}), dict) else {}
+    st.markdown(
+        "One pinned raw dataset, split first, then one pipeline per model "
+        "fit on training rows only (pattern `{name}`): {desc}. Split module "
+        "`{module}` version `{version}` (test fold {fold}, {n_splits}-fold CV); "
+        "zero policy `{action}` on {cols} (sentinel `{sentinel}`).".format(
+            name=_pattern.get("name", "?"),
+            desc=_pattern.get("description", ""),
+            module=_split.get("module", "?"),
+            version=_split.get("version", "?"),
+            fold=_split.get("test_fold", "?"),
+            n_splits=_split.get("n_splits", "?"),
+            action=_zero.get("action", "?"),
+            cols=", ".join(f"`{c}`" for c in _zero.get("columns", [])) or "_none_",
+            sentinel=_zero.get("sentinel", "?"),
+        )
+    )
+    _models = _audit.get("models", []) or []
+    _model_rows = []
+    for _m in _models:
+        if not isinstance(_m, dict):
+            continue
+        _tuned = _m.get("tuned", {}) or {}
+        _model_rows.append(
+            {
+                "Model": str(_m.get("model_type", "")),
+                "Family": str(_m.get("family", "")),
+                "Depth": str(_m.get("depth", "")),
+                "Tuned": ", ".join(sorted(_tuned.keys())) if isinstance(_tuned, dict) else "",
+                "Expanded features": str(_m.get("expanded_feature_count", "")),
+            }
+        )
+    if _model_rows:
+        _df_table(pd.DataFrame(
+            _model_rows,
+            columns=["Model", "Family", "Depth", "Tuned", "Expanded features"],
+        ))
+    _lr = next((m for m in _models if isinstance(m, dict) and m.get("model_type") == "logistic-regression-l2"), None)
+    if _lr is not None:
+        st.caption(
+            "Logistic-regression (L2) estimator: {desc} Fixed params {fixed}; "
+            "expanded feature count {n}.".format(
+                desc=_lr.get("estimator_description", ""),
+                fixed=_lr.get("fixed_params", {}),
+                n=_lr.get("expanded_feature_count", "?"),
+            )
+        )
+
+# ---------------------------------------------------------------------------
+# Part C — logistic-regression preparation methodology (six-checklist)
+# ---------------------------------------------------------------------------
+
+st.subheader("Part C — Logistic-regression preparation methodology")
+st.caption("Artifacts: treatment_audit.json + stage2/stage4 EDA stages")
+st.markdown(
+    "Why the logistic-regression family gets six preparation checks before "
+    "any transformation is trusted: it is the linear, interpretable baseline "
+    "everything else is measured against. Each check below is a reading of "
+    "the artifacts above — nothing is recomputed here."
+)
+st.markdown(
+    "1. **Missingness handling** — sentinel zeros are median-imputed inside "
+    "the pipeline (Part B zero policy), never dropped.\n"
+    "2. **Skew response** — lopsided columns (Stage 2 skew) motivate the "
+    "power-transform candidates; symmetric columns stay untouched.\n"
+    "3. **Outlier policy** — the declared IQR policy barely moves means and "
+    "target correlations (Stage 4), so winsorize/trim is not load-bearing.\n"
+    "4. **Linearity in log-odds** — roughly straight empirical-logit bands "
+    "(Stage 4) keep the linear form comfortable; bends would call for a "
+    "transform.\n"
+    "5. **Collinearity guard** — VIF near 1 and no high-correlation pair "
+    "(Stage 3) mean coefficients are not double-counted.\n"
+    "6. **Categorical encoding** — one-hot drop-first inside the pipeline "
+    "keeps the design matrix full-rank for the L2 solver."
+)
+
+# ---------------------------------------------------------------------------
+# Part D — pre-declared class-imbalance ladder
+# ---------------------------------------------------------------------------
+
+st.subheader("Part D — Pre-declared class-imbalance ladder")
+st.caption("Artifact: treatment_plan.json · verified against manifest.json (SHA-256)")
+_plan = view.treatment_plan
+if _plan is None:
+    st.info(
+        "Imbalance ladder unavailable (`treatment_plan.json` absent). "
+        "Regenerate the Data & Methods report to restore it."
+    )
+else:
+    _ladder = _plan.get("imbalance_ladder", []) or []
+    _lad_rows = [
+        {
+            "Rung": str(r.get("rung", "")) if isinstance(r, dict) else "",
+            "Label": str(r.get("label", "")) if isinstance(r, dict) else "",
+            "Variant": str(r.get("variant_key", "—")) if isinstance(r, dict) and r.get("variant_key") else "— incumbent —",
+        }
+        for r in _ladder
+    ]
+    if _lad_rows:
+        _df_table(pd.DataFrame(_lad_rows, columns=["Rung", "Label", "Variant"]))
+    _cands = _plan.get("candidates", []) or []
+    _cand_rows = []
+    for _c in _cands:
+        if not isinstance(_c, dict):
+            continue
+        _cand_rows.append(
+            {
+                "Variant": str(_c.get("variant_key", "")),
+                "Mechanism": str(_c.get("mechanism", "")),
+                "Applies to": ", ".join(_c.get("applies_to", []) or []),
+            }
+        )
+    if _cand_rows:
+        st.markdown("Declared treatment candidates (mechanism and scope):")
+        _df_table(pd.DataFrame(_cand_rows, columns=["Variant", "Mechanism", "Applies to"]))
+    st.caption(
+        "Declared before any candidate number existed: "
+        + str(_plan.get("declared_before_any_candidate_number", ""))
+    )
+
+# ---------------------------------------------------------------------------
+# Part E — validation and calibration narrative
+# ---------------------------------------------------------------------------
+
+st.subheader("Part E — Validation and calibration")
+st.caption("Artifacts: treatment_plan.json + treatment_gate_verdicts.json")
+_verdicts = view.gate_verdicts
+if _verdicts is None:
+    st.info(
+        "Gate verdicts have not been measured for this directory "
+        "(`treatment_gate_verdicts.json` absent): validation dispositions "
+        "render as n/a. The ladder above remains the declared plan."
+    )
+else:
+    _outs_all = _verdicts.get("outcomes", []) or []
+    _n_acc = sum(1 for _o in _outs_all if isinstance(_o, dict) and str(_o.get("verdict", "")) == "accepted")
+    _n_rej = sum(1 for _o in _outs_all if isinstance(_o, dict) and str(_o.get("verdict", "")) == "rejected")
+    st.markdown(
+        "Every candidate is re-measured under repeated cross-validation on "
+        "split `{split}` and judged by the pre-declared severity gate; "
+        "winners must clear a practical delta, a paired significance "
+        "reading, and a no-worse leaderboard standing. Measured pairs: "
+        "**{n}** — accepted **{a}**, rejected **{r}**. Every rejection keeps "
+        "the incumbent pipeline, so the ladder's final disposition is "
+        "*incumbent stands* unless a row below reads accepted.".format(
+            split=_verdicts.get("split_version", "?"),
+            n=_verdicts.get("measured_pair_count", len(_outs_all)),
+            a=_n_acc,
+            r=_n_rej,
+        )
+    )
+
+# ---------------------------------------------------------------------------
+# Part F — gate verdicts table (MLflow-derived, artifactverbatim)
+# ---------------------------------------------------------------------------
+
+st.subheader("Part F — Severity-gate verdicts")
+st.caption("Artifact: treatment_gate_verdicts.json · verified against manifest.json (SHA-256)")
+if _plan is not None and isinstance(_plan.get("gate", {}), dict):
+    st.markdown(str(_plan["gate"].get("text", "")))
+if _verdicts is None:
+    st.info(
+        "Gate verdicts have not been measured for this directory "
+        "(`treatment_gate_verdicts.json` absent)."
+    )
+else:
+    _outs = _verdicts.get("outcomes", []) or []
+    _vrows = []
+    for _o in _outs:
+        if not isinstance(_o, dict):
+            continue
+        _sig = _o.get("significant", _o.get("significance"))
+        _stand = _o.get("standing_ok", _o.get("standing"))
+        _vrows.append(
+            {
+                "Candidate": str(_o.get("candidate_key", _o.get("treated_key", ""))),
+                "Model": str(_o.get("model_type", "")),
+                "Delta ROC-AUC": _fmt(_o.get("delta")),
+                "Delta ok": str(_o.get("delta_ok", "")),
+                "Significant": str(_sig),
+                "Standing ok": str(_stand),
+                "Verdict": str(_o.get("verdict", "")),
+            }
+        )
+    if _vrows:
+        _df_table(pd.DataFrame(
+            _vrows,
+            columns=["Candidate", "Model", "Delta ROC-AUC", "Delta ok", "Significant", "Standing ok", "Verdict"],
+        ))
+    st.caption(
+        "Split `{split}` · {n} measured pairs · standings supplied: {ss}. "
+        "Table built verbatim from the artifact payload — page numbers equal "
+        "the artifact by construction.".format(
+            split=_verdicts.get("split_version", "?"),
+            n=_verdicts.get("measured_pair_count", len(_outs)),
+            ss=_verdicts.get("standings_supplied", "?"),
+        )
+    )
+
+# ---------------------------------------------------------------------------
 # Technical appendix: the verified manifest artifact index
 # ---------------------------------------------------------------------------
 

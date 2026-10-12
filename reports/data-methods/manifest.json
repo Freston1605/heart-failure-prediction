@@ -1,6 +1,6 @@
 {
   "algorithm": "sha256",
-  "artifact_count": 28,
+  "artifact_count": 31,
   "artifacts": {
     "meta.json": "544a68ae86f96ce98a3d6d1feee96e8a2ef55babe384c304d57260798ab808db",
     "stage1_hygiene.json": "c275ed50ded4f9d2e2466dcb287d8daf542ab3b0f69438d321b561d9788ab7f0",
@@ -29,6 +29,9 @@
     "stage4_empirical_logit_Cholesterol.png": "95f95707219a62aa7b65a4ac510e8f70cfa4933ce86e58b8048dc05c58943fc4",
     "stage4_empirical_logit_MaxHR.png": "538ad56be7f8727bcffbd4b22227b53228ad2e5b53dc370b05a0befb17643161",
     "stage4_empirical_logit_Oldpeak.png": "79862a1a561616da7e45ccc1b7f20358b0a6e8676934afa3e329daa6d3dd844d",
-    "stage4_empirical_logit_RestingBP.png": "abca66783065885a57b1b8dad9e0a51a9a3d11d75268b1dded1e73a7edc1686b"
+    "stage4_empirical_logit_RestingBP.png": "abca66783065885a57b1b8dad9e0a51a9a3d11d75268b1dded1e73a7edc1686b",
+    "treatment_audit.json": "791d878939bc5ed6985089f96d2560c0af29a2d929db078d5c58d425cd6e90a6",
+    "treatment_gate_verdicts.json": "110a10f5db6f04f3cfd7d67284c970bd6840f81e7e24b08d322827f52c0f8811",
+    "treatment_plan.json": "fa082296e28f95a9345d857c494e4df65295cec8e6746e0ddf223cfb6d711ed0"
   }
 }
