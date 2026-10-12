@@ -1,0 +1,228 @@
+{
+  "candidates": [
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "lda",
+        "qda"
+      ],
+      "description": "Add a Yeo-Johnson power transform on the skewed numeric columns inside the preprocessing pipeline, fit on training rows only.",
+      "group": "transform",
+      "is_incumbent": false,
+      "mechanism": "pipeline-variant",
+      "mlflow_treatment_variant": "yeo-johnson-power-transform",
+      "order": 1,
+      "variant_key": "yeo-johnson-power-transform"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "lda",
+        "qda"
+      ],
+      "description": "Add a Box-Cox power transform restricted to the strictly positive numeric columns inside the preprocessing pipeline, fit on training rows only.",
+      "group": "transform",
+      "is_incumbent": false,
+      "mechanism": "pipeline-variant",
+      "mlflow_treatment_variant": "box-cox-power-transform",
+      "order": 2,
+      "variant_key": "box-cox-power-transform"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "naive-bayes",
+        "lda",
+        "qda",
+        "knn",
+        "svm",
+        "random-forest",
+        "xgboost"
+      ],
+      "description": "Keep the committed median imputation policy as the incumbent baseline; it is documented here for ladder honesty and is not re-measured by the gate.",
+      "group": "imputation",
+      "is_incumbent": true,
+      "mechanism": "pipeline-variant",
+      "mlflow_treatment_variant": "median-imputer-incumbent",
+      "order": 3,
+      "variant_key": "median-imputer-incumbent"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "lda",
+        "qda"
+      ],
+      "description": "Replace the median imputer with a K-nearest-neighbours imputer inside the preprocessing pipeline, fit on training rows only.",
+      "group": "imputation",
+      "is_incumbent": false,
+      "mechanism": "pipeline-variant",
+      "mlflow_treatment_variant": "knn-imputer",
+      "order": 4,
+      "variant_key": "knn-imputer"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "lda",
+        "qda"
+      ],
+      "description": "Add one binary missing-indicator column per feature with any observed missing value before the committed imputation, so the model can see the missingness itself.",
+      "group": "imputation",
+      "is_incumbent": false,
+      "mechanism": "pipeline-variant",
+      "mlflow_treatment_variant": "missingness-flag-columns",
+      "order": 5,
+      "variant_key": "missingness-flag-columns"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "lda",
+        "qda"
+      ],
+      "description": "Replace the committed one-hot keep-all encoding with drop-first encoding to test the classic dummy-trap alternative against the already-regularised linear family.",
+      "group": "encoding",
+      "is_incumbent": false,
+      "mechanism": "pipeline-variant",
+      "mlflow_treatment_variant": "one-hot-drop-first",
+      "order": 6,
+      "variant_key": "one-hot-drop-first"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet"
+      ],
+      "description": "Pin class_weight='balanced' on the logistic-regression variants instead of the tuned class-weight policy.",
+      "group": "imbalance",
+      "is_incumbent": false,
+      "mechanism": "estimator-param",
+      "mlflow_treatment_variant": "class-weight-balanced",
+      "order": 7,
+      "variant_key": "class-weight-balanced"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "lda",
+        "qda"
+      ],
+      "description": "Apply random undersampling of the majority class inside the training fold only, after the split and before the fit.",
+      "group": "imbalance",
+      "is_incumbent": false,
+      "mechanism": "sampling",
+      "mlflow_treatment_variant": "random-undersampling",
+      "order": 8,
+      "variant_key": "random-undersampling"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "lda",
+        "qda"
+      ],
+      "description": "Apply random oversampling of the minority class inside the training fold only, after the split and before the fit.",
+      "group": "imbalance",
+      "is_incumbent": false,
+      "mechanism": "sampling",
+      "mlflow_treatment_variant": "random-oversampling",
+      "order": 9,
+      "variant_key": "random-oversampling"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "lda",
+        "qda"
+      ],
+      "description": "Apply SMOTE synthetic minority oversampling inside the training fold only, after the split and before the fit.",
+      "group": "imbalance",
+      "is_incumbent": false,
+      "mechanism": "sampling",
+      "mlflow_treatment_variant": "smote-oversampling",
+      "order": 10,
+      "variant_key": "smote-oversampling"
+    },
+    {
+      "applies_to": [
+        "logistic-regression-l2",
+        "logistic-regression-l1",
+        "logistic-regression-elasticnet",
+        "lda",
+        "qda"
+      ],
+      "description": "Apply ADASYN adaptive synthetic oversampling inside the training fold only, after the split and before the fit.",
+      "group": "imbalance",
+      "is_incumbent": false,
+      "mechanism": "sampling",
+      "mlflow_treatment_variant": "adasyn-oversampling",
+      "order": 11,
+      "variant_key": "adasyn-oversampling"
+    }
+  ],
+  "declared_before_any_candidate_number": true,
+  "gate": {
+    "metric": "roc_auc",
+    "min_delta_roc_auc": 0.01,
+    "paired_significance_alpha": 0.05,
+    "text": "Severity gate, pre-declared before any candidate number existed: a candidate treatment is accepted only if (a) its delta on repeated-CV roc_auc against the incumbent is at least +0.0100, (b) the paired significance layer reads that delta as significant at alpha=0.05, and (c) the treated model's standing versus the baseline and the runner-up on the leaderboard does not worsen; every candidate that fails any of the three keeps the incumbent pipeline and is recorded as rejected.",
+    "winner_standing_rule": "the treated model's standing versus the baseline and the runner-up on the leaderboard does not worsen"
+  },
+  "imbalance_ladder": [
+    {
+      "label": "none -- incumbent pipeline with its tuned class-weight policy (documented, not re-measured)",
+      "rung": 0,
+      "variant_key": null
+    },
+    {
+      "label": "class weights pinned",
+      "rung": 1,
+      "variant_key": "class-weight-balanced"
+    },
+    {
+      "label": "random undersampling",
+      "rung": 2,
+      "variant_key": "random-undersampling"
+    },
+    {
+      "label": "random oversampling",
+      "rung": 3,
+      "variant_key": "random-oversampling"
+    },
+    {
+      "label": "SMOTE",
+      "rung": 4,
+      "variant_key": "smote-oversampling"
+    },
+    {
+      "label": "ADASYN",
+      "rung": 5,
+      "variant_key": "adasyn-oversampling"
+    }
+  ],
+  "mlflow": {
+    "run_kind_treatment_candidate": "treatment-candidate",
+    "tag_treatment_variant": "treatment_variant"
+  },
+  "source_module": "heart.eval.treatment_declared"
+}

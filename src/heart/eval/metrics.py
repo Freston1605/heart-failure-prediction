@@ -22,6 +22,9 @@ The returned dict has **exactly** these top-level keys (see
     npv               float in [0, 1]   (negative predictive value)
     prevalence        float in [0, 1]   (observed positive rate)
     brier_score       float in [0, 1]   (probability calibration error)
+    log_loss          float >= 0        (non-negative finite cross-entropy;
+                      NOT a [0, 1] rate, so it lives in LOSS_METRIC_KEYS,
+                      not RATE_METRIC_KEYS)
     confusion_matrix  dict with tn/fp/fn/tp/n_samples/n_positive/n_negative
     calibration       dict with brier_score/expected_calibration_error/n_bins/bins
 
@@ -50,6 +53,7 @@ from sklearn.metrics import (
     average_precision_score,
     brier_score_loss,
     f1_score,
+    log_loss as sk_log_loss,
     precision_score,
     recall_score,
     roc_auc_score,
@@ -62,7 +66,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 #: Schema version. Bump when a key is added, removed, or renamed.
-METRIC_SCHEMA_VERSION: str = "1"
+#: v2 added ``log_loss`` (LOSS_METRIC_KEYS) alongside the rate metrics.
+METRIC_SCHEMA_VERSION: str = "2"
 
 #: Positive class label for this binary prediction task.
 POSITIVE_LABEL: int = 1
@@ -90,8 +95,13 @@ RATE_METRIC_KEYS: tuple[str, ...] = (
     "brier_score",
 )
 
+#: Scalar loss metrics: finite, non-negative, but NOT bounded above by 1
+#: (a loss, not a rate). They must never join RATE_METRIC_KEYS because the
+#: rate validation enforces a [0, 1] domain.
+LOSS_METRIC_KEYS: tuple[str, ...] = ("log_loss",)
+
 #: Every scalar (MLflow-loggable) metric key, in canonical order.
-SCALAR_METRIC_KEYS: tuple[str, ...] = RATE_METRIC_KEYS
+SCALAR_METRIC_KEYS: tuple[str, ...] = RATE_METRIC_KEYS + LOSS_METRIC_KEYS
 
 #: Top-level key holding the confusion-matrix breakdown.
 CONFUSION_MATRIX_KEY: str = "confusion_matrix"
@@ -452,8 +462,10 @@ def compute_metric_dict(
 
     This is the only sanctioned producer of the metric dict. It validates its
     inputs (binary labels, in-range probabilities, aligned predictions),
-    computes every metric, and returns a dict whose keys are exactly
-    :data:`METRIC_KEYS`.
+    computes every metric (including ``log_loss``, a non-negative finite
+    cross-entropy computed with :func:`sklearn.metrics.log_loss` on
+    ``(y_true, y_proba)`` with ``labels=[0, 1]``), and returns a dict whose
+    keys are exactly :data:`METRIC_KEYS`.
     """
     labels = as_label_vector(y_true)
     probabilities = as_probability_vector(y_proba)
@@ -479,6 +491,9 @@ def compute_metric_dict(
         "npv": _safe_rate(matrix.tn, matrix.tn + matrix.fn),
         "prevalence": _safe_rate(matrix.n_positive, matrix.n_samples),
         "brier_score": calibration.brier_score,
+        "log_loss": float(
+            sk_log_loss(labels, probabilities, labels=[NEGATIVE_LABEL, POSITIVE_LABEL])
+        ),
         CONFUSION_MATRIX_KEY: matrix.to_dict(),
         CALIBRATION_KEY: calibration.to_dict(),
     }

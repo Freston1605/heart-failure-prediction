@@ -569,7 +569,17 @@ def test_evaluate_does_not_mutate_the_split(logreg_model, inline_split):
 
 
 def test_schema_version_is_declared():
-    from heart.eval.metrics import METRIC_SCHEMA_VERSION
+    from heart.eval.metrics import (
+        LOSS_METRIC_KEYS,
+        METRIC_SCHEMA_VERSION,
+        RATE_METRIC_KEYS,
+        SCALAR_METRIC_KEYS,
+    )
 
-    assert METRIC_SCHEMA_VERSION == "1"
+    # v2 added log_loss (LOSS_METRIC_KEYS) alongside the rate metrics.
+    assert METRIC_SCHEMA_VERSION == "2"
     assert isinstance(copy.deepcopy(METRIC_KEYS), tuple)
+    assert "log_loss" in METRIC_KEYS
+    assert "log_loss" not in RATE_METRIC_KEYS
+    assert LOSS_METRIC_KEYS == ("log_loss",)
+    assert SCALAR_METRIC_KEYS == RATE_METRIC_KEYS + LOSS_METRIC_KEYS

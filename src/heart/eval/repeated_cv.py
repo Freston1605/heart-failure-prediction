@@ -63,10 +63,13 @@ from heart.config import RANDOM_SEED
 from heart.eval.contract import (
     EvaluationSplit,
     PRIMARY_METRIC,
+    _predict,
+    compute_metric_dict,
     evaluate,
     flatten_metrics,
+    validate_metric_dict,
 )
-from heart.eval.metrics import METRIC_KEYS
+from heart.eval.metrics import DEFAULT_CALIBRATION_BINS, METRIC_KEYS
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +87,7 @@ __all__ = [
     "RepeatedCVResult",
     "run_repeated_cv",
     "run_repeated_cv_comparison",
+    "pooled_oof_metrics",
     "primary_metric_values",
     "rank_candidates",
     "repeated_cv_report",
@@ -238,6 +242,22 @@ class RepeatedCVResult:
     config: RepeatedCVConfig
     per_fold: tuple[FoldScore, ...] = field(repr=False)
     per_repeat_means: dict[int, dict[str, float]]
+    # D036 capture extension (backwards compatible, ``capture_predictions=False``
+    # default): when the caller asks for it, every fold's held-out labels,
+    # positive-class probabilities and hard predictions are pooled in (repeat,
+    # fold) loop order so the pooled arrays are exactly reproducible from the
+    # config. Each pooled array has length ``sum(pooled_fold_sizes)`` and every
+    # input row appears exactly ``n_repeats`` times — an explicitly documented
+    # aggregate, NOT a leaderboard metric source.
+    pooled_y_true: np.ndarray | None = field(default=None, repr=False, compare=False)
+    pooled_y_proba: np.ndarray | None = field(default=None, repr=False, compare=False)
+    pooled_y_pred: np.ndarray | None = field(default=None, repr=False, compare=False)
+    pooled_fold_sizes: tuple[int, ...] = ()
+
+    @property
+    def has_captured_predictions(self) -> bool:
+        """Whether pooled OOF predictions were captured for this result."""
+        return self.pooled_y_true is not None
 
     @property
     def aggregate(self) -> CandidateAggregate:
@@ -307,6 +327,69 @@ class RepeatedCVResult:
         )
 
 
+def _per_repeat_means(fold_scores: Sequence[FoldScore]) -> dict[int, dict[str, float]]:
+    """Per-repeat means of every scalar metric leaf, in repeat then key order.
+
+    Shared by :func:`run_repeated_cv` and the gate runner's sampling fold loop
+    (:mod:`heart.eval.treatment_gate`) so both producers assemble byte-identical
+    :class:`RepeatedCVResult` objects from their fold scores.
+    """
+    repeat_flats_by_repeat: dict[int, list[dict[str, float]]] = {}
+    for score in fold_scores:
+        repeat_flats_by_repeat.setdefault(int(score.repeat), []).append(score.flat())
+    per_repeat_means: dict[int, dict[str, float]] = {}
+    for repeat in sorted(repeat_flats_by_repeat):
+        repeat_flats = repeat_flats_by_repeat[repeat]
+        union_keys: list[str] = []
+        seen: set[str] = set()
+        for flat in repeat_flats:
+            for key in flat:
+                if key not in seen:
+                    seen.add(key)
+                    union_keys.append(key)
+        per_repeat_means[repeat] = {}
+        for key in union_keys:
+            values = [flat[key] for flat in repeat_flats if key in flat]
+            per_repeat_means[repeat][key] = float(np.mean(values))
+    return per_repeat_means
+
+
+def _finalise_repeated_cv_result(
+    model_name: str,
+    config: RepeatedCVConfig,
+    fold_scores: Sequence[FoldScore],
+    *,
+    pooled: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
+) -> RepeatedCVResult:
+    """Assemble a :class:`RepeatedCVResult` from collected fold scores.
+
+    Sole shared producer for both fold loops (the plain repeated-CV loop here
+    and the gate runner's sampling loop in :mod:`heart.eval.treatment_gate`) so
+    per-repeat means and pooled-OOF arrays cannot drift between the two
+    measurement paths. ``pooled`` is the ``(y_true, y_proba, y_pred)``
+    concatenation in (repeat, fold) loop order, or ``None`` when predictions
+    were not captured (the D036 default leaves the pooled fields empty).
+    """
+    if pooled is None:
+        return RepeatedCVResult(
+            model_name=model_name,
+            config=config,
+            per_fold=tuple(fold_scores),
+            per_repeat_means=_per_repeat_means(fold_scores),
+        )
+    pooled_true, pooled_proba, pooled_pred = pooled
+    return RepeatedCVResult(
+        model_name=model_name,
+        config=config,
+        per_fold=tuple(fold_scores),
+        per_repeat_means=_per_repeat_means(fold_scores),
+        pooled_y_true=np.asarray(pooled_true),
+        pooled_y_proba=np.asarray(pooled_proba, dtype=float),
+        pooled_y_pred=np.asarray(pooled_pred),
+        pooled_fold_sizes=tuple(int(score.n_test) for score in fold_scores),
+    )
+
+
 def _coerce_frame_and_labels(
     X: object, y: object
 ) -> tuple[pd.DataFrame, np.ndarray]:
@@ -347,6 +430,7 @@ def run_repeated_cv(
     y: Sequence[object],
     *,
     config: RepeatedCVConfig | None = None,
+    capture_predictions: bool = False,
 ) -> RepeatedCVResult:
     """Repeated stratified k-fold CV for one candidate, via the shared contract.
 
@@ -363,11 +447,21 @@ def run_repeated_cv(
     config:
         :class:`RepeatedCVConfig`; defaults to
         ``(n_folds=DEFAULT_N_FOLDS, n_repeats=DEFAULT_N_REPEATS, seed=RANDOM_SEED)``.
+    capture_predictions:
+        D036 extension (backwards compatible, default ``False``). When
+        ``True``, each fold's held-out ``y_true`` / ``y_proba`` / ``y_pred``
+        are pooled onto the result in (repeat, fold) order and
+        :func:`pooled_oof_metrics` becomes available — via the same contract
+        predict path (:func:`heart.eval.contract._predict` ->
+        ``compute_metric_dict`` -> ``validate_metric_dict``)
+        ``evaluate`` consumes. The default path is unchanged and leaves the
+        pooled fields empty.
 
     Returns
     -------
     RepeatedCVResult
-        Per-fold canonical metric dicts plus per-repeat means.
+        Per-fold canonical metric dicts plus per-repeat means (and, when
+        captured, the pooled OOF arrays).
 
     Raises
     ------
@@ -387,14 +481,15 @@ def run_repeated_cv(
         )
 
     fold_scores: list[FoldScore] = []
-    per_repeat_means: dict[int, dict[str, float]] = {}
+    pooled_true: list[np.ndarray] = []
+    pooled_proba: list[np.ndarray] = []
+    pooled_pred: list[np.ndarray] = []
     started = time.perf_counter()
 
     for repeat in range(cfg.n_repeats):
         splitter = StratifiedKFold(
             n_splits=cfg.n_folds, shuffle=True, random_state=cfg.fold_seed(repeat)
         )
-        repeat_flats: list[dict[str, float]] = []
         for fold, (train_idx, test_idx) in enumerate(splitter.split(features, labels)):
             try:
                 model = model_factory()
@@ -405,12 +500,25 @@ def run_repeated_cv(
                     f"repeat {repeat} fold {fold} ({cfg.fingerprint()}): "
                     f"{type(exc).__name__}: {exc}"
                 ) from exc
-            split = EvaluationSplit(
-                X_test=features.iloc[test_idx],
-                y_test=labels[test_idx],
-                name=f"{model_name}/repeat{repeat}/fold{fold}",
-            )
-            metrics = evaluate(model, split)
+            X_test = features.iloc[test_idx]
+            y_test = labels[test_idx]
+            if capture_predictions:
+                # Same producer as the evaluate() path below; capturing here
+                # additionally exposes the held-out predictions for the D036
+                # pooled-OOF aggregate without a second prediction pass.
+                predictions, probabilities = _predict(model, X_test)
+                metrics = compute_metric_dict(y_test, probabilities, predictions)
+                validate_metric_dict(metrics)
+                pooled_true.append(np.asarray(y_test))
+                pooled_proba.append(np.asarray(probabilities, dtype=float))
+                pooled_pred.append(np.asarray(predictions))
+            else:
+                split = EvaluationSplit(
+                    X_test=X_test,
+                    y_test=y_test,
+                    name=f"{model_name}/repeat{repeat}/fold{fold}",
+                )
+                metrics = evaluate(model, split)
             fold_scores.append(
                 FoldScore(
                     model_name=model_name,
@@ -421,25 +529,19 @@ def run_repeated_cv(
                     metrics=metrics,
                 )
             )
-            repeat_flats.append(flatten_metrics(metrics))
-        union_keys: list[str] = []
-        seen: set[str] = set()
-        for flat in repeat_flats:
-            for key in flat:
-                if key not in seen:
-                    seen.add(key)
-                    union_keys.append(key)
-        per_repeat_means[repeat] = {}
-        for key in union_keys:
-            values = [flat[key] for flat in repeat_flats if key in flat]
-            per_repeat_means[repeat][key] = float(np.mean(values))
 
     elapsed = time.perf_counter() - started
-    result = RepeatedCVResult(
-        model_name=model_name,
-        config=cfg,
-        per_fold=tuple(fold_scores),
-        per_repeat_means=per_repeat_means,
+    result = _finalise_repeated_cv_result(
+        model_name,
+        cfg,
+        fold_scores,
+        pooled=(
+            (np.concatenate(pooled_true),
+             np.concatenate(pooled_proba),
+             np.concatenate(pooled_pred))
+            if capture_predictions
+            else None
+        ),
     )
     primary_mean, primary_std = result.aggregate.primary_mean_std()
     logger.info(
@@ -460,12 +562,14 @@ def run_repeated_cv_comparison(
     y: object,
     *,
     config: RepeatedCVConfig | None = None,
+    capture_predictions: bool = False,
 ) -> dict[str, RepeatedCVResult]:
     """Repeated CV for every candidate on the *same* folds, keyed by name.
 
     Running candidates sequentially against one config guarantees they share
     fold membership (deterministic per repeat seed), which is the pairing a
-    later significance test relies on.
+    later significance test relies on. ``capture_predictions`` (D036) flows
+    through to every candidate.
     """
     if not isinstance(candidates, Mapping):
         raise EmptyCandidateError(
@@ -480,8 +584,56 @@ def run_repeated_cv_comparison(
     cfg = config or RepeatedCVConfig()
     results: dict[str, RepeatedCVResult] = {}
     for name in candidates:
-        results[name] = run_repeated_cv(name, candidates[name], X, y, config=cfg)
+        results[name] = run_repeated_cv(
+            name,
+            candidates[name],
+            X,
+            y,
+            config=cfg,
+            capture_predictions=capture_predictions,
+        )
     return results
+
+
+def pooled_oof_metrics(
+    result: RepeatedCVResult,
+    *,
+    n_bins: int = DEFAULT_CALIBRATION_BINS,
+) -> dict[str, object]:
+    """Canonical metric dict over the result's pooled OOF predictions (D036).
+
+    The gate runner's (and any capture consumer's) sole sanctioned path from
+    captured held-out predictions to a canonical metric dict:
+    ``compute_metric_dict`` on the pooled arrays, then
+    ``validate_metric_dict`` (a ``validate=False`` escape hatch is forbidden
+    here — the dict must pass the schema before anyone logs it through
+    ``log_evaluation_run``).
+
+    The aggregate is explicitly documented: a row may be held out in several
+    repeats (exactly ``n_repeats`` times), so these are pooled-OOF metrics,
+    NOT leaderboard metric values and NOT the paired-per-fold sample the
+    significance test consumes.
+
+    Raises
+    ------
+    RepeatedCVDataError
+        When the result was produced without ``capture_predictions=True`` —
+        silently returning an empty dict would masquerade as a measurement.
+    """
+    if not result.has_captured_predictions:
+        raise RepeatedCVDataError(
+            f"Repeated-CV result for {result.model_name!r} carries no pooled "
+            "OOF predictions; run run_repeated_cv with capture_predictions=True "
+            "before asking for a pooled-OOF metric dict."
+        )
+    metrics = compute_metric_dict(
+        result.pooled_y_true,
+        result.pooled_y_proba,
+        result.pooled_y_pred,
+        n_bins=n_bins,
+    )
+    validate_metric_dict(metrics)
+    return metrics
 
 
 def primary_metric_values(results: Mapping[str, RepeatedCVResult]) -> dict[str, np.ndarray]:

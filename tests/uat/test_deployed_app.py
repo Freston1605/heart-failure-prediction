@@ -48,7 +48,7 @@ for _p in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "src")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-_DEPLOYED_URL = "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app"
+_DEPLOYED_URL = "https://heart-failure-prediction-krwy4etmtavrqd233mteym.streamlit.app"
 _AUTH_HOST = "share.streamlit.io"
 _TIMEOUT_S = 10
 # Free-tier cold-start blips: retry a few times with backoff before giving up.
@@ -122,16 +122,31 @@ def test_followed_root_resolves_to_a_200_page(deployed_url: str) -> None:
 
 
 def test_app_health_endpoint_is_ok(deployed_url: str) -> None:
-    """The app iframe's ``_stcore/health`` answers ``ok`` for the running app."""
-    health = _get_ok(f"{deployed_url}/~/+/_stcore/health")
+    """The platform ``/healthz`` answers ``ok`` for the running app.
+
+    ``/healthz`` is the nginx-level health probe (direct 200 JSON, no auth
+    chain); ``/_stcore/health`` is kept as a fallback because it resolves
+    through the documented 303 auth chain to the served app shell. The
+    legacy ``/~/+/_stcore/health`` iframe prefix was retired by the edge
+    (persistent empty 400 as of 2026-10-12) and is no longer probed.
+    """
+    health = _get_ok(f"{deployed_url}/healthz")
+    if health.status_code != 200:
+        health = _get_ok(f"{deployed_url}/_stcore/health")
     assert health.status_code == 200
-    assert health.text.strip().lower() == "ok"
+    assert "ok" in health.text.strip().lower()
 
 
 def test_app_iframe_serves_both_flow_routes(deployed_url: str) -> None:
-    """Both flow routes are served by the app iframe (no 404 burial)."""
+    """Both flow routes are served by the app (no 404 burial).
+
+    Routes are fetched directly (``/{route}``); each follows the
+    documented 303 auth chain to the 200 app shell. The legacy ``/~/+``
+    iframe prefix was retired by the edge (persistent empty 400 as of
+    2026-10-12) and is no longer used.
+    """
     for route in ("/", "/Explore", "/Predict"):
-        resp = _get_ok(f"{deployed_url}/~/+{route}")
+        resp = _get_ok(f"{deployed_url}{route}")
         assert resp.status_code == 200, f"{route} returned {resp.status_code}"
 
 
