@@ -88,6 +88,11 @@ from heart.runtime import (
     timestamped_run_id,
     write_json_document,
 )
+from heart.observability import (
+    configure_logging,
+    log_event,
+    record_metric,
+)
 from heart.tracking.run import log_evaluation_run
 from heart.tuning.runner import (
     DEFAULT_CV_FOLDS,
@@ -1015,18 +1020,22 @@ def _resolve_config(args: argparse.Namespace) -> BatteryConfig:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    logging.basicConfig(
-        level=logging.INFO, format="%(levelname)s %(name)s: %(message)s"
-    )
+    configure_logging()
+    wall_start = time.perf_counter()
     try:
         config = _resolve_config(args)
     except BatteryConfigError as exc:
+        log_event(logger, "battery.complete", "error", level=logging.ERROR,
+                  message=f"battery configuration error: {exc}", error_kind="battery-config")
         print(f"configuration error: {exc}")
         return 2
 
     try:
         train_frame, test_frame = load_split_frames(args.split_version)
     except SplitError as exc:
+        log_event(logger, "battery.complete", "error", level=logging.ERROR,
+                  message=f"dataset split could not be loaded ({args.split_version}): {exc}",
+                  error_kind="split-error")
         print(f"could not load split {args.split_version!r}: {exc}")
         return 1
 
@@ -1046,6 +1055,13 @@ def main(argv: list[str] | None = None) -> int:
             strict=args.strict,
         )
     except BatteryRunError as exc:
+        log_event(logger, "battery.complete", "error", level=logging.ERROR,
+                  message=f"battery failed (strict mode): {exc}",
+                  error_kind="battery-strict",
+                  n_models=exc.result.n_models, n_succeeded=exc.result.n_succeeded,
+                  duration_ms=round(time.perf_counter() - wall_start, 3))
+        record_metric(logger, "heart.battery.models_failed_count", exc.result.n_models - exc.result.n_succeeded,
+                      kind="gauge")
         print(render_battery_summary(exc.result))
         print(f"battery failed (strict mode): {exc}")
         return 1
@@ -1053,6 +1069,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"battery error: {exc}")
         return 1
 
+    log_event(logger, "battery.complete", "ok", level=logging.INFO,
+              message="battery complete",
+              n_models=result.n_models, n_succeeded=result.n_succeeded,
+              experiment=result.experiment_name,
+              tuning_experiment=result.tuning_experiment_name,
+              duration_ms=round(time.perf_counter() - wall_start, 3))
+    record_metric(logger, "heart.battery.duration_ms", round(time.perf_counter() - wall_start, 3),
+                  kind="histogram")
+    record_metric(logger, "heart.battery.models_failed_count", result.n_models - result.n_succeeded,
+                  kind="gauge")
     print(render_battery_summary(result))
     print(f"portfolio experiment: {result.experiment_name}")
     print(f"tuning experiment:    {result.tuning_experiment_name}")

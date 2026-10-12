@@ -25,7 +25,18 @@ for _p in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "src")):
 
 import streamlit as st
 
+import logging
+
 from app.lib.artifact_loader import load_winning_artifact
+from heart.observability import (
+    configure_logging,
+    log_event,
+    record_metric,
+    timed_event,
+)
+
+logger = logging.getLogger("heart.app")
+configure_logging()
 from app.lib.disclaimer import (
     DISCLAIMER_FULL,
     render_disclaimer,
@@ -54,7 +65,10 @@ st.caption(
     "describes, no re-fitting and no look-alike copy."
 )
 
-result = load_winning_artifact()
+with timed_event(logger, "app.artifact_load", "heart.serving.artifact_load_ms") as event_fields:
+    result = load_winning_artifact()
+    if result.ok:
+        event_fields["path"] = str(result.path)
 
 if not result.ok:
     error = result.error
@@ -62,6 +76,11 @@ if not result.ok:
         f"**Prediction is unavailable ({error.kind}).** {error.user_message}"
     )
     st.caption(f"Attempted artifact path: `{result.path}`.")
+    log_event(
+        logger, "app.artifact_load", "error", level=logging.ERROR,
+        message=f"artifact load failed ({error.kind})",
+        error_kind=error.kind, path=str(result.path),
+    )
     st.stop()
 
 artifact = result.artifact
@@ -154,6 +173,11 @@ if submitted and not acknowledged:
         "**Please tick the disclaimer acknowledgement above before a "
         "prediction is computed.** Nothing was predicted from this input."
     )
+    log_event(
+        logger, "app.predict_submit", "skipped", level=logging.INFO,
+        message="submit ignored: disclaimer not acknowledged", outcome="not-acknowledged",
+    )
+    record_metric(logger, "heart.serving.predict_count", 1, kind="counter", outcome="not-acknowledged")
     st.stop()
 
 # ---------------------------------------------------------------------------
@@ -178,15 +202,33 @@ if submitted:
             "Fix the marked fields and resubmit; nothing was predicted from "
             "this input."
         )
+        log_event(
+            logger, "app.predict_submit", "skipped", level=logging.INFO,
+            message="submit refused by field validation",
+            outcome="validation-blocked",
+            rejected_field_count=len(exc.issues),
+        )
+        record_metric(logger, "heart.serving.predict_count", 1, kind="counter", outcome="validation-blocked")
         st.stop()
 
     try:
-        probability = float(artifact.predict_positive_proba(frame)[0])
+        with timed_event(
+            logger, "app.predict_submit", "heart.serving.predict_latency_ms",
+            message="prediction served",
+        ) as predict_fields:
+            probability = float(artifact.predict_positive_proba(frame)[0])
+            predict_fields["outcome"] = "served"
     except Exception as exc:  # noqa: BLE001 - serving swallows, maps, explains
         mapped = to_app_error(exc)
         st.error(
             f"**Prediction failed ({mapped.kind}).** {mapped.user_message}"
         )
+        log_event(
+            logger, "app.predict_submit", "error", level=logging.ERROR,
+            message=f"prediction failed ({mapped.kind})",
+            outcome="error", error_kind=mapped.kind,
+        )
+        record_metric(logger, "heart.serving.predict_count", 1, kind="counter", outcome="error")
         st.stop()
 
     threshold = metadata.threshold
@@ -208,6 +250,11 @@ if submitted:
     )
 
     st.warning(DISCLAIMER_FULL)
+    log_event(
+        logger, "app.predict_submit", "ok", level=logging.INFO,
+        message="prediction served", outcome="served",
+    )
+    record_metric(logger, "heart.serving.predict_count", 1, kind="counter", outcome="served")
 else:
     st.caption(
         "Fill the form and press Predict to produce a probability from the "

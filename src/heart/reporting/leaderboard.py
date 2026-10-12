@@ -88,6 +88,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import time
 import math
 import os
 import sys
@@ -114,6 +115,11 @@ from heart.eval.contract import (
     SCALAR_METRIC_KEYS,
 )
 from heart.eval.metrics import CONFUSION_MATRIX_KEYS
+from heart.observability import (
+    configure_logging,
+    log_event,
+    record_metric,
+)
 from heart.tracking.mlflow_store import (
     DEFAULT_EXPERIMENT,
     resolve_tracking_uri,
@@ -1501,12 +1507,13 @@ def _config_from_args(args: argparse.Namespace) -> LeaderboardConfig:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    logging.basicConfig(
-        level=logging.INFO, format="%(levelname)s %(name)s: %(message)s"
-    )
+    configure_logging()
+    wall_start = time.perf_counter()
     try:
         config = _config_from_args(args)
     except LeaderboardConfigError as exc:
+        log_event(logger, "leaderboard.complete", "error", level=logging.ERROR,
+                  message=f"leaderboard configuration error: {exc}", error_kind="leaderboard-config")
         print(f"configuration error: {exc}")
         return 2
 
@@ -1517,6 +1524,10 @@ def main(argv: list[str] | None = None) -> int:
             report_path=None if args.no_report else args.report_path,
         )
     except LeaderboardError as exc:
+        log_event(logger, "leaderboard.complete", "error", level=logging.ERROR,
+                  message=f"leaderboard generation failed: {exc}",
+                  error_kind="leaderboard-error",
+                  experiment=config.experiment_name)
         print(f"leaderboard error: {exc}")
         return 1
 
@@ -1531,6 +1542,14 @@ def main(argv: list[str] | None = None) -> int:
         print("no benchmarked models matched")
     if board.report_path is not None:
         print(f"report: {board.report_path}")
+    log_event(logger, "leaderboard.complete", "ok", level=logging.INFO,
+              message="leaderboard rendered",
+              experiment=config.experiment_name,
+              n_rows=len(board.rows) if getattr(board, "rows", None) else 0,
+              top_model=board.top.model_name if board.top is not None else None,
+              duration_ms=round(time.perf_counter() - wall_start, 3))
+    record_metric(logger, "heart.leaderboard.duration_ms", round(time.perf_counter() - wall_start, 3),
+                  kind="histogram")
     return 0
 
 
