@@ -64,7 +64,13 @@ jobs:
         run: pip install -r app/requirements.txt
 
       - name: Smoke import pinned stack
-        run: python -c "import shap, streamlit, sklearn, joblib, pandas, numpy, scipy"
+        run: python -c "import shap, streamlit, sklearn, joblib, pandas, numpy, scipy, mlflow"
 
       - name: Assert shap pin matches pyproject
         run: python -c "import shap; assert shap.__version__ == '0.52.0', shap.__version__"
+
+      # The Predict page's import closure imports mlflow at module load, so a
+      # manifest without mlflow crashes the deployed app at boot (M007 redeploy
+      # 2026-10-13). Assert the manifest's mlflow pin matches pyproject [ml].
+      - name: Assert mlflow pin matches pyproject
+        run: python -c "import mlflow; assert mlflow.__version__ == '3.16.1', mlflow.__version__"
