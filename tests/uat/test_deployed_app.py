@@ -8,6 +8,11 @@ clean environment:
   Community Cloud edge gates raw first-hit fetches with a 303 to
   ``share.streamlit.io/-/auth/app``; these tests assert that exact documented
   contract so an assertion never mistakes session gating for an outage.
+  Once past the edge, the app itself is probed on its documented surfaces:
+  ``{url}/healthz`` (JSON ``{"status": "ok"}``) and the direct page routes
+  (``/``, ``/Explore``, ``/Predict``) followed through the auth chain to a
+  200. The retired ``/~/+`` iframe prefix is deliberately not probed — it is
+  not the documented health/route contract.
 - *Contract tests* import the same modules the deployed app serves from
   (``app.lib.disclaimer``, the winning artifact) and pin the wording/values
   that were observed in the recorded browser session (screenshots in

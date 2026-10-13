@@ -13,3 +13,7 @@ scipy==1.18.1
 scikit-learn==1.9.1
 joblib==1.6.0
 streamlit==1.65.0
+# SHAP TreeExplainer powers the Predict page's per-patient attribution at
+# request time (M007/S02); pip resolves numba/slicer/tqdm transitively, so
+# this file stays direct-deps only.
+shap==0.52.0
