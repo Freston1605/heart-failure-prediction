@@ -17,3 +17,9 @@ streamlit==1.65.0
 # request time (M007/S02); pip resolves numba/slicer/tqdm transitively, so
 # this file stays direct-deps only.
 shap==0.52.0
+# The Predict page's import closure (heart.tracking.mlflow_store via
+# app/lib/runs_view.py and the M002/M006 code path) imports mlflow at module
+# load, so the deployed app cannot boot without it. Pinned to the exact
+# pyproject.toml [ml] version. Added 2026-10-13 after the M007 redeploy
+# crashed with ModuleNotFoundError: mlflow (the manifest had never carried it).
+mlflow==3.16.1
