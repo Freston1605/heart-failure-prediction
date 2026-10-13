@@ -22,6 +22,14 @@ Pinned contract of the T01 deliverable:
    never-raise path; an empty frame is rejected.
 6. **Import layer** — the app sources never ``import shap`` directly; the
    only sanctioned path is app.lib.explain over heart.interpret.shap_export.
+7. **Global cohort drivers (M007/S03)** — ``explain_global`` returns a
+   frozen, descending-sorted ``CohortDrivers`` pinned to a direct
+   ``shap_export.compute_shap_values`` + ``summarize_shap`` run
+   (deterministic across calls, ``n_rows == COHORT_MAX_ROWS``), degrades
+   with named kinds for schema / compute / shap failures without ever
+   raising, and the session-cached ``cohort_drivers`` glue never raises
+   either (``dataset-unavailable`` on a failed dataset load; the
+   process-global cache is cleared around every test).
 
 The real-artifact pins skip cleanly only when the artifact is absent; with
 the artifact present (the done-when condition) they all execute for real.
@@ -60,6 +68,22 @@ from heart.serving.artifact import (  # noqa: E402
     ServingArtifact,
     load_artifact,
 )
+
+# M007/S03: global cohort contract imports (separate block so the S02
+# import block above stays byte-identical).
+from app.lib import explain as explain_lib  # noqa: E402
+from app.lib.explain import (  # noqa: E402
+    COHORT_MAX_ROWS,
+    CohortDrivers,
+    CohortOutcome,
+    clear_cohort_cache,
+    cohort_drivers,
+    explain_global,
+    _as_explainable_pipeline,
+)
+from app.lib.plots import ExploreData  # noqa: E402
+from heart.config import RANDOM_SEED  # noqa: E402
+from heart.data.load import load_dataset  # noqa: E402
 
 REAL_ARTIFACT = PROJECT_ROOT / DEFAULT_ARTIFACT_PATH
 
@@ -321,3 +345,209 @@ def test_app_sources_do_not_import_shap_directly() -> None:
     for relative in ("app/lib/explain.py", "app/pages/2_Predict.py"):
         source = (PROJECT_ROOT / relative).read_text(encoding="utf-8")
         assert "import shap" not in source, f"{relative} imports shap directly"
+
+
+# ---------------------------------------------------------------------------
+# 7. Global cohort drivers (M007/S03): explain_global + session-cached glue
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(autouse=True)
+def _cohort_cache_isolated():
+    """Bracket every test with a clean session-cached cohort outcome.
+
+    The ``st.cache_resource`` cache behind ``cohort_drivers`` is
+    process-global and spans AppTest runs, so a cached success (or a
+    cached sticky error) would leak into later tests and later suites.
+    Clear on entry AND on exit — teardown runs even when an assertion
+    fails mid-test.
+    """
+    clear_cohort_cache()
+    yield
+    clear_cohort_cache()
+
+
+@pytest.fixture(scope="module")
+def cohort_frame(real_artifact):
+    """All 918 pinned rows in the artifact's exact feature order.
+
+    The cohort sample source: larger than COHORT_MAX_ROWS, so the
+    deterministic sampling inside compute_shap_values actually caps at
+    COHORT_MAX_ROWS rows (the v1 held-out split is too small to pin that).
+    """
+    dataset = load_dataset(allow_download=False)
+    frame = dataset.frame[list(real_artifact.metadata.feature_columns)]
+    assert len(frame) > COHORT_MAX_ROWS, "cohort frame must exceed the cap"
+    return frame
+
+
+def test_cohort_drivers_ok_contract_and_determinism(real_artifact, cohort_frame) -> None:
+    """Two explain_global runs -> identical frozen descending drivers."""
+    first = explain_global(real_artifact, cohort_frame)
+    second = explain_global(real_artifact, cohort_frame)
+
+    assert first.ok and first.error is None
+    assert second.ok and second.error is None
+    drivers, again = first.drivers, second.drivers
+    assert isinstance(drivers, CohortDrivers)
+
+    assert np.array_equal(drivers.mean_abs, again.mean_abs)
+    assert drivers.feature_names == again.feature_names
+    assert drivers.display_names == again.display_names
+    assert drivers.mean_signed == again.mean_signed
+    assert drivers.top_feature == again.top_feature
+    assert drivers.n_rows == again.n_rows == COHORT_MAX_ROWS
+
+    mean_abs = np.asarray(drivers.mean_abs, dtype=float)
+    assert len(drivers.display_names) == len(drivers.feature_names) == mean_abs.size
+    assert mean_abs.size >= 1
+    assert np.all(np.isfinite(mean_abs)) and np.all(mean_abs >= 0)
+    assert np.all(np.diff(mean_abs) <= 0)  # descending: the render contract
+    assert drivers.top_feature == drivers.display_names[int(np.argmax(mean_abs))]
+    assert drivers.top_feature
+
+
+def test_cohort_drivers_pin_to_the_sanctioned_shap_export_path(
+    real_artifact, cohort_frame
+) -> None:
+    """explain_global's tuple equals a direct compute+summarize run (1e-10)."""
+    outcome = explain_global(real_artifact, cohort_frame)
+    assert outcome.drivers is not None
+
+    computed = shap_export.compute_shap_values(
+        _as_explainable_pipeline(real_artifact.raw_estimator),
+        cohort_frame,
+        max_samples=COHORT_MAX_ROWS,
+        random_state=RANDOM_SEED,
+    )
+    summary = shap_export.summarize_shap(computed)
+    order = sorted(
+        range(len(summary.feature_names)),
+        key=lambda index: (-summary.mean_abs_shap[index], index),
+    )
+    expected_abs = tuple(float(summary.mean_abs_shap[index]) for index in order)
+    expected_names = tuple(summary.display_names[index] for index in order)
+
+    assert np.allclose(outcome.drivers.mean_abs, expected_abs, rtol=0.0, atol=1e-10)
+    assert outcome.drivers.display_names == expected_names
+    assert outcome.drivers.n_rows == summary.n_samples == COHORT_MAX_ROWS
+
+
+def test_explain_global_schema_guard_degrades(real_artifact, cohort_frame) -> None:
+    """Reordered columns -> named error outcome, never an exception."""
+    columns = list(cohort_frame.columns)
+    columns[0], columns[2] = columns[2], columns[0]
+    outcome = explain_global(real_artifact, cohort_frame[columns])
+
+    assert outcome.degraded and not outcome.ok
+    assert outcome.drivers is None
+    assert outcome.error is not None
+    # The schema guard (FeatureSchemaError) maps to this named kind.
+    assert outcome.error.kind == "explanation-unsupported"
+    assert outcome.error.user_message
+
+
+def test_explain_global_forced_compute_failure_degrades(
+    real_artifact, cohort_frame, monkeypatch
+) -> None:
+    """ShapComputationError and any escaping exception -> explanation-failed."""
+
+    def _boom(*args, **kwargs):
+        raise shap_export.ShapComputationError("synthetic cohort compute failure")
+
+    monkeypatch.setattr(shap_export, "compute_shap_values", _boom)
+    outcome = explain_global(real_artifact, cohort_frame)
+    assert outcome.drivers is None
+    assert outcome.error is not None
+    assert outcome.error.kind == "explanation-failed"
+    assert outcome.error.user_message
+
+    def _explode(*args, **kwargs):
+        raise RuntimeError("synthetic unexpected cohort explosion")
+
+    monkeypatch.setattr(shap_export, "compute_shap_values", _explode)
+    outcome = explain_global(real_artifact, cohort_frame)
+    assert outcome.drivers is None
+    assert outcome.error is not None
+    assert outcome.error.kind == "explanation-failed"
+
+
+def test_explain_global_missing_shap_degrades(
+    real_artifact, cohort_frame, monkeypatch
+) -> None:
+    """A failing shap import -> shap-unavailable, never an exception."""
+
+    def _no_shap(*args, **kwargs):
+        raise ImportError("shap is not installed (synthetic)")
+
+    monkeypatch.setattr(shap_export, "_import_shap", _no_shap)
+    outcome = explain_global(real_artifact, cohort_frame)
+    assert outcome.drivers is None
+    assert outcome.error is not None
+    assert outcome.error.kind == "shap-unavailable"
+    assert outcome.error.user_message
+
+
+def test_cohort_drivers_session_glue_ok() -> None:
+    """The session glue loads artifact + dataset and computes once."""
+    outcome = cohort_drivers()
+    assert outcome.error is None, outcome.error
+    assert isinstance(outcome.drivers, CohortDrivers)
+    assert outcome.drivers.n_rows == COHORT_MAX_ROWS
+    assert outcome.drivers.top_feature
+    # Second call is a cache hit: the SAME outcome object, not a recompute.
+    assert cohort_drivers() is outcome
+
+
+def test_cohort_drivers_dataset_failure_is_named(monkeypatch) -> None:
+    """A not-ok pinned-dataset load degrades to dataset-unavailable."""
+    broken = ExploreData(None, "data-missing", "synthetic dataset failure (injected).")
+    monkeypatch.setattr(explain_lib, "load_explore_data", lambda: broken)
+
+    outcome = cohort_drivers()
+    assert outcome.drivers is None
+    assert outcome.error is not None
+    assert outcome.error.kind == "dataset-unavailable"
+    assert "synthetic dataset failure" in outcome.error.user_message
+
+
+def test_cohort_outcome_requires_exactly_one_branch() -> None:
+    """The cohort outcome type cannot encode 'both' or 'neither'."""
+    with pytest.raises(ValueError):
+        CohortOutcome(drivers=None, error=None)
+
+    error = ExplanationError("dataset-unavailable", "synthetic")
+    degraded = CohortOutcome(drivers=None, error=error)
+    assert degraded.error is error and not degraded.ok and degraded.degraded
+    assert error.kind in EXPLANATION_ERROR_KINDS
+
+
+def test_cohort_drivers_validates_shape_order_and_top_feature() -> None:
+    """The frozen driver bundle rejects malformed input at construction."""
+    valid = dict(
+        feature_names=("age", "oldpeak"),
+        display_names=("Age", "Oldpeak"),
+        mean_abs=(0.3, 0.1),
+        mean_signed=(0.2, -0.05),
+        n_rows=200,
+        top_feature="Age",
+    )
+    drivers = CohortDrivers(**valid)
+    assert drivers.top_feature == "Age" and drivers.n_rows == 200
+
+    with pytest.raises(ValueError):  # length mismatch
+        CohortDrivers(**{**valid, "mean_abs": (0.3,)})
+    with pytest.raises(ValueError):  # negative magnitude
+        CohortDrivers(**{**valid, "mean_abs": (-0.3, 0.1)})
+    with pytest.raises(ValueError):  # not sorted descending
+        CohortDrivers(**{**valid, "mean_abs": (0.1, 0.3)})
+    with pytest.raises(ValueError):  # top_feature != argmax mean_abs
+        CohortDrivers(**{**valid, "top_feature": "Oldpeak"})
+    with pytest.raises(ValueError):  # no rows explained
+        CohortDrivers(**{**valid, "n_rows": 0})
+
+    with pytest.raises(ValueError):  # both branches set
+        CohortOutcome(
+            drivers=drivers,
+            error=ExplanationError("explanation-failed", "synthetic"),
+        )
