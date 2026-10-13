@@ -1,11 +1,12 @@
 # CI for heart-failure-prediction.
 #
-# Minimal by design: test + build. No lint stage exists yet (the project has
-# no linter configured); add a job here when one is adopted.
+# Minimal by design: test + build + deploy-manifest. No lint stage exists yet
+# (the project has no linter configured); add a job here when one is adopted.
 #
-# Deps come from pyproject.toml extras (pinned for reproducibility).
-# app/requirements.txt is deliberately NOT used here — it is the narrower
-# Streamlit Community Cloud deploy manifest.
+# Deps come from pyproject.toml extras (pinned for reproducibility). The
+# separate `deploy-manifest` job installs the narrower Streamlit Community
+# Cloud deploy manifest (app/requirements.txt) on every PR/push, so a broken
+# or drifted deploy pin fails here instead of at Cloud boot (MEM117).
 
 name: CI
 
@@ -47,3 +48,23 @@ jobs:
 
       - name: Build wheel
         run: pipx run build
+
+  deploy-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: app/requirements.txt
+
+      - name: Install deploy manifest
+        run: pip install -r app/requirements.txt
+
+      - name: Smoke import pinned stack
+        run: python -c "import shap, streamlit, sklearn, joblib, pandas, numpy, scipy"
+
+      - name: Assert shap pin matches pyproject
+        run: python -c "import shap; assert shap.__version__ == '0.52.0', shap.__version__"
