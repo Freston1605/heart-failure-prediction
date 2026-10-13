@@ -30,6 +30,18 @@ Prediction-time schema checking is available through
 feed a model a frame with reordered, missing, or extra columns without a
 named :class:`FeatureSchemaError` first.
 
+Raw (pre-calibration) access is an **access-time** contract, deliberately
+kept out of the load-time checks so format v1 and every existing
+plain-pipeline payload keep loading unchanged:
+:meth:`ServingArtifact.raw_estimator` peels the calibration wrapper down to
+the unfrozen base estimator, and
+:meth:`ServingArtifact.predict_raw_positive_proba` serves P(y=1|x) straight
+from it with the same feature guard and probability validation as the
+calibrated path. A payload that exposes no calibration-wrapper/base-estimator
+structure fails **at access time** with a named :class:`ArtifactPayloadError`
+naming why it cannot serve a raw pre-calibration probability — never a
+fabricated "raw" number, never a load refusal.
+
 Serialization format
 --------------------
 A single pickle of a flat dict::
@@ -49,8 +61,9 @@ Named subclasses of :class:`ArtifactError`: :class:`ArtifactDataError`
 (missing/unreadable file, malformed payload), :class:`ArtifactSchemaError`
 (metadata contract violation), :class:`ArtifactVersionError` (unsupported
 format version), :class:`ArtifactPayloadError` (model without the serving
-interface), and :class:`FeatureSchemaError` (embedded or runtime
-feature-order mismatch).
+interface, or without the calibration-wrapper/base-estimator structure a raw
+pre-calibration probability requires — raised at raw-access time only), and
+:class:`FeatureSchemaError` (embedded or runtime feature-order mismatch).
 """
 
 from __future__ import annotations
@@ -64,6 +77,7 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
+from sklearn.frozen import FrozenEstimator
 
 from heart.config import RANDOM_SEED
 from heart.data.schema import FEATURE_COLUMNS
@@ -503,6 +517,71 @@ class ServingArtifact:
     metadata: ArtifactMetadata
     path: Path
 
+    @property
+    def raw_estimator(self) -> object:
+        """The unfrozen base estimator behind a calibration wrapper.
+
+        The serialized payload of the winner is a fitted
+        :class:`sklearn.calibration.CalibratedClassifierCV` whose
+        ``estimator`` attribute holds a :class:`sklearn.frozen.FrozenEstimator`
+        around the fitted pipeline (preprocessing + classifier). This property
+        peels that chain — any :class:`FrozenEstimator` wrapper on the way is
+        unwrapped — and returns the object whose ``predict_proba`` is the
+        *raw, pre-calibration* probability (e.g. the RF's own vote fraction).
+
+        Raises :class:`ArtifactPayloadError` **at access time** when the
+        payload exposes no calibration-wrapper/base-estimator structure (or
+        the peeled base cannot serve probabilities). This failure is
+        deliberately access-time only: the load-time contract
+        (format v1, metadata, serving interface) is unchanged, so plain
+        pipeline payloads still load and serve calibrated probabilities.
+        """
+        payload = self.model
+        candidate = getattr(payload, "estimator", None)
+        if candidate is None:
+            raise ArtifactPayloadError(
+                f"Model payload of type {type(payload).__name__} exposes no "
+                "calibration-wrapper/base-estimator structure; this payload "
+                "cannot serve a raw pre-calibration probability (raw access "
+                "fails at access time; loading is unaffected)."
+            )
+        peeled: object = candidate
+        while isinstance(peeled, FrozenEstimator):
+            peeled = peeled.estimator
+        if not callable(getattr(peeled, "predict_proba", None)):
+            raise ArtifactPayloadError(
+                f"Base estimator of payload type {type(payload).__name__} "
+                f"({type(peeled).__name__}) exposes no callable "
+                "predict_proba; this payload cannot serve a raw "
+                "pre-calibration probability."
+            )
+        return peeled
+
+    @staticmethod
+    def _positive_proba(
+        estimator: object, features: pd.DataFrame, *, row_count: int
+    ) -> np.ndarray:
+        """Validated positive-class column of ``estimator.predict_proba``.
+
+        Shared by the calibrated and raw serving paths so both validate
+        identically: the probability matrix must be an (n, 2) matrix with
+        exactly one row per input row, or :class:`ArtifactPayloadError`
+        names the malformed result instead of serving it.
+        """
+        probabilities = np.asarray(estimator.predict_proba(features), dtype=float)
+        if probabilities.ndim != 2 or probabilities.shape[1] != 2:
+            raise ArtifactPayloadError(
+                "predict_proba must return an (n_samples, 2) matrix; got "
+                f"shape {probabilities.shape}."
+            )
+        rows = probabilities[:, 1]
+        if rows.size != row_count:
+            raise ArtifactPayloadError(
+                f"predict_proba produced {rows.size} rows for {row_count} "
+                "input rows."
+            )
+        return rows
+
     def predict_positive_proba(self, frame: pd.DataFrame) -> np.ndarray:
         """Validated P(y=1|x) from the artifact's model.
 
@@ -512,19 +591,24 @@ class ServingArtifact:
         payload's probabilities are malformed.
         """
         features = check_features(frame, self)
-        probabilities = np.asarray(self.model.predict_proba(features), dtype=float)
-        if probabilities.ndim != 2 or probabilities.shape[1] != 2:
-            raise ArtifactPayloadError(
-                "predict_proba must return an (n_samples, 2) matrix; got "
-                f"shape {probabilities.shape}."
-            )
-        rows = probabilities[:, 1]
-        if rows.size != len(frame):
-            raise ArtifactPayloadError(
-                f"predict_proba produced {rows.size} rows for {len(frame)} "
-                "input rows."
-            )
-        return rows
+        return self._positive_proba(self.model, features, row_count=len(frame))
+
+    def predict_raw_positive_proba(self, frame: pd.DataFrame) -> np.ndarray:
+        """Validated raw (pre-calibration) P(y=1|x) from the base estimator.
+
+        The frame passes the identical :class:`FeatureSchemaError` guard as
+        the calibrated path *before* any model call, and the probability
+        matrix passes the identical (n, 2) / row-count validation via
+        :meth:`_positive_proba`. When the payload has no
+        calibration-wrapper/base-estimator structure, raises
+        :class:`ArtifactPayloadError` at access time with a message naming
+        that this payload cannot serve a raw pre-calibration probability —
+        the calibrated path is unaffected.
+        """
+        features = check_features(frame, self)
+        return self._positive_proba(
+            self.raw_estimator, features, row_count=len(frame)
+        )
 
 
 def predict_positive_proba(

@@ -15,15 +15,28 @@ The contract pinned here:
 4. **Named failures** — missing/corrupt files, unsupported format versions,
    missing metadata keys, malformed thresholds, and payload models without
    ``predict``/``predict_proba`` all raise their named exceptions.
+5. **Raw vs calibrated serving pair** (M007/S01) —
+   :meth:`ServingArtifact.predict_raw_positive_proba` serves the raw
+   (pre-isotonic) probability from the peeled frozen base estimator,
+   elementwise equal to a direct call on that estimator for the known
+   default patient, differing from the calibrated value for the same input;
+   a payload without a calibration wrapper still loads and serves the
+   calibrated path but refuses raw access with a named
+   :class:`ArtifactPayloadError` **at access time only**; the raw path runs
+   the identical feature-schema and probability-matrix guards as the
+   calibrated path.
 
 Fixtures are synthetic and self-contained (no gitignored paths); one
 integration test rebuilds the real winner artifact through the selection
-flow and cross-checks it against the committed ``reports/selection.md``.
+flow and cross-checks it against the committed ``reports/selection.md``,
+and the raw-vs-calibrated pair is pinned against the committed real
+artifact at ``models/heart-winner-v1.pkl`` (skipped cleanly when absent).
 """
 
 from __future__ import annotations
 
 import pickle
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -34,9 +47,11 @@ from sklearn.pipeline import Pipeline
 
 from heart.data.pipeline import build_preprocessing_pipeline
 from heart.data.schema import FEATURE_COLUMNS, SCHEMA
+from heart.eval.calibration import fit_calibration_wrapper
 from heart.serving import artifact as art
 from heart.serving.artifact import (
     ARTIFACT_FORMAT_VERSION,
+    DEFAULT_ARTIFACT_PATH,
     ArtifactDataError,
     ArtifactPayloadError,
     ArtifactSchemaError,
@@ -49,6 +64,17 @@ from heart.serving.artifact import (
     load_artifact,
     predict_positive_proba,
     save_artifact,
+)
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+for _p in (str(PROJECT_ROOT), str(PROJECT_ROOT / "src")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
+from app.lib.input_validation import (  # noqa: E402
+    CATEGORICAL_DISPLAY_LEVELS,
+    NUMERIC_DEFAULTS,
+    build_feature_frame,
 )
 
 
@@ -73,6 +99,39 @@ class _ProbaOnlyStub:
 
 class _ProbaOnlyStub2(_ProbaOnlyStub):
     """Second no-predict variant; same interface gap, distinct identity."""
+
+
+class _WrapperLikeStub:
+    """Calibration-wrapper-shaped payload: serving interface + ``estimator``."""
+
+    def __init__(self, base: object) -> None:
+        self.estimator = base
+
+    def predict(self, X):  # noqa: ANN001 - test stub
+        return np.zeros(len(X))
+
+    def predict_proba(self, X):  # noqa: ANN001 - test stub
+        return np.full((len(X), 2), 0.5)
+
+
+class _MalformedProbaBase:
+    """Base estimator whose ``predict_proba`` is 1-D (malformed)."""
+
+    def predict(self, X):  # noqa: ANN001 - test stub
+        return np.zeros(len(X))
+
+    def predict_proba(self, X):  # noqa: ANN001 - test stub
+        return np.zeros(len(X))
+
+
+class _RowMismatchBase:
+    """Base estimator returning one row too many for its input."""
+
+    def predict(self, X):  # noqa: ANN001 - test stub
+        return np.zeros(len(X))
+
+    def predict_proba(self, X):  # noqa: ANN001 - test stub
+        return np.tile(np.array([0.5, 0.5]), (len(X) + 1, 1))
 
 
 # ---------------------------------------------------------------------------
@@ -444,3 +503,173 @@ def test_real_winner_artifact_matches_the_selection_decision(tmp_path) -> None:
     before = artifact.model.predict_proba(sample)
     after = load_artifact(written).model.predict_proba(sample)
     assert np.array_equal(before, after)
+
+
+# ---------------------------------------------------------------------------
+# Raw vs calibrated serving pair (M007/S01/T01)
+# ---------------------------------------------------------------------------
+
+REAL_ARTIFACT = PROJECT_ROOT / DEFAULT_ARTIFACT_PATH
+
+
+@pytest.fixture(scope="module")
+def real_artifact():
+    """The real serialized winning model (skip cleanly if not serialized)."""
+    if not REAL_ARTIFACT.is_file():
+        pytest.skip("Real artifact not present on disk; run the S06 flow first.")
+    return load_artifact(REAL_ARTIFACT)
+
+
+@pytest.fixture(scope="module")
+def synthetic_calibrated_artifact(tmp_path_factory):
+    """A calibration-wrapped synthetic payload, save → load round-tripped."""
+    frame = _synthetic_frame()
+    train, calib = frame.iloc[:200], frame.iloc[200:]
+    base = _fitted_pipeline(train)
+    wrapper = fit_calibration_wrapper(
+        base, calib[list(FEATURE_COLUMNS)], calib["HeartDisease"]
+    )
+    path = tmp_path_factory.mktemp("raw-pair") / "calibrated.pkl"
+    save_artifact(wrapper, path, **_metadata().to_dict())  # type: ignore[arg-type]
+    return load_artifact(path)
+
+
+def _default_form_values() -> dict[str, object]:
+    """The Predict form's default submission (first levels + defaults)."""
+    values: dict[str, object] = dict(NUMERIC_DEFAULTS)
+    for column, levels in CATEGORICAL_DISPLAY_LEVELS.items():
+        values[column] = levels[0]
+    return values
+
+
+def _elementwise_equal(actual: np.ndarray, expected: np.ndarray) -> bool:
+    """Plan contract: np.array_equal or abs diff < 1e-12, elementwise."""
+    actual = np.asarray(actual, dtype=float)
+    expected = np.asarray(expected, dtype=float)
+    if actual.shape != expected.shape:
+        return False
+    return bool(
+        np.array_equal(actual, expected)
+        or np.all(np.abs(actual - expected) < 1e-12)
+    )
+
+
+def test_real_artifact_raw_equals_direct_frozen_base_estimator_call(
+    real_artifact,
+) -> None:
+    """Known default patient: raw is the base estimator's own number.
+
+    The pair must be real, not a copy: raw (pre-isotonic RF vote fraction)
+    differs from the isotonic-calibrated value for this input, both are
+    probabilities, and each accessor equals its direct payload call.
+    """
+    frame = build_feature_frame(_default_form_values())
+
+    raw = real_artifact.predict_raw_positive_proba(frame)
+    calibrated = real_artifact.predict_positive_proba(frame)
+
+    # The peeled handle is the pipeline behind the FrozenEstimator wrapper.
+    assert real_artifact.raw_estimator is real_artifact.model.estimator.estimator
+
+    direct_raw = real_artifact.model.estimator.estimator.predict_proba(frame)[:, 1]
+    direct_cal = real_artifact.model.predict_proba(frame)[:, 1]
+    assert _elementwise_equal(raw, direct_raw)
+    assert _elementwise_equal(calibrated, direct_cal)
+
+    assert np.all((0.0 <= raw) & (raw <= 1.0))
+    assert np.all((0.0 <= calibrated) & (calibrated <= 1.0))
+
+    # The gap is real: raw is not a renamed copy of the calibrated value.
+    assert not _elementwise_equal(raw, calibrated)
+
+
+def test_synthetic_calibrated_payload_raw_survives_round_trip(
+    synthetic_calibrated_artifact,
+) -> None:
+    """After save → load, the raw accessor still equals the frozen base."""
+    loaded = synthetic_calibrated_artifact
+    features = _synthetic_frame()[list(FEATURE_COLUMNS)]
+
+    raw = loaded.predict_raw_positive_proba(features)
+    direct_raw = loaded.model.estimator.estimator.predict_proba(features)[:, 1]
+    assert _elementwise_equal(raw, direct_raw)
+
+    calibrated = loaded.predict_positive_proba(features)
+    direct_cal = loaded.model.predict_proba(features)[:, 1]
+    assert _elementwise_equal(calibrated, direct_cal)
+    assert np.all((0.0 <= raw) & (raw <= 1.0))
+    assert np.all((0.0 <= calibrated) & (calibrated <= 1.0))
+
+
+def test_plain_pipeline_payload_loads_but_refuses_raw(tmp_path) -> None:
+    """Regression guard: no calibration wrapper → load and calibrated path
+    keep working exactly as before; only raw access fails, at access time."""
+    frame = _synthetic_frame()
+    model = _fitted_pipeline(frame)
+    path = tmp_path / "plain.pkl"
+    save_artifact(model, path, **_metadata().to_dict())  # type: ignore[arg-type]
+    loaded = load_artifact(path)  # loads fine: the load contract is unchanged
+
+    features = frame[list(FEATURE_COLUMNS)]
+    calibrated = loaded.predict_positive_proba(features)
+    assert _elementwise_equal(calibrated, model.predict_proba(features)[:, 1])
+
+    with pytest.raises(ArtifactPayloadError, match="raw pre-calibration"):
+        loaded.predict_raw_positive_proba(features)
+    with pytest.raises(ArtifactPayloadError, match="raw pre-calibration"):
+        _ = loaded.raw_estimator  # the failure is named at access time
+
+
+def test_raw_accessor_enforces_feature_schema_before_any_model_call(
+    synthetic_calibrated_artifact,
+) -> None:
+    """Reordered/missing frames raise FeatureSchemaError from the raw path."""
+    loaded = synthetic_calibrated_artifact
+    frame = _synthetic_frame()[list(FEATURE_COLUMNS)]
+
+    columns = list(FEATURE_COLUMNS)
+    columns[0], columns[2] = columns[2], columns[0]
+    with pytest.raises(FeatureSchemaError, match="reordered"):
+        loaded.predict_raw_positive_proba(frame[columns])
+    with pytest.raises(FeatureSchemaError, match="missing"):
+        loaded.predict_raw_positive_proba(frame.drop(columns=["Oldpeak"]))
+
+    # The schema guard fires before the payload-structure error too: a bad
+    # frame is a bad frame regardless of what the payload can serve.
+    plain = ServingArtifact(
+        model=_fitted_pipeline(_synthetic_frame()),
+        metadata=_metadata(),
+        path=Path("unused.pkl"),
+    )
+    with pytest.raises(FeatureSchemaError, match="reordered"):
+        plain.predict_raw_positive_proba(frame[columns])
+
+
+def test_raw_path_validates_probability_matrix_like_calibrated_path() -> None:
+    """The shared helper applies identical (n, 2) / row-count checks."""
+    frame = _synthetic_frame()[list(FEATURE_COLUMNS)]
+    metadata = _metadata()
+
+    malformed = ServingArtifact(
+        model=_WrapperLikeStub(_MalformedProbaBase()),
+        metadata=metadata,
+        path=Path("unused.pkl"),
+    )
+    with pytest.raises(ArtifactPayloadError, match="matrix") as raw_err:
+        malformed.predict_raw_positive_proba(frame)
+
+    calibrated = ServingArtifact(
+        model=_MalformedProbaBase(), metadata=metadata, path=Path("unused.pkl")
+    )
+    with pytest.raises(ArtifactPayloadError, match="matrix") as cal_err:
+        calibrated.predict_positive_proba(frame)
+    # Identical validation: same helper, byte-identical failure message.
+    assert str(raw_err.value) == str(cal_err.value)
+
+    mismatched = ServingArtifact(
+        model=_WrapperLikeStub(_RowMismatchBase()),
+        metadata=metadata,
+        path=Path("unused.pkl"),
+    )
+    with pytest.raises(ArtifactPayloadError, match="rows"):
+        mismatched.predict_raw_positive_proba(frame)
