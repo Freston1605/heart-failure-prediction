@@ -1,6 +1,6 @@
 # UAT — deployed app (S08 T02)
 
-**Deployed URL:** https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app/
+**Deployed URL:** https://heart-failure-prediction-krwy4etmtavrqd233mteym.streamlit.app/
 **Apps/flows covered:** multipage Streamlit Cloud deployment — dashboard (Home + Explore) and prediction (/Predict).
 **Method:** both flows exercised in a real automated browser session (Chromium 1280x800) against the live URL; each step recorded by a DOM assertion and an on-disk screenshot bundle. The machine-checkable half is the reproducible pytest suite `tests/uat/test_deployed_app.py` (7 tests, all passing), which re-asserts the same facts against the deployed URL and the tracked serving modules.
 

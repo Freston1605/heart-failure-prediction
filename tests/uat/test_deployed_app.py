@@ -8,6 +8,11 @@ clean environment:
   Community Cloud edge gates raw first-hit fetches with a 303 to
   ``share.streamlit.io/-/auth/app``; these tests assert that exact documented
   contract so an assertion never mistakes session gating for an outage.
+  Once past the edge, the app itself is probed on its documented surfaces:
+  ``{url}/healthz`` (JSON ``{"status": "ok"}``) and the direct page routes
+  (``/``, ``/Explore``, ``/Predict``) followed through the auth chain to a
+  200. The retired ``/~/+`` iframe prefix is deliberately not probed — it is
+  not the documented health/route contract.
 - *Contract tests* import the same modules the deployed app serves from
   (``app.lib.disclaimer``, the winning artifact) and pin the wording/values
   that were observed in the recorded browser session (screenshots in
@@ -48,7 +53,7 @@ for _p in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "src")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-_DEPLOYED_URL = "https://heart-failure-prediction-c68cacatqtcrhvls7eszt2.streamlit.app"
+_DEPLOYED_URL = "https://heart-failure-prediction-krwy4etmtavrqd233mteym.streamlit.app"
 _AUTH_HOST = "share.streamlit.io"
 _TIMEOUT_S = 10
 # Free-tier cold-start blips: retry a few times with backoff before giving up.
@@ -122,16 +127,21 @@ def test_followed_root_resolves_to_a_200_page(deployed_url: str) -> None:
 
 
 def test_app_health_endpoint_is_ok(deployed_url: str) -> None:
-    """The app iframe's ``_stcore/health`` answers ``ok`` for the running app."""
-    health = _get_ok(f"{deployed_url}/~/+/_stcore/health")
+    """The documented ``/healthz`` endpoint answers 200 with ``ok`` for the app."""
+    # Documented health contract: {url}/healthz -> 200 {"status": "ok"}.
+    # The bare /_stcore/health 303s through the auth chain and the /~/+ iframe
+    # prefix is retired contract — neither is probed.
+    health = _get_ok(f"{deployed_url}/healthz")
     assert health.status_code == 200
-    assert health.text.strip().lower() == "ok"
+    assert "ok" in health.text.lower()
 
 
 def test_app_iframe_serves_both_flow_routes(deployed_url: str) -> None:
-    """Both flow routes are served by the app iframe (no 404 burial)."""
+    """All page routes are served directly by the app (no 404 burial)."""
+    # Direct routes with requests' default allow_redirects=True: the
+    # documented 303 auth chain resolves to the app shell for each page.
     for route in ("/", "/Explore", "/Predict"):
-        resp = _get_ok(f"{deployed_url}/~/+{route}")
+        resp = _get_ok(f"{deployed_url}{route}")
         assert resp.status_code == 200, f"{route} returned {resp.status_code}"
 
 
