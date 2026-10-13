@@ -31,6 +31,13 @@ Pinned contract of the T03 deliverable:
    direct call on the wrapper's frozen base estimator, and an injected
    raw-access failure degrades to a friendly named notice while the
    calibrated probability is still served (never a stack trace).
+7. **Per-patient SHAP attribution (M007/S02/T02)** — a submitted default
+   form renders the "Why this score?" attribution section pinned to a
+   direct ``explain_patient`` call on the same frame (top pushed-up /
+   pushed-down display names and .4f values, deterministic across runs);
+   a forced SHAP failure — both a degraded contract outcome and an
+   exception escaping the call site — degrades to a kind-named warning
+   while the calibrated probability is still served (never a stack trace).
 
 All fixtures are inline (dicts / tmp_path); the only external file.
 touched is either the git-tracked real artifact (guarded by a skip) or
@@ -39,9 +46,11 @@ tmp-artifacts created inside the test's own tmp dir.
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -54,8 +63,14 @@ from app.lib.artifact_loader import (  # noqa: E402
     DEFAULT_ARTIFACT_PATH,
     clear_artifact_cache,
 )
+from app.lib import explain as explain_lib  # noqa: E402
 from app.lib.errors import APP_ERROR_KINDS, to_app_error  # noqa: E402
 from app.lib.disclaimer import DISCLAIMER_FULL, DISCLAIMER_SHORT  # noqa: E402
+from app.lib.explain import (  # noqa: E402
+    ExplanationError,
+    ExplanationOutcome,
+    explain_patient,
+)
 from app.lib.input_validation import (  # noqa: E402
     CATEGORICAL_DISPLAY_LEVELS,
     NUMERIC_DEFAULTS,
@@ -633,6 +648,197 @@ def test_gap_line_renders_for_both_gap_signs(
     displayed_gap = calibrated - (calibrated + raw_offset)
     markdown_text = " ".join(m.value for m in test.markdown)
     assert f"(calibration gap {displayed_gap:+.4f})" in markdown_text
+
+    monkeypatch.undo()
+    clear_artifact_cache()
+
+
+# ---------------------------------------------------------------------------
+# 7. Per-patient SHAP attribution (M007/S02/T02)
+# ---------------------------------------------------------------------------
+
+
+def _submit_defaults(test) -> None:
+    """Acknowledge and submit the default form in an existing AppTest."""
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+
+
+def _attribution_direction(attribution, direction: str, k: int = 3):
+    """Top-k (display name, value) pushed up or down, from a direct call."""
+    values = np.asarray(attribution.values, dtype=float)
+    order = np.argsort(-values) if direction == "up" else np.argsort(values)
+    picked = [
+        int(i)
+        for i in order
+        if (values[i] > 0 if direction == "up" else values[i] < 0)
+    ]
+    return [
+        (attribution.display_names[i], float(values[i])) for i in picked[:k]
+    ]
+
+
+def _attribution_rows(test):
+    """Parse the rendered attribution table into (pushed-up, pushed-down).
+
+    Regex-based on purpose: ``_rendered_text`` joins elements with spaces,
+    so the table's final row can share a line with the following caption;
+    a line-by-line parser would silently drop it.
+    """
+    row_pattern = re.compile(
+        r"\|\s*(pushed up|pushed down)\s*\|\s*([^|]+?)\s*\|\s*(-?\d+\.\d{4})\s*\|"
+    )
+    ups: list[tuple[str, float]] = []
+    downs: list[tuple[str, float]] = []
+    for direction, feature, value in row_pattern.findall(_rendered_text(test)):
+        row = (feature, float(value))
+        (ups if direction == "pushed up" else downs).append(row)
+    return ups, downs
+
+
+def test_submit_renders_attribution_section(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """The default submit renders the attribution; pre-submit it is absent."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    # Negative guard: nothing before submit promises an explanation.
+    assert not any("Why this score?" in s.value for s in test.subheader)
+    assert "Why this score?" not in _rendered_text(test)
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    assert any("Why this score?" in s.value for s in test.subheader)
+    attribution = explain_patient(real_artifact, _defaults_frame()).attribution
+    assert attribution is not None  # the real artifact explains for real
+
+    ups, downs = _attribution_rows(test)
+    expected_up = _attribution_direction(attribution, "up")
+    expected_down = _attribution_direction(attribution, "down")
+    # Top-3 per direction, capped by how many genuinely exist (>=1 each).
+    assert len(ups) == len(expected_up) and 1 <= len(ups) <= 3
+    assert len(downs) == len(expected_down) and 1 <= len(downs) <= 3
+    # Pushed-up values are positive, pushed-down negative (signed display).
+    assert all(value > 0 for _, value in ups)
+    assert all(value < 0 for _, value in downs)
+    # The top pushed-up name pins to argmax of the direct call's values.
+    argmax_top = attribution.display_names[
+        int(np.argmax(np.asarray(attribution.values, dtype=float)))
+    ]
+    assert ups[0][0] == argmax_top
+    # Captions keep the calibration seam honest.
+    captions = " ".join(c.value for c in test.caption)
+    assert "raw pre-calibration RF score" in captions
+    assert "reproduced exactly" in captions
+
+
+def test_attribution_matches_direct_explain_call(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """Page render == explain.py call == deterministic values (three-way)."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    attribution = explain_patient(real_artifact, _defaults_frame()).attribution
+    assert attribution is not None
+    expected_up = _attribution_direction(attribution, "up")
+    expected_down = _attribution_direction(attribution, "down")
+
+    ups, downs = _attribution_rows(test)
+    assert [name for name, _ in ups] == [name for name, _ in expected_up]
+    assert [name for name, _ in downs] == [name for name, _ in expected_down]
+    # Values are shown to .4f of the same direct-call numbers.
+    assert [round(value, 4) for _, value in ups] == [
+        round(value, 4) for _, value in expected_up
+    ]
+    assert [round(value, 4) for _, value in downs] == [
+        round(value, 4) for _, value in expected_down
+    ]
+
+
+def test_attribution_determinism(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """Two submit renders are identical; explain_patient is array_equal."""
+    first = _run_page(monkeypatch)
+    _submit_defaults(first)
+    assert not first.exception, str(first.exception)
+    second = _run_page(monkeypatch)
+    _submit_defaults(second)
+    assert not second.exception, str(second.exception)
+
+    # Same frame + same artifact -> identical rendered names and values.
+    assert _attribution_rows(first) == _attribution_rows(second)
+
+    direct_first = explain_patient(real_artifact, _defaults_frame())
+    direct_second = explain_patient(real_artifact, _defaults_frame())
+    assert direct_first.attribution is not None
+    assert direct_second.attribution is not None
+    assert np.array_equal(
+        direct_first.attribution.values, direct_second.attribution.values
+    )
+
+
+def test_shap_failure_degrades_and_still_serves_probability(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """A named SHAP failure degrades the explanation, not the prediction."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+
+    degraded = ExplanationOutcome(
+        attribution=None,
+        error=ExplanationError(
+            "explanation-failed", "synthetic SHAP failure (injected)."
+        ),
+    )
+    monkeypatch.setattr(
+        explain_lib, "explain_patient", lambda artifact, frame: degraded
+    )
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    assert "Predicted probability of heart disease" in metrics
+
+    rendered = _rendered_text(test)
+    assert "explanation-failed" in rendered  # the warning names the kind
+    assert "traceback" not in rendered.lower()
+    assert not any("Why this score?" in s.value for s in test.subheader)
+    # No fabricated attribution table rendered.
+    ups, downs = _attribution_rows(test)
+    assert ups == [] and downs == []
+
+    monkeypatch.undo()
+    clear_artifact_cache()
+
+
+def test_shap_exception_never_white_screens(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """Even an exception escaping explain_patient degrades, never crashes."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+
+    def _boom(artifact, frame):
+        raise RuntimeError("injected: explanation explosion")
+
+    monkeypatch.setattr(explain_lib, "explain_patient", _boom)
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    assert "Predicted probability of heart disease" in metrics
+
+    rendered = _rendered_text(test)
+    assert "explanation-failed" in rendered
+    assert "served normally; only the explanation" in rendered
+    assert "traceback" not in rendered.lower()
 
     monkeypatch.undo()
     clear_artifact_cache()

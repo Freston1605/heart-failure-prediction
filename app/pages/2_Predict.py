@@ -11,7 +11,11 @@ never a stack-trace white screen. A successful submit also exposes the
 calibration seam (M007): the raw pre-calibration RF probability is shown
 next to the served calibrated one with the gap between them spelled out,
 or — if raw access fails — a friendly named notice while the calibrated
-probability is still served.
+probability is still served. A submitted prediction also renders a
+per-patient SHAP attribution (M007/S02) explaining the RAW pre-calibration
+RF score through :mod:`app.lib.explain`, under the same never-raise rule:
+a SHAP failure degrades to a kind-named notice while the served
+probability stays.
 
 Predictions are gated behind an explicit acknowledgement checkbox, and the
 full disclaimer is re-rendered next to every returned probability.
@@ -27,11 +31,13 @@ for _p in (str(_PROJECT_ROOT), str(_PROJECT_ROOT / "src")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+import pandas as pd
 import streamlit as st
 
 import logging
 
 from app.lib.artifact_loader import load_winning_artifact
+from app.lib.explain import explain_patient
 from heart.observability import (
     configure_logging,
     log_event,
@@ -317,6 +323,121 @@ if submitted:
                 message=f"raw pair render failed ({render_error.kind})",
                 outcome="raw-unavailable", error_kind=render_error.kind,
             )
+
+    # ------------------------------------------------------------------
+    # Per-patient SHAP attribution (M007/S02) — its OWN guarded section,
+    # deliberately outside the prediction try: the probability above is
+    # already served, so an attribution failure can only degrade the
+    # explanation (MEM125) — never re-raise, never st.stop. The page also
+    # guards the call itself, so even a contract breach escaping
+    # explain_patient lands in the same kind-named degradation path.
+    # ------------------------------------------------------------------
+    explain_outcome = None
+    explain_error_kind: str | None = None
+    explain_error_message: str | None = None
+    try:
+        with timed_event(
+            logger,
+            "app.explain",
+            "heart.serving.explain_latency_ms",
+            message="explanation computed",
+        ) as explain_fields:
+            explain_outcome = explain_patient(artifact, frame)
+            if explain_outcome.attribution is not None:
+                explain_fields["n_features"] = explain_outcome.attribution.n_features
+                explain_fields["top_feature"] = explain_outcome.attribution.top_feature
+            elif explain_outcome.error is not None:
+                explain_fields["outcome"] = "explanation-unavailable"
+                explain_fields["error_kind"] = explain_outcome.error.kind
+    except Exception:  # noqa: BLE001 - call-site guard, never white-screen
+        explain_error_kind = "explanation-failed"
+        explain_error_message = (
+            "Something went wrong while computing this patient's "
+            "explanation, so it was skipped rather than shown incorrectly. "
+            "The prediction above was served normally; only the "
+            "explanation is affected. Re-running the prediction may "
+            "succeed."
+        )
+    if explain_outcome is not None and explain_outcome.error is not None:
+        explain_error_kind = explain_outcome.error.kind
+        explain_error_message = explain_outcome.error.user_message
+
+    attribution = explain_outcome.attribution if explain_outcome is not None else None
+    if explain_error_kind is None and attribution is not None:
+        try:
+            # Render inside its own guard too: a chart-formatting failure
+            # degrades the same way instead of white-screening the page.
+            names = list(attribution.display_names)
+            values = [float(v) for v in attribution.values]
+            base_value = float(attribution.base_value)
+            top8 = sorted(range(len(values)), key=lambda i: -abs(values[i]))[:8]
+            top8.sort(key=lambda i: values[i], reverse=True)
+            chart = pd.Series(
+                [values[i] for i in top8],
+                index=[names[i] for i in top8],
+                name="SHAP value",
+            ).rename_axis("feature")
+            up_top = sorted(
+                (i for i in range(len(values)) if values[i] > 0),
+                key=lambda i: -values[i],
+            )[:3]
+            down_top = sorted(
+                (i for i in range(len(values)) if values[i] < 0),
+                key=lambda i: values[i],
+            )[:3]
+            reproduced_raw = base_value + sum(values)
+
+            st.subheader("Why this score?")
+            st.caption(
+                "SHAP explains the **raw pre-calibration RF score** "
+                f"(raw {reproduced_raw:.4f}, base {base_value:.4f}) — the "
+                "calibrated probability served above is what counts."
+            )
+            st.bar_chart(chart)
+            rows = [
+                "| Direction | Feature | SHAP value |",
+                "| --- | --- | ---: |",
+            ]
+            rows += [
+                f"| pushed up | {names[i]} | {values[i]:.4f} |" for i in up_top
+            ]
+            rows += [
+                f"| pushed down | {names[i]} | {values[i]:.4f} |"
+                for i in down_top
+            ]
+            st.markdown("\n".join(rows))
+            st.caption(
+                f"base {base_value:.4f} + sum of SHAP values "
+                f"{sum(values):+.4f} = {reproduced_raw:.4f} — the raw "
+                "score, reproduced exactly (the attribution is additive)."
+            )
+            log_event(
+                logger, "app.explain", "ok", level=logging.INFO,
+                message="explanation rendered", outcome="served",
+                top_feature=attribution.top_feature,
+                n_features=attribution.n_features,
+            )
+        except Exception:  # noqa: BLE001 - render degradation path
+            explain_error_kind = "explanation-failed"
+            explain_error_message = (
+                "The explanation was computed but could not be drawn "
+                "correctly, so it was skipped rather than shown "
+                "incorrectly. The prediction above was served normally; "
+                "only the explanation is affected. Re-running the "
+                "prediction may succeed."
+            )
+
+    if explain_error_kind is not None:
+        st.warning(
+            f"**The explanation is unavailable ({explain_error_kind}).** "
+            f"{explain_error_message}"
+        )
+        log_event(
+            logger, "app.explain", "degraded", level=logging.WARNING,
+            message=f"explanation degraded ({explain_error_kind})",
+            outcome="explanation-unavailable",
+            error_kind=explain_error_kind,
+        )
 
     st.warning(DISCLAIMER_FULL)
     served_fields: dict[str, object] = {}
