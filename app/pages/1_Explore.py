@@ -93,7 +93,10 @@ numeric_tabs = st.tabs(
 for tab, dist in zip(numeric_tabs, distributions["numeric"]):
     with tab:
         column = dist.columns.to_list()[0]
-        st.bar_chart(dist, horizontal=True)
+        # sort=False keeps the frame's own ascending-by-bin-edge order;
+        # the bar_chart default re-sorts the label strings alphabetically
+        # ("100–110" before "10–20"), scrambling the numeric axis.
+        st.bar_chart(dist, horizontal=True, sort=False)
         st.caption(
                 f"{column}: {dist[column].sum():.0f} rows binned "
                 f"over {len(dist)} intervals."
@@ -105,7 +108,9 @@ categorical_tabs = st.tabs(
 for tab, dist in zip(categorical_tabs, distributions["categorical"]):
     with tab:
         column = dist.columns.to_list()[0]
-        st.bar_chart(dist, horizontal=True)
+        # sort=False keeps the frame's own descending-by-count order
+        # instead of re-sorting the level strings alphabetically.
+        st.bar_chart(dist, horizontal=True, sort=False)
         st.caption(
             f"{column}: {dist[column].sum():.0f} rows over "
             f"{len(dist)} levels."
@@ -194,7 +199,8 @@ st.markdown(
 )
 c1, c2 = st.columns([1, 2])
 with c1:
-    st.bar_chart(rates_frame, horizontal=True)
+    # sort=False: keep the levels in the rates frame's own order.
+    st.bar_chart(rates_frame, horizontal=True, sort=False)
 with c2:
     st.dataframe(rates_frame.T, width="stretch")
 
