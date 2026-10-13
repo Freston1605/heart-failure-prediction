@@ -62,7 +62,7 @@ one human-required step is flagged in the task closeout:
 | Main file | `app/Home.py` |
 | Python runtime | 3.11 (`app/runtime.txt`) |
 | Requirements | `app/requirements.txt` (pinned, app-scoped) |
-| Deployed | 2026-10-07 (Streamlit Cloud app created from `Freston1605/heart-failure-prediction`, branch `milestone/M001`); re-published 2026-10-11 (MEM082), which is the live subdomain recorded above — the original 2026-10-07 subdomain is retired |
+| Deployed | 2026-10-07 (Streamlit Cloud app created from `Freston1605/heart-failure-prediction`, branch `milestone/M001`); URL renewed 2026-10-11 after the original deployment stopped serving anonymously (owner re-published the app at the new subdomain, MEM082) — the original 2026-10-07 subdomain is retired and the live subdomain recorded above is the current one |
 
 Live-verified in a real browser session (2026-10-07):
 - Home renders with the green serving banner: "Model artifact loaded and validated", serving model `random-forest`, threshold `0.33`, calibration `isotonic` — the 2.5 MB tracked artifact deployed and deserialized on the host.

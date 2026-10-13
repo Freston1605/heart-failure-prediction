@@ -1,0 +1,974 @@
+{
+  "depth_tiers": {
+    "deep": [
+      "lda",
+      "logistic-regression-elasticnet",
+      "logistic-regression-l1",
+      "logistic-regression-l2",
+      "qda"
+    ],
+    "light": [
+      "knn",
+      "naive-bayes",
+      "random-forest",
+      "svm",
+      "xgboost"
+    ]
+  },
+  "loader": {
+    "module": "heart.data.load",
+    "pinned_sha256": "948420b084d8a3a0ca42b8419fce9aee175879e43f8aedf712377899a67aa49b"
+  },
+  "models": [
+    {
+      "depth": "light",
+      "estimator_description": "k-nearest neighbours on the scaled feature space; neighbourhood size, weighting, and Minkowski power are tuned.",
+      "family": "distance",
+      "fixed_params": {},
+      "model_name": "k-Nearest Neighbours",
+      "model_type": "knn",
+      "preprocessing": true,
+      "robustness_justification": "The k-nearest-neighbour vote is taken on distances computed in the standardized space the shared chain produces, so the metric the model uses is already the scaled one; a monotone transform preserves neighbour orderings up to scale and the committed median imputation is what the distances actually see, so the transform and imputation rungs are not re-measured for this family.",
+      "tuned_space_keys": [
+        "n_neighbors",
+        "p",
+        "weights"
+      ]
+    },
+    {
+      "depth": "deep",
+      "estimator_description": "Linear discriminant analysis; solver and shrinkage are tuned (shrinkage only applies to the lsqr solver).",
+      "expanded_feature_count": 21,
+      "expanded_feature_names": [
+        "numeric__Age",
+        "numeric__RestingBP",
+        "numeric__Cholesterol",
+        "numeric__MaxHR",
+        "numeric__Oldpeak",
+        "categorical__Sex_F",
+        "categorical__Sex_M",
+        "categorical__ChestPainType_ASY",
+        "categorical__ChestPainType_ATA",
+        "categorical__ChestPainType_NAP",
+        "categorical__ChestPainType_TA",
+        "categorical__FastingBS_0",
+        "categorical__FastingBS_1",
+        "categorical__RestingECG_LVH",
+        "categorical__RestingECG_Normal",
+        "categorical__RestingECG_ST",
+        "categorical__ExerciseAngina_N",
+        "categorical__ExerciseAngina_Y",
+        "categorical__ST_Slope_Down",
+        "categorical__ST_Slope_Flat",
+        "categorical__ST_Slope_Up"
+      ],
+      "family": "discriminant",
+      "fixed_params": {},
+      "model_name": "LDA",
+      "model_type": "lda",
+      "pipeline_steps": [
+        {
+          "params": {
+            "columns": [
+              "RestingBP",
+              "Cholesterol"
+            ],
+            "sentinel": 0
+          },
+          "step": "zero_policy",
+          "transformer": "ZeroMedianImputer"
+        },
+        {
+          "params": {
+            "n_jobs": null,
+            "remainder": "drop",
+            "sparse_threshold": 0.3,
+            "transformer_weights": null,
+            "transformers": [
+              [
+                "numeric",
+                "StandardScaler()",
+                [
+                  "Age",
+                  "RestingBP",
+                  "Cholesterol",
+                  "MaxHR",
+                  "Oldpeak"
+                ]
+              ],
+              [
+                "categorical",
+                "OneHotEncoder(dtype=<class 'float'>, handle_unknown='ignore',\n              sparse_output=False)",
+                [
+                  "Sex",
+                  "ChestPainType",
+                  "FastingBS",
+                  "RestingECG",
+                  "ExerciseAngina",
+                  "ST_Slope"
+                ]
+              ]
+            ],
+            "verbose": false,
+            "verbose_feature_names_out": true
+          },
+          "step": "features",
+          "sub_transformers": [
+            {
+              "columns": [
+                "Age",
+                "RestingBP",
+                "Cholesterol",
+                "MaxHR",
+                "Oldpeak"
+              ],
+              "name": "numeric",
+              "params": {
+                "copy": true,
+                "with_mean": true,
+                "with_std": true
+              },
+              "transformer": "StandardScaler"
+            },
+            {
+              "columns": [
+                "Sex",
+                "ChestPainType",
+                "FastingBS",
+                "RestingECG",
+                "ExerciseAngina",
+                "ST_Slope"
+              ],
+              "name": "categorical",
+              "params": {
+                "categories": "auto",
+                "drop": null,
+                "dtype": "float",
+                "feature_name_combiner": "concat",
+                "handle_unknown": "ignore",
+                "max_categories": null,
+                "min_frequency": null,
+                "sparse_output": false
+              },
+              "transformer": "OneHotEncoder"
+            }
+          ],
+          "transformer": "ColumnTransformer"
+        }
+      ],
+      "preprocessing": true,
+      "tuned_space_keys": [
+        "shrinkage",
+        "solver"
+      ]
+    },
+    {
+      "depth": "deep",
+      "estimator_description": "logistic regression with elastic-net mixing weight tuned in (0, 1) (solver saga); the tuned strength is C and the class-weight policy.",
+      "expanded_feature_count": 21,
+      "expanded_feature_names": [
+        "numeric__Age",
+        "numeric__RestingBP",
+        "numeric__Cholesterol",
+        "numeric__MaxHR",
+        "numeric__Oldpeak",
+        "categorical__Sex_F",
+        "categorical__Sex_M",
+        "categorical__ChestPainType_ASY",
+        "categorical__ChestPainType_ATA",
+        "categorical__ChestPainType_NAP",
+        "categorical__ChestPainType_TA",
+        "categorical__FastingBS_0",
+        "categorical__FastingBS_1",
+        "categorical__RestingECG_LVH",
+        "categorical__RestingECG_Normal",
+        "categorical__RestingECG_ST",
+        "categorical__ExerciseAngina_N",
+        "categorical__ExerciseAngina_Y",
+        "categorical__ST_Slope_Down",
+        "categorical__ST_Slope_Flat",
+        "categorical__ST_Slope_Up"
+      ],
+      "family": "linear",
+      "fixed_params": {
+        "max_iter": 2000,
+        "random_state": 42,
+        "solver": "saga"
+      },
+      "model_name": "Logistic Regression (ElasticNet)",
+      "model_type": "logistic-regression-elasticnet",
+      "pipeline_steps": [
+        {
+          "params": {
+            "columns": [
+              "RestingBP",
+              "Cholesterol"
+            ],
+            "sentinel": 0
+          },
+          "step": "zero_policy",
+          "transformer": "ZeroMedianImputer"
+        },
+        {
+          "params": {
+            "n_jobs": null,
+            "remainder": "drop",
+            "sparse_threshold": 0.3,
+            "transformer_weights": null,
+            "transformers": [
+              [
+                "numeric",
+                "StandardScaler()",
+                [
+                  "Age",
+                  "RestingBP",
+                  "Cholesterol",
+                  "MaxHR",
+                  "Oldpeak"
+                ]
+              ],
+              [
+                "categorical",
+                "OneHotEncoder(dtype=<class 'float'>, handle_unknown='ignore',\n              sparse_output=False)",
+                [
+                  "Sex",
+                  "ChestPainType",
+                  "FastingBS",
+                  "RestingECG",
+                  "ExerciseAngina",
+                  "ST_Slope"
+                ]
+              ]
+            ],
+            "verbose": false,
+            "verbose_feature_names_out": true
+          },
+          "step": "features",
+          "sub_transformers": [
+            {
+              "columns": [
+                "Age",
+                "RestingBP",
+                "Cholesterol",
+                "MaxHR",
+                "Oldpeak"
+              ],
+              "name": "numeric",
+              "params": {
+                "copy": true,
+                "with_mean": true,
+                "with_std": true
+              },
+              "transformer": "StandardScaler"
+            },
+            {
+              "columns": [
+                "Sex",
+                "ChestPainType",
+                "FastingBS",
+                "RestingECG",
+                "ExerciseAngina",
+                "ST_Slope"
+              ],
+              "name": "categorical",
+              "params": {
+                "categories": "auto",
+                "drop": null,
+                "dtype": "float",
+                "feature_name_combiner": "concat",
+                "handle_unknown": "ignore",
+                "max_categories": null,
+                "min_frequency": null,
+                "sparse_output": false
+              },
+              "transformer": "OneHotEncoder"
+            }
+          ],
+          "transformer": "ColumnTransformer"
+        }
+      ],
+      "preprocessing": true,
+      "tuned_space_keys": [
+        "C",
+        "class_weight",
+        "l1_ratio"
+      ]
+    },
+    {
+      "depth": "deep",
+      "estimator_description": "logistic regression with l1_ratio=1 (solver liblinear); the tuned strength is C and the class-weight policy.",
+      "expanded_feature_count": 21,
+      "expanded_feature_names": [
+        "numeric__Age",
+        "numeric__RestingBP",
+        "numeric__Cholesterol",
+        "numeric__MaxHR",
+        "numeric__Oldpeak",
+        "categorical__Sex_F",
+        "categorical__Sex_M",
+        "categorical__ChestPainType_ASY",
+        "categorical__ChestPainType_ATA",
+        "categorical__ChestPainType_NAP",
+        "categorical__ChestPainType_TA",
+        "categorical__FastingBS_0",
+        "categorical__FastingBS_1",
+        "categorical__RestingECG_LVH",
+        "categorical__RestingECG_Normal",
+        "categorical__RestingECG_ST",
+        "categorical__ExerciseAngina_N",
+        "categorical__ExerciseAngina_Y",
+        "categorical__ST_Slope_Down",
+        "categorical__ST_Slope_Flat",
+        "categorical__ST_Slope_Up"
+      ],
+      "family": "linear",
+      "fixed_params": {
+        "l1_ratio": 1.0,
+        "max_iter": 2000,
+        "random_state": 42,
+        "solver": "liblinear"
+      },
+      "model_name": "Logistic Regression (L1)",
+      "model_type": "logistic-regression-l1",
+      "pipeline_steps": [
+        {
+          "params": {
+            "columns": [
+              "RestingBP",
+              "Cholesterol"
+            ],
+            "sentinel": 0
+          },
+          "step": "zero_policy",
+          "transformer": "ZeroMedianImputer"
+        },
+        {
+          "params": {
+            "n_jobs": null,
+            "remainder": "drop",
+            "sparse_threshold": 0.3,
+            "transformer_weights": null,
+            "transformers": [
+              [
+                "numeric",
+                "StandardScaler()",
+                [
+                  "Age",
+                  "RestingBP",
+                  "Cholesterol",
+                  "MaxHR",
+                  "Oldpeak"
+                ]
+              ],
+              [
+                "categorical",
+                "OneHotEncoder(dtype=<class 'float'>, handle_unknown='ignore',\n              sparse_output=False)",
+                [
+                  "Sex",
+                  "ChestPainType",
+                  "FastingBS",
+                  "RestingECG",
+                  "ExerciseAngina",
+                  "ST_Slope"
+                ]
+              ]
+            ],
+            "verbose": false,
+            "verbose_feature_names_out": true
+          },
+          "step": "features",
+          "sub_transformers": [
+            {
+              "columns": [
+                "Age",
+                "RestingBP",
+                "Cholesterol",
+                "MaxHR",
+                "Oldpeak"
+              ],
+              "name": "numeric",
+              "params": {
+                "copy": true,
+                "with_mean": true,
+                "with_std": true
+              },
+              "transformer": "StandardScaler"
+            },
+            {
+              "columns": [
+                "Sex",
+                "ChestPainType",
+                "FastingBS",
+                "RestingECG",
+                "ExerciseAngina",
+                "ST_Slope"
+              ],
+              "name": "categorical",
+              "params": {
+                "categories": "auto",
+                "drop": null,
+                "dtype": "float",
+                "feature_name_combiner": "concat",
+                "handle_unknown": "ignore",
+                "max_categories": null,
+                "min_frequency": null,
+                "sparse_output": false
+              },
+              "transformer": "OneHotEncoder"
+            }
+          ],
+          "transformer": "ColumnTransformer"
+        }
+      ],
+      "preprocessing": true,
+      "tuned_space_keys": [
+        "C",
+        "class_weight"
+      ]
+    },
+    {
+      "depth": "deep",
+      "estimator_description": "logistic regression with l1_ratio=0 (solver lbfgs); the tuned strength is C and the class-weight policy.",
+      "expanded_feature_count": 21,
+      "expanded_feature_names": [
+        "numeric__Age",
+        "numeric__RestingBP",
+        "numeric__Cholesterol",
+        "numeric__MaxHR",
+        "numeric__Oldpeak",
+        "categorical__Sex_F",
+        "categorical__Sex_M",
+        "categorical__ChestPainType_ASY",
+        "categorical__ChestPainType_ATA",
+        "categorical__ChestPainType_NAP",
+        "categorical__ChestPainType_TA",
+        "categorical__FastingBS_0",
+        "categorical__FastingBS_1",
+        "categorical__RestingECG_LVH",
+        "categorical__RestingECG_Normal",
+        "categorical__RestingECG_ST",
+        "categorical__ExerciseAngina_N",
+        "categorical__ExerciseAngina_Y",
+        "categorical__ST_Slope_Down",
+        "categorical__ST_Slope_Flat",
+        "categorical__ST_Slope_Up"
+      ],
+      "family": "linear",
+      "fixed_params": {
+        "l1_ratio": 0.0,
+        "max_iter": 2000,
+        "random_state": 42,
+        "solver": "lbfgs"
+      },
+      "model_name": "Logistic Regression (L2)",
+      "model_type": "logistic-regression-l2",
+      "pipeline_steps": [
+        {
+          "params": {
+            "columns": [
+              "RestingBP",
+              "Cholesterol"
+            ],
+            "sentinel": 0
+          },
+          "step": "zero_policy",
+          "transformer": "ZeroMedianImputer"
+        },
+        {
+          "params": {
+            "n_jobs": null,
+            "remainder": "drop",
+            "sparse_threshold": 0.3,
+            "transformer_weights": null,
+            "transformers": [
+              [
+                "numeric",
+                "StandardScaler()",
+                [
+                  "Age",
+                  "RestingBP",
+                  "Cholesterol",
+                  "MaxHR",
+                  "Oldpeak"
+                ]
+              ],
+              [
+                "categorical",
+                "OneHotEncoder(dtype=<class 'float'>, handle_unknown='ignore',\n              sparse_output=False)",
+                [
+                  "Sex",
+                  "ChestPainType",
+                  "FastingBS",
+                  "RestingECG",
+                  "ExerciseAngina",
+                  "ST_Slope"
+                ]
+              ]
+            ],
+            "verbose": false,
+            "verbose_feature_names_out": true
+          },
+          "step": "features",
+          "sub_transformers": [
+            {
+              "columns": [
+                "Age",
+                "RestingBP",
+                "Cholesterol",
+                "MaxHR",
+                "Oldpeak"
+              ],
+              "name": "numeric",
+              "params": {
+                "copy": true,
+                "with_mean": true,
+                "with_std": true
+              },
+              "transformer": "StandardScaler"
+            },
+            {
+              "columns": [
+                "Sex",
+                "ChestPainType",
+                "FastingBS",
+                "RestingECG",
+                "ExerciseAngina",
+                "ST_Slope"
+              ],
+              "name": "categorical",
+              "params": {
+                "categories": "auto",
+                "drop": null,
+                "dtype": "float",
+                "feature_name_combiner": "concat",
+                "handle_unknown": "ignore",
+                "max_categories": null,
+                "min_frequency": null,
+                "sparse_output": false
+              },
+              "transformer": "OneHotEncoder"
+            }
+          ],
+          "transformer": "ColumnTransformer"
+        }
+      ],
+      "preprocessing": true,
+      "tuned_space_keys": [
+        "C",
+        "class_weight"
+      ]
+    },
+    {
+      "depth": "light",
+      "estimator_description": "Gaussian Naive Bayes; only the variance-smoothing floor is tuned.",
+      "family": "bayes",
+      "fixed_params": {},
+      "model_name": "Naive Bayes",
+      "model_type": "naive-bayes",
+      "preprocessing": true,
+      "robustness_justification": "Gaussian naive Bayes estimates one mean and one variance per feature, so a monotone power transform would shift those estimates but cannot change the model's shape; the committed median imputation already keeps every row usable, and the one-hot keep-all encoding matches the independent-feature assumption the model declares, so the transform, imputation, and encoding rungs are not re-measured for this family.",
+      "tuned_space_keys": [
+        "var_smoothing"
+      ]
+    },
+    {
+      "depth": "deep",
+      "estimator_description": "Quadratic discriminant analysis; covariance regularisation is tuned.",
+      "expanded_feature_count": 21,
+      "expanded_feature_names": [
+        "numeric__Age",
+        "numeric__RestingBP",
+        "numeric__Cholesterol",
+        "numeric__MaxHR",
+        "numeric__Oldpeak",
+        "categorical__Sex_F",
+        "categorical__Sex_M",
+        "categorical__ChestPainType_ASY",
+        "categorical__ChestPainType_ATA",
+        "categorical__ChestPainType_NAP",
+        "categorical__ChestPainType_TA",
+        "categorical__FastingBS_0",
+        "categorical__FastingBS_1",
+        "categorical__RestingECG_LVH",
+        "categorical__RestingECG_Normal",
+        "categorical__RestingECG_ST",
+        "categorical__ExerciseAngina_N",
+        "categorical__ExerciseAngina_Y",
+        "categorical__ST_Slope_Down",
+        "categorical__ST_Slope_Flat",
+        "categorical__ST_Slope_Up"
+      ],
+      "family": "discriminant",
+      "fixed_params": {},
+      "model_name": "QDA",
+      "model_type": "qda",
+      "pipeline_steps": [
+        {
+          "params": {
+            "columns": [
+              "RestingBP",
+              "Cholesterol"
+            ],
+            "sentinel": 0
+          },
+          "step": "zero_policy",
+          "transformer": "ZeroMedianImputer"
+        },
+        {
+          "params": {
+            "n_jobs": null,
+            "remainder": "drop",
+            "sparse_threshold": 0.3,
+            "transformer_weights": null,
+            "transformers": [
+              [
+                "numeric",
+                "StandardScaler()",
+                [
+                  "Age",
+                  "RestingBP",
+                  "Cholesterol",
+                  "MaxHR",
+                  "Oldpeak"
+                ]
+              ],
+              [
+                "categorical",
+                "OneHotEncoder(dtype=<class 'float'>, handle_unknown='ignore',\n              sparse_output=False)",
+                [
+                  "Sex",
+                  "ChestPainType",
+                  "FastingBS",
+                  "RestingECG",
+                  "ExerciseAngina",
+                  "ST_Slope"
+                ]
+              ]
+            ],
+            "verbose": false,
+            "verbose_feature_names_out": true
+          },
+          "step": "features",
+          "sub_transformers": [
+            {
+              "columns": [
+                "Age",
+                "RestingBP",
+                "Cholesterol",
+                "MaxHR",
+                "Oldpeak"
+              ],
+              "name": "numeric",
+              "params": {
+                "copy": true,
+                "with_mean": true,
+                "with_std": true
+              },
+              "transformer": "StandardScaler"
+            },
+            {
+              "columns": [
+                "Sex",
+                "ChestPainType",
+                "FastingBS",
+                "RestingECG",
+                "ExerciseAngina",
+                "ST_Slope"
+              ],
+              "name": "categorical",
+              "params": {
+                "categories": "auto",
+                "drop": null,
+                "dtype": "float",
+                "feature_name_combiner": "concat",
+                "handle_unknown": "ignore",
+                "max_categories": null,
+                "min_frequency": null,
+                "sparse_output": false
+              },
+              "transformer": "OneHotEncoder"
+            }
+          ],
+          "transformer": "ColumnTransformer"
+        }
+      ],
+      "preprocessing": true,
+      "tuned_space_keys": [
+        "reg_param"
+      ]
+    },
+    {
+      "depth": "light",
+      "estimator_description": "Random forest of pruned trees; ensemble size, tree depth, split counts, feature sampling, and class weighting are tuned.",
+      "family": "ensemble",
+      "fixed_params": {
+        "random_state": 42
+      },
+      "model_name": "Random Forest",
+      "model_type": "random-forest",
+      "preprocessing": true,
+      "robustness_justification": "Axis-aligned leaf splits are invariant to any monotone transform of a single feature, so the power-transform rungs cannot change the trees this family grows; the trees never scale features and the committed median imputation is the only missing-value policy the chain applies, so the transform and encoding rungs are not re-measured for this family.",
+      "tuned_space_keys": [
+        "class_weight",
+        "max_depth",
+        "max_features",
+        "min_samples_leaf",
+        "min_samples_split",
+        "n_estimators"
+      ]
+    },
+    {
+      "depth": "light",
+      "estimator_description": "Support-vector classifier with calibrated probabilities; C, kernel, and gamma are tuned.",
+      "family": "kernel",
+      "fixed_params": {
+        "probability": true,
+        "random_state": 42
+      },
+      "model_name": "Support Vector Machine",
+      "model_type": "svm",
+      "preprocessing": true,
+      "robustness_justification": "Kernel evaluations happen in the standardized space the shared chain produces, and the tuned C/gamma budget already absorbs any feature-shape change a transform would introduce; the committed median imputation feeds the same standardized features regardless, so the transform, imputation, and encoding rungs are not re-measured for this family.",
+      "tuned_space_keys": [
+        "C",
+        "class_weight",
+        "gamma",
+        "kernel"
+      ]
+    },
+    {
+      "depth": "light",
+      "estimator_description": "Gradient-boosted trees (XGBoost); boosting rounds, depth, learning rate, subsampling, and L2 regularisation are tuned.",
+      "family": "gradient-boosting",
+      "fixed_params": {
+        "eval_metric": "logloss",
+        "random_state": 42
+      },
+      "model_name": "XGBoost",
+      "model_type": "xgboost",
+      "preprocessing": true,
+      "robustness_justification": "Split-gain trees are invariant to monotone per-feature transforms and the booster handles whatever the shared imputer hands it, so the power-transform rungs cannot change the learned structure; the committed one-hot keep-all encoding already feeds the booster numeric columns only, so the transform and encoding rungs are not re-measured for this family.",
+      "tuned_space_keys": [
+        "colsample_bytree",
+        "learning_rate",
+        "max_depth",
+        "n_estimators",
+        "reg_lambda",
+        "subsample"
+      ]
+    }
+  ],
+  "pattern": {
+    "decision": "D033",
+    "deep_scope": [
+      "logistic-regression-l2",
+      "logistic-regression-l1",
+      "logistic-regression-elasticnet",
+      "lda",
+      "qda"
+    ],
+    "depth_policy_decision": "D028",
+    "description": "one pinned raw dataset, split first, per-model pipelines fit on training rows only, unified evaluate() scoring",
+    "name": "Model-Specific Pipeline Pattern"
+  },
+  "preprocessing": {
+    "categorical_columns": [
+      "Sex",
+      "ChestPainType",
+      "FastingBS",
+      "RestingECG",
+      "ExerciseAngina",
+      "ST_Slope"
+    ],
+    "fit_on": "training rows only",
+    "fitted": {
+      "encoder_categories": [
+        [
+          "F",
+          "M"
+        ],
+        [
+          "ASY",
+          "ATA",
+          "NAP",
+          "TA"
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          "LVH",
+          "Normal",
+          "ST"
+        ],
+        [
+          "N",
+          "Y"
+        ],
+        [
+          "Down",
+          "Flat",
+          "Up"
+        ]
+      ],
+      "expanded_feature_count": 21,
+      "expanded_feature_names": [
+        "numeric__Age",
+        "numeric__RestingBP",
+        "numeric__Cholesterol",
+        "numeric__MaxHR",
+        "numeric__Oldpeak",
+        "categorical__Sex_F",
+        "categorical__Sex_M",
+        "categorical__ChestPainType_ASY",
+        "categorical__ChestPainType_ATA",
+        "categorical__ChestPainType_NAP",
+        "categorical__ChestPainType_TA",
+        "categorical__FastingBS_0",
+        "categorical__FastingBS_1",
+        "categorical__RestingECG_LVH",
+        "categorical__RestingECG_Normal",
+        "categorical__RestingECG_ST",
+        "categorical__ExerciseAngina_N",
+        "categorical__ExerciseAngina_Y",
+        "categorical__ST_Slope_Down",
+        "categorical__ST_Slope_Flat",
+        "categorical__ST_Slope_Up"
+      ],
+      "row_count": 734,
+      "scaler_mean": [
+        53.483651,
+        132.726158,
+        244.26158,
+        137.531335,
+        0.895095
+      ],
+      "scaler_scale": [
+        9.469678,
+        18.252392,
+        52.543278,
+        25.394403,
+        1.085891
+      ],
+      "zero_medians": {
+        "Cholesterol": 239.5,
+        "RestingBP": 130.0
+      }
+    },
+    "module": "heart.data.pipeline",
+    "numeric_columns": [
+      "Age",
+      "RestingBP",
+      "Cholesterol",
+      "MaxHR",
+      "Oldpeak"
+    ],
+    "pipeline_steps": [
+      {
+        "params": {
+          "columns": [
+            "RestingBP",
+            "Cholesterol"
+          ],
+          "sentinel": 0
+        },
+        "step": "zero_policy",
+        "transformer": "ZeroMedianImputer"
+      },
+      {
+        "params": {
+          "n_jobs": null,
+          "remainder": "drop",
+          "sparse_threshold": 0.3,
+          "transformer_weights": null,
+          "transformers": [
+            [
+              "numeric",
+              "StandardScaler()",
+              [
+                "Age",
+                "RestingBP",
+                "Cholesterol",
+                "MaxHR",
+                "Oldpeak"
+              ]
+            ],
+            [
+              "categorical",
+              "OneHotEncoder(dtype=<class 'float'>, handle_unknown='ignore',\n              sparse_output=False)",
+              [
+                "Sex",
+                "ChestPainType",
+                "FastingBS",
+                "RestingECG",
+                "ExerciseAngina",
+                "ST_Slope"
+              ]
+            ]
+          ],
+          "verbose": false,
+          "verbose_feature_names_out": true
+        },
+        "step": "features",
+        "sub_transformers": [
+          {
+            "columns": [
+              "Age",
+              "RestingBP",
+              "Cholesterol",
+              "MaxHR",
+              "Oldpeak"
+            ],
+            "name": "numeric",
+            "params": {
+              "copy": true,
+              "with_mean": true,
+              "with_std": true
+            },
+            "transformer": "StandardScaler"
+          },
+          {
+            "columns": [
+              "Sex",
+              "ChestPainType",
+              "FastingBS",
+              "RestingECG",
+              "ExerciseAngina",
+              "ST_Slope"
+            ],
+            "name": "categorical",
+            "params": {
+              "categories": "auto",
+              "drop": null,
+              "dtype": "float",
+              "feature_name_combiner": "concat",
+              "handle_unknown": "ignore",
+              "max_categories": null,
+              "min_frequency": null,
+              "sparse_output": false
+            },
+            "transformer": "OneHotEncoder"
+          }
+        ],
+        "transformer": "ColumnTransformer"
+      }
+    ]
+  },
+  "split": {
+    "group_straddle_policy": "fail-closed: heart.data.split.assert_no_group_straddle raises SplitLeakageError if any near-duplicate group spans the train/test boundary",
+    "module": "heart.data.split",
+    "n_splits": 5,
+    "test_fold": 0,
+    "version": "v1"
+  },
+  "zero_policy": {
+    "action": "median_impute",
+    "columns": [
+      "RestingBP",
+      "Cholesterol"
+    ],
+    "module": "heart.data.quality.DEFAULT_ZERO_POLICY",
+    "sentinel": 0
+  }
+}
