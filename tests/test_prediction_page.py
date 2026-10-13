@@ -38,6 +38,14 @@ Pinned contract of the T03 deliverable:
    a forced SHAP failure — both a degraded contract outcome and an
    exception escaping the call site — degrades to a kind-named warning
    while the calibrated probability is still served (never a stack trace).
+8. **Global cohort-drivers section (M007/S03/T02)** — the bottom-guarded
+   section renders pre-submit with the top-5 mean-|SHAP| table pinned to
+   a direct ``explain_global`` call on a deterministic sample of the
+   pinned dataset (three-way pin, ordering deterministic across fresh
+   runs); the session cache computes the cohort once per session
+   (``st.cache_resource``); and a forced global failure — both a degraded
+   contract outcome and an exception escaping the call site — degrades
+   to a kind-named warning while the prediction keeps serving.
 
 All fixtures are inline (dicts / tmp_path); the only external file.
 touched is either the git-tracked real artifact (guarded by a skip) or
@@ -841,4 +849,214 @@ def test_shap_exception_never_white_screens(
     assert "traceback" not in rendered.lower()
 
     monkeypatch.undo()
+    clear_artifact_cache()
+
+
+# ---------------------------------------------------------------------------
+# 8. Global cohort-drivers section (M007/S03/T02)
+# ---------------------------------------------------------------------------
+#
+# The st.cache_resource cache behind cohort_drivers is PROCESS-GLOBAL across
+# AppTest runs, so every test here starts and ends with a cache clear (and
+# undoes its monkeypatches) so no cached error/success leaks between tests
+# or into the S01/S02 suites.
+
+
+@pytest.fixture(scope="module")
+def pinned_frame(real_artifact) -> pd.DataFrame:
+    """All 918 pinned rows in the artifact's exact feature order."""
+    from heart.data.load import load_dataset
+
+    dataset = load_dataset(allow_download=False)
+    return dataset.frame[list(real_artifact.metadata.feature_columns)]
+
+
+def _expected_cohort_rows(drivers) -> list[tuple[str, str, str, str]]:
+    """The top-5 rows the page must render, derived from a direct call."""
+    rows: list[tuple[str, str, str, str]] = []
+    for index in range(min(5, len(drivers.display_names))):
+        signed = float(drivers.mean_signed[index])
+        if signed > 0:
+            direction = "pushed up"
+        elif signed < 0:
+            direction = "pushed down"
+        else:
+            direction = "neutral"
+        rows.append(
+            (
+                drivers.display_names[index],
+                f"{float(drivers.mean_abs[index]):.4f}",
+                f"{signed:+.4f}",
+                direction,
+            )
+        )
+    return rows
+
+
+def _cohort_rows(test) -> list[tuple[str, str, str, str]]:
+    """Parse the rendered cohort top-5 table (regex, like the attribution
+    parser: ``_rendered_text`` joins elements with spaces)."""
+    row_pattern = re.compile(
+        r"\|\s*([^|]+?)\s*\|\s*(\d+\.\d{4})\s*\|\s*"
+        r"([+-]\d+\.\d{4})\s*\((pushed up|pushed down|neutral)\)\s*\|"
+    )
+    return [
+        (name, mean_abs, signed, direction)
+        for name, mean_abs, signed, direction in row_pattern.findall(
+            _rendered_text(test)
+        )
+    ]
+
+
+def test_cohort_section_renders_pre_submit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Zero submits: the cohort section is already there, zero exceptions."""
+    explain_lib.clear_cohort_cache()
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    assert any(
+        "What drives scores across patients?" in s.value for s in test.subheader
+    )
+    rendered = _rendered_text(test)
+    assert "traceback" not in rendered.lower()
+    # No fabricated numbers without the real artifact-backed compute.
+    assert _cohort_rows(test), "the top-5 cohort table should render"
+    explain_lib.clear_cohort_cache()
+
+
+def test_cohort_section_pins_to_direct_explain_global(
+    monkeypatch: pytest.MonkeyPatch, real_artifact, pinned_frame
+) -> None:
+    """Page table == direct explain_global == deterministic across runs."""
+    explain_lib.clear_cohort_cache()
+    first = _run_page(monkeypatch)
+    assert not first.exception, str(first.exception)
+
+    outcome = explain_lib.explain_global(real_artifact, pinned_frame)
+    drivers = outcome.drivers
+    assert drivers is not None  # the real artifact explains a real cohort
+    assert drivers.n_rows == explain_lib.COHORT_MAX_ROWS
+    expected = _expected_cohort_rows(drivers)
+    rendered_rows = _cohort_rows(first)
+    assert rendered_rows == expected[:5]
+    # The caption states the sample size the plan promises.
+    caption_text = " ".join(c.value for c in first.caption)
+    assert f"across {explain_lib.COHORT_MAX_ROWS} deterministically" in caption_text
+    assert "raw pre-calibration RF score" in caption_text
+
+    # A fresh session (cleared cache, fresh AppTest) renders identically —
+    # deterministic ordering, not a stale-cache reuse.
+    explain_lib.clear_cohort_cache()
+    second = _run_page(monkeypatch)
+    assert not second.exception, str(second.exception)
+    assert _cohort_rows(second) == rendered_rows
+    explain_lib.clear_cohort_cache()
+
+
+def test_cohort_drivers_computed_once_per_session(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """st.cache_resource: two runs in one session, one real compute."""
+    explain_lib.clear_cohort_cache()
+    clear_artifact_cache()
+    calls = {"count": 0}
+    original = explain_lib.explain_global
+
+    def _counting(artifact, frame, **kwargs):
+        calls["count"] += 1
+        return original(artifact, frame, **kwargs)
+
+    monkeypatch.setattr(explain_lib, "explain_global", _counting)
+    page = PROJECT_ROOT / "app/pages/2_Predict.py"
+    test = pytest.importorskip("streamlit.testing.v1").AppTest.from_file(
+        str(page), default_timeout=180
+    )
+    test.run()
+    assert not test.exception, str(test.exception)
+    assert any(
+        "What drives scores across patients?" in s.value for s in test.subheader
+    )
+    first_count = calls["count"]
+    assert first_count >= 1  # the cold render did the real compute
+
+    test.run()  # second render of the SAME session: a cache hit
+    assert not test.exception, str(test.exception)
+    assert calls["count"] == first_count  # no second compute
+
+    monkeypatch.undo()
+    explain_lib.clear_cohort_cache()
+    clear_artifact_cache()
+
+
+def test_cohort_failure_degrades_and_still_serves_probability(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """A named cohort failure degrades the section, not the prediction."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+
+    degraded = explain_lib.CohortOutcome(
+        drivers=None,
+        error=ExplanationError(
+            "cohort-failed", "synthetic global failure (injected)."
+        ),
+    )
+    # Clear FIRST: clear_cohort_cache() resolves the module-global
+    # cohort_drivers name, which the patch below replaces with a plain
+    # function that has no .clear().
+    explain_lib.clear_cohort_cache()
+    monkeypatch.setattr(explain_lib, "cohort_drivers", lambda: degraded)
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    assert "Predicted probability of heart disease" in metrics
+
+    rendered = _rendered_text(test)
+    assert "cohort-failed" in rendered  # the warning names the kind
+    assert "traceback" not in rendered.lower()
+    assert not any(
+        "What drives scores across patients?" in s.value
+        for s in test.subheader
+    )
+    assert _cohort_rows(test) == []  # no fabricated cohort table
+
+    monkeypatch.undo()
+    explain_lib.clear_cohort_cache()
+    clear_artifact_cache()
+
+
+def test_cohort_exception_never_white_screens(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """Even an exception escaping cohort_drivers degrades, never crashes."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+
+    def _boom():
+        raise RuntimeError("injected: cohort explosion")
+
+    # Clear BEFORE patching for the same reason as the test above.
+    explain_lib.clear_cohort_cache()
+    monkeypatch.setattr(explain_lib, "cohort_drivers", _boom)
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    assert "Predicted probability of heart disease" in metrics
+
+    rendered = _rendered_text(test)
+    assert "cohort drivers are unavailable (cohort-failed)" in rendered.lower()
+    assert "only the global drivers section is affected" in rendered
+    assert "traceback" not in rendered.lower()
+    assert not any(
+        "What drives scores across patients?" in s.value
+        for s in test.subheader
+    )
+
+    monkeypatch.undo()
+    explain_lib.clear_cohort_cache()
     clear_artifact_cache()

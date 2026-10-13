@@ -17,6 +17,14 @@ RF score through :mod:`app.lib.explain`, under the same never-raise rule:
 a SHAP failure degrades to a kind-named notice while the served
 probability stays.
 
+The page also renders a global cohort-drivers section (M007/S03, the
+bottom-guarded block): mean |SHAP| per feature over a deterministic
+sample of the pinned 918-row dataset, computed once per session behind
+``st.cache_resource`` and explained in the raw (pre-calibration) domain
+(D011/MEM118 seam stays honest). It sits deliberately outside the
+per-submission flow — it renders pre-submit too — and its failure
+degrades exactly like S02's: a kind-named warning, prediction intact.
+
 Predictions are gated behind an explicit acknowledgement checkbox, and the
 full disclaimer is re-rendered next to every returned probability.
 """
@@ -37,7 +45,7 @@ import streamlit as st
 import logging
 
 from app.lib.artifact_loader import load_winning_artifact
-from app.lib.explain import explain_patient
+from app.lib.explain import cohort_drivers, explain_patient
 from heart.observability import (
     configure_logging,
     log_event,
@@ -454,4 +462,130 @@ else:
     st.caption(
         "Fill the form and press Predict to produce a probability from the "
         "serialized artifact."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Global cohort drivers (M007/S03) — its OWN guarded section, deliberately
+# at the BOTTOM of the page and OUTSIDE the per-submission flow: the cohort
+# narrative is global context ("what drives scores across patients"),
+# computed once per session behind st.cache_resource, so it renders
+# pre-submit too (the page already st.stop()ed above if the artifact
+# failed to load). A cohort failure can only degrade this section
+# (MEM125 discipline) — never re-raise, never st.stop, never touch
+# heart.serving.predict_count.
+# ---------------------------------------------------------------------------
+
+cohort_outcome = None
+cohort_error_kind: str | None = None
+cohort_error_message: str | None = None
+try:
+    # timed_event: the first session render carries the real SHAP compute
+    # cost; later renders are st.cache_resource hits (that skew is by
+    # design and documented as a monitoring gap in the slice plan).
+    with timed_event(
+        logger,
+        "app.cohort",
+        "heart.serving.cohort_explain_latency_ms",
+        message="cohort drivers computed",
+    ) as cohort_fields:
+        cohort_outcome = cohort_drivers()
+        if cohort_outcome.drivers is not None:
+            cohort_fields["n_rows"] = cohort_outcome.drivers.n_rows
+            cohort_fields["top_feature"] = cohort_outcome.drivers.top_feature
+        elif cohort_outcome.error is not None:
+            cohort_fields["outcome"] = "cohort-unavailable"
+            cohort_fields["error_kind"] = cohort_outcome.error.kind
+except Exception:  # noqa: BLE001 - call-site guard, never white-screen
+    cohort_error_kind = "cohort-failed"
+    cohort_error_message = (
+        "Something went wrong while computing the global cohort drivers, "
+        "so the section was skipped rather than shown incorrectly. "
+        "Re-running the page may succeed."
+    )
+if cohort_outcome is not None and cohort_outcome.error is not None:
+    cohort_error_kind = cohort_outcome.error.kind
+    cohort_error_message = cohort_outcome.error.user_message
+
+cohort_data = cohort_outcome.drivers if cohort_outcome is not None else None
+if cohort_error_kind is None and cohort_data is not None:
+    try:
+        # Render inside its own guard too, mirroring S02's attribution
+        # render guard: a formatting failure degrades the section, not
+        # the page. Charts stay native (matplotlib is NOT deployed).
+        cohort_names = list(cohort_data.display_names)
+        cohort_mean_abs = [float(value) for value in cohort_data.mean_abs]
+        cohort_mean_signed = [float(value) for value in cohort_data.mean_signed]
+        cohort_top8 = list(range(min(8, len(cohort_names))))
+        cohort_chart = pd.Series(
+            [cohort_mean_abs[i] for i in cohort_top8],
+            index=[cohort_names[i] for i in cohort_top8],
+            name="Mean abs SHAP",
+        ).rename_axis("feature")
+
+        st.subheader("What drives scores across patients?")
+        st.caption(
+            f"Mean |SHAP| across {cohort_data.n_rows} deterministically "
+            "sampled rows of the pinned 918-row dataset, computed once "
+            "per session from the live serving artifact. It explains the "
+            "**raw pre-calibration RF score** — the forest's own vote "
+            "before the isotonic calibration mapping — so the "
+            "D011/MEM118 seam stays honest; the calibrated probability "
+            "served above is what counts."
+        )
+        st.bar_chart(cohort_chart)
+        cohort_rows = [
+            "| Feature | Mean abs SHAP | Mean signed SHAP |",
+            "| --- | ---: | ---: |",
+        ]
+        for index in range(min(5, len(cohort_names))):
+            signed = cohort_mean_signed[index]
+            if signed > 0:
+                direction = "pushed up"
+            elif signed < 0:
+                direction = "pushed down"
+            else:
+                direction = "neutral"
+            cohort_rows.append(
+                f"| {cohort_names[index]} | {cohort_mean_abs[index]:.4f} | "
+                f"{signed:+.4f} ({direction}) |"
+            )
+        st.markdown("\n".join(cohort_rows))
+        st.caption(
+            "Bars (top 8) and table (top 5) rank features by mean |SHAP| "
+            "— absolute impact across the sampled cohort; the signed "
+            "column shows the average direction of that push."
+        )
+        log_event(
+            logger,
+            "app.cohort",
+            "ok",
+            level=logging.INFO,
+            message="cohort drivers rendered",
+            outcome="served",
+            top_feature=cohort_data.top_feature,
+            n_rows=cohort_data.n_rows,
+        )
+    except Exception:  # noqa: BLE001 - render degradation path
+        cohort_error_kind = "cohort-failed"
+        cohort_error_message = (
+            "The cohort drivers were computed but could not be drawn "
+            "correctly, so the section was skipped rather than shown "
+            "incorrectly. Re-running the page may succeed."
+        )
+
+if cohort_error_kind is not None:
+    st.warning(
+        f"**Cohort drivers are unavailable ({cohort_error_kind}).** "
+        f"{cohort_error_message} The prediction above, if submitted, was "
+        "served normally; only the global drivers section is affected."
+    )
+    log_event(
+        logger,
+        "app.cohort",
+        "degraded",
+        level=logging.WARNING,
+        message=f"cohort drivers degraded ({cohort_error_kind})",
+        outcome="cohort-unavailable",
+        error_kind=cohort_error_kind,
     )
