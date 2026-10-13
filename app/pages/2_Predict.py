@@ -7,7 +7,11 @@ a named friendly error), the widget-vs-frame conversion is the
 each rejected field), and the disclaimer wording is the
 :mod:`app.lib.disclaimer` contract asserted by tests. A corrupt or missing
 artifact therefore renders the same friendly error everywhere in the app,
-never a stack-trace white screen.
+never a stack-trace white screen. A successful submit also exposes the
+calibration seam (M007): the raw pre-calibration RF probability is shown
+next to the served calibrated one with the gap between them spelled out,
+or — if raw access fails — a friendly named notice while the calibrated
+probability is still served.
 
 Predictions are gated behind an explicit acknowledgement checkbox, and the
 full disclaimer is re-rendered next to every returned probability.
@@ -211,6 +215,8 @@ if submitted:
         record_metric(logger, "heart.serving.predict_count", 1, kind="counter", outcome="validation-blocked")
         st.stop()
 
+    raw_probability: float | None = None
+    calibration_gap: float | None = None
     try:
         with timed_event(
             logger, "app.predict_submit", "heart.serving.predict_latency_ms",
@@ -218,6 +224,32 @@ if submitted:
         ) as predict_fields:
             probability = float(artifact.predict_positive_proba(frame)[0])
             predict_fields["outcome"] = "served"
+            # The raw (pre-calibration) pair is best-effort: it runs in its
+            # own guard so a raw-access failure can never block the
+            # calibrated probability already served above.
+            try:
+                raw_probability = float(
+                    artifact.predict_raw_positive_proba(frame)[0]
+                )
+            except Exception as raw_exc:  # noqa: BLE001 - degradation path
+                raw_error = to_app_error(raw_exc)
+                log_event(
+                    logger, "app.predict_submit", "degraded",
+                    level=logging.WARNING,
+                    message=f"raw probability unavailable ({raw_error.kind})",
+                    outcome="raw-unavailable", error_kind=raw_error.kind,
+                )
+                st.warning(
+                    f"**The raw pre-calibration probability is unavailable "
+                    f"({raw_error.kind}).** The calibrated probability was "
+                    "served normally below; only the pre-calibration view "
+                    "is affected."
+                )
+                raw_probability = None
+            else:
+                calibration_gap = probability - raw_probability
+                predict_fields["raw_probability"] = raw_probability
+                predict_fields["calibration_gap"] = calibration_gap
     except Exception as exc:  # noqa: BLE001 - serving swallows, maps, explains
         mapped = to_app_error(exc)
         st.error(
@@ -249,10 +281,52 @@ if submitted:
         f"'{metadata.threshold_objective}'."
     )
 
+    if raw_probability is not None and calibration_gap is not None:
+        # The calibration seam is shown deliberately (M007): the raw
+        # pre-calibration RF score beside the served calibrated number,
+        # with the gap (calibrated - raw, either sign) spelled out. All
+        # formatting stays inside this guard so a rendering failure can
+        # never white-screen an already-served prediction.
+        try:
+            raw_left, raw_right = st.columns(2)
+            raw_left.metric(
+                "Raw RF probability (pre-calibration)",
+                f"{raw_probability:.4f}",
+            )
+            raw_right.markdown(
+                f"Raw RF **{raw_probability:.4f}** -> "
+                f"{metadata.calibration_method}-calibrated "
+                f"**{probability:.4f}** "
+                f"(calibration gap {calibration_gap:+.4f})"
+            )
+            st.caption(
+                "The served probability is the calibrated one; the raw "
+                "pre-calibration RF score and the calibration gap are "
+                "shown deliberately."
+            )
+        except Exception as raw_render_exc:  # noqa: BLE001 - degradation path
+            render_error = to_app_error(raw_render_exc)
+            st.warning(
+                f"**The calibration-gap view is unavailable "
+                f"({render_error.kind}).** The calibrated probability "
+                "above was served normally."
+            )
+            log_event(
+                logger, "app.predict_submit", "degraded",
+                level=logging.WARNING,
+                message=f"raw pair render failed ({render_error.kind})",
+                outcome="raw-unavailable", error_kind=render_error.kind,
+            )
+
     st.warning(DISCLAIMER_FULL)
+    served_fields: dict[str, object] = {}
+    if raw_probability is not None and calibration_gap is not None:
+        served_fields["raw_probability"] = raw_probability
+        served_fields["calibration_gap"] = calibration_gap
     log_event(
         logger, "app.predict_submit", "ok", level=logging.INFO,
         message="prediction served", outcome="served",
+        **served_fields,
     )
     record_metric(logger, "heart.serving.predict_count", 1, kind="counter", outcome="served")
 else:

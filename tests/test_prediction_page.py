@@ -25,6 +25,12 @@ Pinned contract of the T03 deliverable:
    failure renders the named friendly error, never a stack trace; and a
    missing artifact lets the page show ``artifact-missing`` with no form
    and no exceptions.
+6. **Raw-then-calibrated pair (M007/S01/T02)** — a submitted default form
+   renders the raw pre-calibration RF probability beside the calibrated
+   one with a visible, signed calibration gap; the raw metric equals a
+   direct call on the wrapper's frozen base estimator, and an injected
+   raw-access failure degrades to a friendly named notice while the
+   calibrated probability is still served (never a stack trace).
 
 All fixtures are inline (dicts / tmp_path); the only external file.
 touched is either the git-tracked real artifact (guarded by a skip) or
@@ -48,6 +54,7 @@ from app.lib.artifact_loader import (  # noqa: E402
     DEFAULT_ARTIFACT_PATH,
     clear_artifact_cache,
 )
+from app.lib.errors import APP_ERROR_KINDS, to_app_error  # noqa: E402
 from app.lib.disclaimer import DISCLAIMER_FULL, DISCLAIMER_SHORT  # noqa: E402
 from app.lib.input_validation import (  # noqa: E402
     CATEGORICAL_DISPLAY_LEVELS,
@@ -63,6 +70,7 @@ from heart.data.schema import (  # noqa: E402
     TARGET_COLUMN,
 )
 from heart.serving.artifact import (  # noqa: E402
+    ArtifactPayloadError,
     FeatureSchemaError,
     load_artifact,
     ServingArtifact,
@@ -462,3 +470,169 @@ def test_prediction_page_gates_prediction_behind_acknowledgement(
     assert "acknowledgement" in warnings_text.lower()
     # No probability metric was produced without the acknowledgement.
     assert not list(test.get("metric"))
+
+
+# ---------------------------------------------------------------------------
+# 6. Raw-then-calibrated pair (M007/S01/T02)
+# ---------------------------------------------------------------------------
+
+
+def _defaults_frame() -> pd.DataFrame:
+    """The exact frame the default widget state submits.
+
+    First option for every categorical, pinned medians for numerics —
+    identical to the construction the existing calibrated pin uses.
+    """
+    defaults = {**NUMERIC_DEFAULTS}
+    for column, levels in CATEGORICAL_DISPLAY_LEVELS.items():
+        defaults[column] = levels[0]
+    return build_feature_frame(defaults)
+
+
+def _rendered_text(test) -> str:
+    """All user-visible rendered text (markdown, caption, alert, metric)."""
+    return " ".join(
+        [m.value for m in test.markdown]
+        + [c.value for c in test.caption]
+        + [w.value for w in test.warning]
+        + [e.value for e in test.error]
+        + [f"{m.label} {m.value}" for m in test.get("metric")]
+    )
+
+
+def test_submit_renders_raw_and_calibrated_pair(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """The submitted default form shows raw + calibrated + the visible gap."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    # Pre-submit: no pair, no metrics, no errors (negative guard).
+    assert not list(test.get("metric"))
+    assert not list(test.error)
+    assert "Raw RF" not in _rendered_text(test)
+
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    calibrated_label = "Predicted probability of heart disease"
+    raw_label = "Raw RF probability (pre-calibration)"
+    assert calibrated_label in metrics  # pinned label unchanged
+    assert raw_label in metrics
+
+    displayed_raw = float(metrics[raw_label])
+    displayed_calibrated = float(metrics[calibrated_label])
+
+    frame = _defaults_frame()
+    direct_raw = float(real_artifact.predict_raw_positive_proba(frame)[0])
+    direct_calibrated = float(real_artifact.predict_positive_proba(frame)[0])
+    # Values pinned to the displayed 4dp rounding (same tolerance as the
+    # existing calibrated pin).
+    assert abs(displayed_raw - direct_raw) <= 0.5 * 10**-4 + 1e-12
+    assert abs(displayed_calibrated - direct_calibrated) <= 0.5 * 10**-4 + 1e-12
+    assert 0.0 <= displayed_raw <= 1.0
+    # The gap is real for this input: raw is not a renamed calibrated copy.
+    assert displayed_raw != displayed_calibrated
+
+    # The gap line is visible and shows both displayed values.
+    markdown_text = " ".join(m.value for m in test.markdown)
+    assert "calibration gap" in markdown_text
+    assert f"{direct_raw:.4f}" in markdown_text
+    assert f"{direct_calibrated:.4f}" in markdown_text
+    # The caption states the served value is the calibrated one on purpose.
+    caption_text = " ".join(c.value for c in test.caption)
+    assert "shown deliberately" in caption_text
+    assert "calibrated" in caption_text
+
+
+def test_raw_pair_matches_frozen_base_estimator_call(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """The rendered raw metric is the frozen base estimator's own number."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    displayed_raw = float(metrics["Raw RF probability (pre-calibration)"])
+
+    frame = _defaults_frame()
+    direct_raw = float(
+        real_artifact.model.estimator.estimator.predict_proba(frame)[0][1]
+    )
+    assert abs(displayed_raw - direct_raw) <= 0.5 * 10**-4 + 1e-12
+
+
+def test_raw_access_failure_degrades_to_friendly_notice(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """A raw-access failure degrades to a named notice; calibrated stays."""
+
+    def _raw_boom(self: ServingArtifact, frame: pd.DataFrame):
+        raise ArtifactPayloadError("injected: raw unavailable")
+
+    monkeypatch.setattr(ServingArtifact, "predict_raw_positive_proba", _raw_boom)
+    clear_artifact_cache()
+    page = PROJECT_ROOT / "app/pages/2_Predict.py"
+    test = pytest.importorskip("streamlit.testing.v1").AppTest.from_file(
+        str(page), default_timeout=180
+    )
+    test.run()
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    # The calibrated prediction was served normally …
+    assert "Predicted probability of heart disease" in metrics
+    # … while no fabricated raw number appears.
+    assert "Raw RF probability (pre-calibration)" not in metrics
+
+    rendered = _rendered_text(test)
+    expected_kind = to_app_error(ArtifactPayloadError("injected")).kind
+    assert expected_kind in APP_ERROR_KINDS  # a stable, named kind
+    assert expected_kind in rendered  # the notice names it
+    assert "raw" in rendered.lower() and "unavailable" in rendered.lower()
+    assert "traceback" not in rendered.lower()  # never a stack trace
+
+    monkeypatch.undo()
+    clear_artifact_cache()
+
+
+@pytest.mark.parametrize("raw_offset", [-0.02, 0.0, 0.02])
+def test_gap_line_renders_for_both_gap_signs(
+    monkeypatch: pytest.MonkeyPatch, real_artifact, raw_offset: float
+) -> None:
+    """Positive, zero, and negative calibration gaps each render signed."""
+    calibrated = float(
+        real_artifact.predict_positive_proba(_defaults_frame())[0]
+    )
+
+    def _fake_raw(self: ServingArtifact, frame: pd.DataFrame):
+        return [calibrated + raw_offset]
+
+    monkeypatch.setattr(ServingArtifact, "predict_raw_positive_proba", _fake_raw)
+    clear_artifact_cache()
+    page = PROJECT_ROOT / "app/pages/2_Predict.py"
+    test = pytest.importorskip("streamlit.testing.v1").AppTest.from_file(
+        str(page), default_timeout=180
+    )
+    test.run()
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    raw_label = "Raw RF probability (pre-calibration)"
+    assert metrics[raw_label] == f"{calibrated + raw_offset:.4f}"
+
+    # The gap line shows the signed value of (calibrated - raw).
+    displayed_gap = calibrated - (calibrated + raw_offset)
+    markdown_text = " ".join(m.value for m in test.markdown)
+    assert f"(calibration gap {displayed_gap:+.4f})" in markdown_text
+
+    monkeypatch.undo()
+    clear_artifact_cache()
