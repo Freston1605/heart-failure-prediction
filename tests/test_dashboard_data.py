@@ -169,6 +169,44 @@ def test_categorical_distribution_function_level_consistency(
         assert dist.loc[level, "ChestPainType"] == expected[level]
 
 
+def _bin_left_edges(labels) -> list[float]:
+    """Left edge of each ``lo–hi`` bin label (the label's leading number)."""
+    return [float(label.split("\u2013")[0]) for label in labels]
+
+
+def test_numeric_distribution_bin_labels_are_ascending(frame: pd.DataFrame) -> None:
+    """The frames carry the order the chart must render: ascending bins.
+
+    Regression pin for the "axis out of order" bug: the data layer was
+    always correct; the render call discarded it. Any future refactor that
+    reorders the labels (e.g. value_counts without sort_index) now fails
+    here instead of resurfacing as a scrambled dashboard axis.
+    """
+    for column in NUMERIC_COLUMNS:
+        edges = _bin_left_edges(numeric_distribution(frame, column).index)
+        assert edges == sorted(edges), f"{column} bins are not ascending: {edges}"
+
+
+def test_numeric_distribution_ordering_holds_for_the_reported_columns(
+    frame: pd.DataFrame,
+) -> None:
+    """Explicit pin for the two columns named in the bug report."""
+    for column in ("RestingBP", "Cholesterol"):
+        labels = list(numeric_distribution(frame, column).index)
+        # The scrambling bug: alphabetical label order != numeric bin order.
+        # If these ever coincide the test still passes (order is what counts).
+        edges = _bin_left_edges(labels)
+        assert edges == sorted(edges)
+        assert len(set(labels)) == len(labels), f"{column} has duplicate bin labels"
+
+
+def test_categorical_distribution_counts_are_descending(frame: pd.DataFrame) -> None:
+    """Categorical frames carry descending-by-count order (as documented)."""
+    for column in CATEGORICAL_COLUMNS:
+        counts = categorical_distribution(frame, column)[column].to_numpy()
+        assert (counts[:-1] >= counts[1:]).all(), f"{column} counts not descending"
+
+
 # ---------------------------------------------------------------------------
 # Insight group 2: correlation view
 # ---------------------------------------------------------------------------
@@ -461,3 +499,38 @@ def test_dashboard_missing_dataset_renders_friendly_error(
     # No insight-group headers were rendered on the failure path.
     headers = [h.value for h in test.get("header")]
     assert not headers
+
+
+def test_explore_bar_charts_render_in_data_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: every Explore bar chart must pass ``sort=False``.
+
+    ``st.bar_chart``'s default ``sort=True`` re-sorts the categorical axis
+    alphabetically over the label strings — which scrambled the RestingBP
+    and Cholesterol bin axis ("100–110" before "10–20"). The data frames
+    are already in the correct order; this pins the render call so the
+    page can never silently discard it again. AppTest does not expose
+    chart protos, so the contract is pinned by spying on the calls the
+    real page makes during a real render.
+    """
+    import streamlit as st
+
+    recorded: list[dict[str, object]] = []
+    real_bar_chart = st.bar_chart
+
+    def spy(data=None, **kwargs):
+        recorded.append(kwargs)
+        return real_bar_chart(data, **kwargs)
+
+    monkeypatch.setattr(st, "bar_chart", spy)
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+
+    assert recorded, "the Explore page must render bar charts"
+    for kwargs in recorded:
+        assert kwargs.get("sort") is False, (
+            "st.bar_chart must be called with sort=False so the frame's own "
+            f"order renders; got sort={kwargs.get('sort')!r}"
+        )
+        assert kwargs.get("horizontal") is True

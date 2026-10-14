@@ -25,6 +25,27 @@ Pinned contract of the T03 deliverable:
    failure renders the named friendly error, never a stack trace; and a
    missing artifact lets the page show ``artifact-missing`` with no form
    and no exceptions.
+6. **Raw-then-calibrated pair (M007/S01/T02)** — a submitted default form
+   renders the raw pre-calibration RF probability beside the calibrated
+   one with a visible, signed calibration gap; the raw metric equals a
+   direct call on the wrapper's frozen base estimator, and an injected
+   raw-access failure degrades to a friendly named notice while the
+   calibrated probability is still served (never a stack trace).
+7. **Per-patient SHAP attribution (M007/S02/T02)** — a submitted default
+   form renders the "Why this score?" attribution section pinned to a
+   direct ``explain_patient`` call on the same frame (top pushed-up /
+   pushed-down display names and .4f values, deterministic across runs);
+   a forced SHAP failure — both a degraded contract outcome and an
+   exception escaping the call site — degrades to a kind-named warning
+   while the calibrated probability is still served (never a stack trace).
+8. **Global cohort-drivers section (M007/S03/T02)** — the bottom-guarded
+   section renders pre-submit with the top-5 mean-|SHAP| table pinned to
+   a direct ``explain_global`` call on a deterministic sample of the
+   pinned dataset (three-way pin, ordering deterministic across fresh
+   runs); the session cache computes the cohort once per session
+   (``st.cache_resource``); and a forced global failure — both a degraded
+   contract outcome and an exception escaping the call site — degrades
+   to a kind-named warning while the prediction keeps serving.
 
 All fixtures are inline (dicts / tmp_path); the only external file.
 touched is either the git-tracked real artifact (guarded by a skip) or
@@ -33,9 +54,11 @@ tmp-artifacts created inside the test's own tmp dir.
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -48,7 +71,14 @@ from app.lib.artifact_loader import (  # noqa: E402
     DEFAULT_ARTIFACT_PATH,
     clear_artifact_cache,
 )
+from app.lib import explain as explain_lib  # noqa: E402
+from app.lib.errors import APP_ERROR_KINDS, to_app_error  # noqa: E402
 from app.lib.disclaimer import DISCLAIMER_FULL, DISCLAIMER_SHORT  # noqa: E402
+from app.lib.explain import (  # noqa: E402
+    ExplanationError,
+    ExplanationOutcome,
+    explain_patient,
+)
 from app.lib.input_validation import (  # noqa: E402
     CATEGORICAL_DISPLAY_LEVELS,
     NUMERIC_DEFAULTS,
@@ -63,6 +93,7 @@ from heart.data.schema import (  # noqa: E402
     TARGET_COLUMN,
 )
 from heart.serving.artifact import (  # noqa: E402
+    ArtifactPayloadError,
     FeatureSchemaError,
     load_artifact,
     ServingArtifact,
@@ -462,3 +493,570 @@ def test_prediction_page_gates_prediction_behind_acknowledgement(
     assert "acknowledgement" in warnings_text.lower()
     # No probability metric was produced without the acknowledgement.
     assert not list(test.get("metric"))
+
+
+# ---------------------------------------------------------------------------
+# 6. Raw-then-calibrated pair (M007/S01/T02)
+# ---------------------------------------------------------------------------
+
+
+def _defaults_frame() -> pd.DataFrame:
+    """The exact frame the default widget state submits.
+
+    First option for every categorical, pinned medians for numerics —
+    identical to the construction the existing calibrated pin uses.
+    """
+    defaults = {**NUMERIC_DEFAULTS}
+    for column, levels in CATEGORICAL_DISPLAY_LEVELS.items():
+        defaults[column] = levels[0]
+    return build_feature_frame(defaults)
+
+
+def _rendered_text(test) -> str:
+    """All user-visible rendered text (markdown, caption, alert, metric)."""
+    return " ".join(
+        [m.value for m in test.markdown]
+        + [c.value for c in test.caption]
+        + [w.value for w in test.warning]
+        + [e.value for e in test.error]
+        + [f"{m.label} {m.value}" for m in test.get("metric")]
+    )
+
+
+def test_submit_renders_raw_and_calibrated_pair(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """The submitted default form shows raw + calibrated + the visible gap."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    # Pre-submit: no pair, no metrics, no errors (negative guard).
+    assert not list(test.get("metric"))
+    assert not list(test.error)
+    assert "Raw RF" not in _rendered_text(test)
+
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    calibrated_label = "Predicted probability of heart disease"
+    raw_label = "Raw RF probability (pre-calibration)"
+    assert calibrated_label in metrics  # pinned label unchanged
+    assert raw_label in metrics
+
+    displayed_raw = float(metrics[raw_label])
+    displayed_calibrated = float(metrics[calibrated_label])
+
+    frame = _defaults_frame()
+    direct_raw = float(real_artifact.predict_raw_positive_proba(frame)[0])
+    direct_calibrated = float(real_artifact.predict_positive_proba(frame)[0])
+    # Values pinned to the displayed 4dp rounding (same tolerance as the
+    # existing calibrated pin).
+    assert abs(displayed_raw - direct_raw) <= 0.5 * 10**-4 + 1e-12
+    assert abs(displayed_calibrated - direct_calibrated) <= 0.5 * 10**-4 + 1e-12
+    assert 0.0 <= displayed_raw <= 1.0
+    # The gap is real for this input: raw is not a renamed calibrated copy.
+    assert displayed_raw != displayed_calibrated
+
+    # The gap line is visible and shows both displayed values.
+    markdown_text = " ".join(m.value for m in test.markdown)
+    assert "calibration gap" in markdown_text
+    assert f"{direct_raw:.4f}" in markdown_text
+    assert f"{direct_calibrated:.4f}" in markdown_text
+    # The caption states the served value is the calibrated one on purpose.
+    caption_text = " ".join(c.value for c in test.caption)
+    assert "shown deliberately" in caption_text
+    assert "calibrated" in caption_text
+
+
+def test_raw_pair_matches_frozen_base_estimator_call(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """The rendered raw metric is the frozen base estimator's own number."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    displayed_raw = float(metrics["Raw RF probability (pre-calibration)"])
+
+    frame = _defaults_frame()
+    direct_raw = float(
+        real_artifact.model.estimator.estimator.predict_proba(frame)[0][1]
+    )
+    assert abs(displayed_raw - direct_raw) <= 0.5 * 10**-4 + 1e-12
+
+
+def test_raw_access_failure_degrades_to_friendly_notice(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """A raw-access failure degrades to a named notice; calibrated stays."""
+
+    def _raw_boom(self: ServingArtifact, frame: pd.DataFrame):
+        raise ArtifactPayloadError("injected: raw unavailable")
+
+    monkeypatch.setattr(ServingArtifact, "predict_raw_positive_proba", _raw_boom)
+    clear_artifact_cache()
+    page = PROJECT_ROOT / "app/pages/2_Predict.py"
+    test = pytest.importorskip("streamlit.testing.v1").AppTest.from_file(
+        str(page), default_timeout=180
+    )
+    test.run()
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    # The calibrated prediction was served normally …
+    assert "Predicted probability of heart disease" in metrics
+    # … while no fabricated raw number appears.
+    assert "Raw RF probability (pre-calibration)" not in metrics
+
+    rendered = _rendered_text(test)
+    expected_kind = to_app_error(ArtifactPayloadError("injected")).kind
+    assert expected_kind in APP_ERROR_KINDS  # a stable, named kind
+    assert expected_kind in rendered  # the notice names it
+    assert "raw" in rendered.lower() and "unavailable" in rendered.lower()
+    assert "traceback" not in rendered.lower()  # never a stack trace
+
+    monkeypatch.undo()
+    clear_artifact_cache()
+
+
+@pytest.mark.parametrize("raw_offset", [-0.02, 0.0, 0.02])
+def test_gap_line_renders_for_both_gap_signs(
+    monkeypatch: pytest.MonkeyPatch, real_artifact, raw_offset: float
+) -> None:
+    """Positive, zero, and negative calibration gaps each render signed."""
+    calibrated = float(
+        real_artifact.predict_positive_proba(_defaults_frame())[0]
+    )
+
+    def _fake_raw(self: ServingArtifact, frame: pd.DataFrame):
+        return [calibrated + raw_offset]
+
+    monkeypatch.setattr(ServingArtifact, "predict_raw_positive_proba", _fake_raw)
+    clear_artifact_cache()
+    page = PROJECT_ROOT / "app/pages/2_Predict.py"
+    test = pytest.importorskip("streamlit.testing.v1").AppTest.from_file(
+        str(page), default_timeout=180
+    )
+    test.run()
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    raw_label = "Raw RF probability (pre-calibration)"
+    assert metrics[raw_label] == f"{calibrated + raw_offset:.4f}"
+
+    # The gap line shows the signed value of (calibrated - raw).
+    displayed_gap = calibrated - (calibrated + raw_offset)
+    markdown_text = " ".join(m.value for m in test.markdown)
+    assert f"(calibration gap {displayed_gap:+.4f})" in markdown_text
+
+    monkeypatch.undo()
+    clear_artifact_cache()
+
+
+# ---------------------------------------------------------------------------
+# 7. Per-patient SHAP attribution (M007/S02/T02)
+# ---------------------------------------------------------------------------
+
+
+def _submit_defaults(test) -> None:
+    """Acknowledge and submit the default form in an existing AppTest."""
+    test.checkbox[0].check().run()
+    test.get("button")[-1].click().run()
+
+
+def _attribution_direction(attribution, direction: str, k: int = 3):
+    """Top-k (display name, value) pushed up or down, from a direct call."""
+    values = np.asarray(attribution.values, dtype=float)
+    order = np.argsort(-values) if direction == "up" else np.argsort(values)
+    picked = [
+        int(i)
+        for i in order
+        if (values[i] > 0 if direction == "up" else values[i] < 0)
+    ]
+    return [
+        (attribution.display_names[i], float(values[i])) for i in picked[:k]
+    ]
+
+
+def _attribution_rows(test):
+    """Parse the rendered attribution table into (pushed-up, pushed-down).
+
+    Regex-based on purpose: ``_rendered_text`` joins elements with spaces,
+    so the table's final row can share a line with the following caption;
+    a line-by-line parser would silently drop it.
+    """
+    row_pattern = re.compile(
+        r"\|\s*(pushed up|pushed down)\s*\|\s*([^|]+?)\s*\|\s*(-?\d+\.\d{4})\s*\|"
+    )
+    ups: list[tuple[str, float]] = []
+    downs: list[tuple[str, float]] = []
+    for direction, feature, value in row_pattern.findall(_rendered_text(test)):
+        row = (feature, float(value))
+        (ups if direction == "pushed up" else downs).append(row)
+    return ups, downs
+
+
+def test_submit_renders_attribution_section(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """The default submit renders the attribution; pre-submit it is absent."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    # Negative guard: nothing before submit promises an explanation.
+    assert not any("Why this score?" in s.value for s in test.subheader)
+    assert "Why this score?" not in _rendered_text(test)
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    assert any("Why this score?" in s.value for s in test.subheader)
+    attribution = explain_patient(real_artifact, _defaults_frame()).attribution
+    assert attribution is not None  # the real artifact explains for real
+
+    ups, downs = _attribution_rows(test)
+    expected_up = _attribution_direction(attribution, "up")
+    expected_down = _attribution_direction(attribution, "down")
+    # Top-3 per direction, capped by how many genuinely exist (>=1 each).
+    assert len(ups) == len(expected_up) and 1 <= len(ups) <= 3
+    assert len(downs) == len(expected_down) and 1 <= len(downs) <= 3
+    # Pushed-up values are positive, pushed-down negative (signed display).
+    assert all(value > 0 for _, value in ups)
+    assert all(value < 0 for _, value in downs)
+    # The top pushed-up name pins to argmax of the direct call's values.
+    argmax_top = attribution.display_names[
+        int(np.argmax(np.asarray(attribution.values, dtype=float)))
+    ]
+    assert ups[0][0] == argmax_top
+    # Captions keep the calibration seam honest.
+    captions = " ".join(c.value for c in test.caption)
+    assert "raw pre-calibration RF score" in captions
+    assert "reproduced exactly" in captions
+
+
+def test_attribution_matches_direct_explain_call(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """Page render == explain.py call == deterministic values (three-way)."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    attribution = explain_patient(real_artifact, _defaults_frame()).attribution
+    assert attribution is not None
+    expected_up = _attribution_direction(attribution, "up")
+    expected_down = _attribution_direction(attribution, "down")
+
+    ups, downs = _attribution_rows(test)
+    assert [name for name, _ in ups] == [name for name, _ in expected_up]
+    assert [name for name, _ in downs] == [name for name, _ in expected_down]
+    # Values are shown to .4f of the same direct-call numbers.
+    assert [round(value, 4) for _, value in ups] == [
+        round(value, 4) for _, value in expected_up
+    ]
+    assert [round(value, 4) for _, value in downs] == [
+        round(value, 4) for _, value in expected_down
+    ]
+
+
+def test_attribution_determinism(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """Two submit renders are identical; explain_patient is array_equal."""
+    first = _run_page(monkeypatch)
+    _submit_defaults(first)
+    assert not first.exception, str(first.exception)
+    second = _run_page(monkeypatch)
+    _submit_defaults(second)
+    assert not second.exception, str(second.exception)
+
+    # Same frame + same artifact -> identical rendered names and values.
+    assert _attribution_rows(first) == _attribution_rows(second)
+
+    direct_first = explain_patient(real_artifact, _defaults_frame())
+    direct_second = explain_patient(real_artifact, _defaults_frame())
+    assert direct_first.attribution is not None
+    assert direct_second.attribution is not None
+    assert np.array_equal(
+        direct_first.attribution.values, direct_second.attribution.values
+    )
+
+
+def test_shap_failure_degrades_and_still_serves_probability(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """A named SHAP failure degrades the explanation, not the prediction."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+
+    degraded = ExplanationOutcome(
+        attribution=None,
+        error=ExplanationError(
+            "explanation-failed", "synthetic SHAP failure (injected)."
+        ),
+    )
+    monkeypatch.setattr(
+        explain_lib, "explain_patient", lambda artifact, frame: degraded
+    )
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    assert "Predicted probability of heart disease" in metrics
+
+    rendered = _rendered_text(test)
+    assert "explanation-failed" in rendered  # the warning names the kind
+    assert "traceback" not in rendered.lower()
+    assert not any("Why this score?" in s.value for s in test.subheader)
+    # No fabricated attribution table rendered.
+    ups, downs = _attribution_rows(test)
+    assert ups == [] and downs == []
+
+    monkeypatch.undo()
+    clear_artifact_cache()
+
+
+def test_shap_exception_never_white_screens(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """Even an exception escaping explain_patient degrades, never crashes."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+
+    def _boom(artifact, frame):
+        raise RuntimeError("injected: explanation explosion")
+
+    monkeypatch.setattr(explain_lib, "explain_patient", _boom)
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    assert "Predicted probability of heart disease" in metrics
+
+    rendered = _rendered_text(test)
+    assert "explanation-failed" in rendered
+    assert "served normally; only the explanation" in rendered
+    assert "traceback" not in rendered.lower()
+
+    monkeypatch.undo()
+    clear_artifact_cache()
+
+
+# ---------------------------------------------------------------------------
+# 8. Global cohort-drivers section (M007/S03/T02)
+# ---------------------------------------------------------------------------
+#
+# The st.cache_resource cache behind cohort_drivers is PROCESS-GLOBAL across
+# AppTest runs, so every test here starts and ends with a cache clear (and
+# undoes its monkeypatches) so no cached error/success leaks between tests
+# or into the S01/S02 suites.
+
+
+@pytest.fixture(scope="module")
+def pinned_frame(real_artifact) -> pd.DataFrame:
+    """All 918 pinned rows in the artifact's exact feature order."""
+    from heart.data.load import load_dataset
+
+    dataset = load_dataset(allow_download=False)
+    return dataset.frame[list(real_artifact.metadata.feature_columns)]
+
+
+def _expected_cohort_rows(drivers) -> list[tuple[str, str, str, str]]:
+    """The top-5 rows the page must render, derived from a direct call."""
+    rows: list[tuple[str, str, str, str]] = []
+    for index in range(min(5, len(drivers.display_names))):
+        signed = float(drivers.mean_signed[index])
+        if signed > 0:
+            direction = "pushed up"
+        elif signed < 0:
+            direction = "pushed down"
+        else:
+            direction = "neutral"
+        rows.append(
+            (
+                drivers.display_names[index],
+                f"{float(drivers.mean_abs[index]):.4f}",
+                f"{signed:+.4f}",
+                direction,
+            )
+        )
+    return rows
+
+
+def _cohort_rows(test) -> list[tuple[str, str, str, str]]:
+    """Parse the rendered cohort top-5 table (regex, like the attribution
+    parser: ``_rendered_text`` joins elements with spaces)."""
+    row_pattern = re.compile(
+        r"\|\s*([^|]+?)\s*\|\s*(\d+\.\d{4})\s*\|\s*"
+        r"([+-]\d+\.\d{4})\s*\((pushed up|pushed down|neutral)\)\s*\|"
+    )
+    return [
+        (name, mean_abs, signed, direction)
+        for name, mean_abs, signed, direction in row_pattern.findall(
+            _rendered_text(test)
+        )
+    ]
+
+
+def test_cohort_section_renders_pre_submit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Zero submits: the cohort section is already there, zero exceptions."""
+    explain_lib.clear_cohort_cache()
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+    assert any(
+        "What drives scores across patients?" in s.value for s in test.subheader
+    )
+    rendered = _rendered_text(test)
+    assert "traceback" not in rendered.lower()
+    # No fabricated numbers without the real artifact-backed compute.
+    assert _cohort_rows(test), "the top-5 cohort table should render"
+    explain_lib.clear_cohort_cache()
+
+
+def test_cohort_section_pins_to_direct_explain_global(
+    monkeypatch: pytest.MonkeyPatch, real_artifact, pinned_frame
+) -> None:
+    """Page table == direct explain_global == deterministic across runs."""
+    explain_lib.clear_cohort_cache()
+    first = _run_page(monkeypatch)
+    assert not first.exception, str(first.exception)
+
+    outcome = explain_lib.explain_global(real_artifact, pinned_frame)
+    drivers = outcome.drivers
+    assert drivers is not None  # the real artifact explains a real cohort
+    assert drivers.n_rows == explain_lib.COHORT_MAX_ROWS
+    expected = _expected_cohort_rows(drivers)
+    rendered_rows = _cohort_rows(first)
+    assert rendered_rows == expected[:5]
+    # The caption states the sample size the plan promises.
+    caption_text = " ".join(c.value for c in first.caption)
+    assert f"across {explain_lib.COHORT_MAX_ROWS} deterministically" in caption_text
+    assert "raw pre-calibration RF score" in caption_text
+
+    # A fresh session (cleared cache, fresh AppTest) renders identically —
+    # deterministic ordering, not a stale-cache reuse.
+    explain_lib.clear_cohort_cache()
+    second = _run_page(monkeypatch)
+    assert not second.exception, str(second.exception)
+    assert _cohort_rows(second) == rendered_rows
+    explain_lib.clear_cohort_cache()
+
+
+def test_cohort_drivers_computed_once_per_session(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """st.cache_resource: two runs in one session, one real compute."""
+    explain_lib.clear_cohort_cache()
+    clear_artifact_cache()
+    calls = {"count": 0}
+    original = explain_lib.explain_global
+
+    def _counting(artifact, frame, **kwargs):
+        calls["count"] += 1
+        return original(artifact, frame, **kwargs)
+
+    monkeypatch.setattr(explain_lib, "explain_global", _counting)
+    page = PROJECT_ROOT / "app/pages/2_Predict.py"
+    test = pytest.importorskip("streamlit.testing.v1").AppTest.from_file(
+        str(page), default_timeout=180
+    )
+    test.run()
+    assert not test.exception, str(test.exception)
+    assert any(
+        "What drives scores across patients?" in s.value for s in test.subheader
+    )
+    first_count = calls["count"]
+    assert first_count >= 1  # the cold render did the real compute
+
+    test.run()  # second render of the SAME session: a cache hit
+    assert not test.exception, str(test.exception)
+    assert calls["count"] == first_count  # no second compute
+
+    monkeypatch.undo()
+    explain_lib.clear_cohort_cache()
+    clear_artifact_cache()
+
+
+def test_cohort_failure_degrades_and_still_serves_probability(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """A named cohort failure degrades the section, not the prediction."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+
+    degraded = explain_lib.CohortOutcome(
+        drivers=None,
+        error=ExplanationError(
+            "cohort-failed", "synthetic global failure (injected)."
+        ),
+    )
+    # Clear FIRST: clear_cohort_cache() resolves the module-global
+    # cohort_drivers name, which the patch below replaces with a plain
+    # function that has no .clear().
+    explain_lib.clear_cohort_cache()
+    monkeypatch.setattr(explain_lib, "cohort_drivers", lambda: degraded)
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    assert "Predicted probability of heart disease" in metrics
+
+    rendered = _rendered_text(test)
+    assert "cohort-failed" in rendered  # the warning names the kind
+    assert "traceback" not in rendered.lower()
+    assert not any(
+        "What drives scores across patients?" in s.value
+        for s in test.subheader
+    )
+    assert _cohort_rows(test) == []  # no fabricated cohort table
+
+    monkeypatch.undo()
+    explain_lib.clear_cohort_cache()
+    clear_artifact_cache()
+
+
+def test_cohort_exception_never_white_screens(
+    monkeypatch: pytest.MonkeyPatch, real_artifact
+) -> None:
+    """Even an exception escaping cohort_drivers degrades, never crashes."""
+    test = _run_page(monkeypatch)
+    assert not test.exception, str(test.exception)
+
+    def _boom():
+        raise RuntimeError("injected: cohort explosion")
+
+    # Clear BEFORE patching for the same reason as the test above.
+    explain_lib.clear_cohort_cache()
+    monkeypatch.setattr(explain_lib, "cohort_drivers", _boom)
+
+    _submit_defaults(test)
+    assert not test.exception, str(test.exception)
+
+    metrics = {m.label: m.value for m in test.get("metric")}
+    assert "Predicted probability of heart disease" in metrics
+
+    rendered = _rendered_text(test)
+    assert "cohort drivers are unavailable (cohort-failed)" in rendered.lower()
+    assert "only the global drivers section is affected" in rendered
+    assert "traceback" not in rendered.lower()
+    assert not any(
+        "What drives scores across patients?" in s.value
+        for s in test.subheader
+    )
+
+    monkeypatch.undo()
+    explain_lib.clear_cohort_cache()
+    clear_artifact_cache()

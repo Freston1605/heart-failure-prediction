@@ -55,6 +55,7 @@ from heart.eval.repeated_cv import (
     RepeatedCVDataError,
     RepeatedCVError,
     RepeatedCVResult,
+    pooled_oof_metrics,
     primary_metric_values,
     rank_candidates,
     repeated_cv_report,
@@ -377,3 +378,99 @@ def test_candidate_not_found_semantics():
     """The documented CandidateNotFoundError exists for missing keys (API surface)."""
     # Kept as a thin API-surface pin because S06/T02 consumes it via name.
     assert rcv.CandidateNotFoundError is CandidateNotFoundError
+
+
+# ---------------------------------------------------------------------------
+# 7. D036 capture extension: pooled OOF predictions (backwards compatible)
+# ---------------------------------------------------------------------------
+
+
+def test_capture_off_path_is_unchanged_and_fields_stay_empty():
+    """The D036 default (capture_predictions=False) behaves exactly as before."""
+    X, y = _synthetic_frame(n=180, seed=71)
+    config = RepeatedCVConfig(n_folds=3, n_repeats=2, seed=14)
+    result = run_repeated_cv("logit", _fresh_logistic, X, y, config=config)
+    assert not result.has_captured_predictions
+    assert result.pooled_y_true is None
+    assert result.pooled_y_proba is None
+    assert result.pooled_y_pred is None
+    assert result.pooled_fold_sizes == ()
+    assert result.to_dict() is not None  # unchanged projection shape
+
+
+def test_capture_on_pools_held_out_predictions_across_folds():
+    X, y = _synthetic_frame(n=200, seed=67)
+    config = RepeatedCVConfig(n_folds=3, n_repeats=2, seed=12)
+    result = run_repeated_cv(
+        "logit", _fresh_logistic, X, y, config=config, capture_predictions=True
+    )
+    assert result.has_captured_predictions
+    # Pooled shapes equal the sum of fold test sizes (n rows held n_repeats times).
+    assert sum(result.pooled_fold_sizes) == 200 * config.n_repeats
+    assert result.pooled_y_true.shape == (200 * config.n_repeats,)
+    assert result.pooled_y_proba.shape == (200 * config.n_repeats,)
+    assert result.pooled_y_pred.shape == (200 * config.n_repeats,)
+    assert result.pooled_fold_sizes == tuple(
+        score.n_test for score in result.per_fold
+    )
+    # Every row appears exactly n_repeats times: pooled positives double.
+    assert int(np.sum(result.pooled_y_true)) == config.n_repeats * int(np.sum(y))
+    # Hard predictions stay binary and probabilities valid [0, 1].
+    assert set(np.unique(result.pooled_y_pred).tolist()).issubset({0, 1})
+    assert float(result.pooled_y_proba.min()) >= 0.0
+    assert float(result.pooled_y_proba.max()) <= 1.0
+
+
+def test_capture_is_reproducible_and_matches_the_default_metrics_producer():
+    X, y = _synthetic_frame(n=240, seed=73)
+    config = RepeatedCVConfig(n_folds=3, n_repeats=2, seed=16)
+    first = run_repeated_cv(
+        "logit", _fresh_logistic, X, y, config=config, capture_predictions=True
+    )
+    second = run_repeated_cv(
+        "logit", _fresh_logistic, X, y, config=config, capture_predictions=True
+    )
+    assert np.array_equal(first.pooled_y_true, second.pooled_y_true)
+    assert np.array_equal(first.pooled_y_proba, second.pooled_y_proba, equal_nan=False)
+    assert np.array_equal(first.pooled_y_pred, second.pooled_y_pred)
+    # The capture path scores through the SAME producer as the default path:
+    # per-fold primary values match an uncaptured run on the same folds.
+    uncaptured = run_repeated_cv(
+        "logit", _fresh_logistic, X, y, config=config, capture_predictions=False
+    )
+    assert [score.primary for score in first.per_fold] == [
+        score.primary for score in uncaptured.per_fold
+    ]
+
+
+def test_comparison_flows_capture_predictions_to_every_candidate():
+    X, y = _synthetic_frame(n=200, seed=79)
+    results = run_repeated_cv_comparison(
+        {"logit": _fresh_logistic, "nb": _fresh_naive_bayes},
+        X,
+        y,
+        config=RepeatedCVConfig(n_folds=3, n_repeats=1, seed=18),
+        capture_predictions=True,
+    )
+    for name, result in results.items():
+        assert result.has_captured_predictions, name
+        assert result.pooled_y_true.shape == (200,)
+
+
+def test_pooled_oof_metrics_validates_and_rejects_uncaptured_results():
+    X, y = _synthetic_frame(n=200, seed=83)
+    config = RepeatedCVConfig(n_folds=3, n_repeats=2, seed=21)
+    captured = run_repeated_cv(
+        "logit", _fresh_logistic, X, y, config=config, capture_predictions=True
+    )
+    metrics = pooled_oof_metrics(captured)
+    from heart.eval.contract import validate_metric_dict
+
+    validate_metric_dict(metrics)  # must pass — the D036 contract
+    assert "log_loss" in metrics
+    assert 0.0 <= float(metrics[PRIMARY_METRIC]) <= 1.0
+    uncaptured = run_repeated_cv(
+        "logit", _fresh_logistic, X, y, config=config, capture_predictions=False
+    )
+    with pytest.raises(RepeatedCVDataError, match="capture_predictions"):
+        pooled_oof_metrics(uncaptured)

@@ -53,6 +53,7 @@ from heart.eval.metrics import (
     CONFUSION_MATRIX_KEYS,
     CONFUSION_MATRIX_KEY,
     DEFAULT_CALIBRATION_BINS,
+    LOSS_METRIC_KEYS,
     METRIC_KEYS,
     METRIC_SCHEMA_VERSION,
     PRIMARY_METRIC,
@@ -68,6 +69,8 @@ __all__ = [
     "METRIC_KEYS",
     "METRIC_SCHEMA_VERSION",
     "PRIMARY_METRIC",
+    "RATE_METRIC_KEYS",
+    "LOSS_METRIC_KEYS",
     "SCALAR_METRIC_KEYS",
     "STRUCTURED_METRIC_KEYS",
     "MetricContractError",
@@ -297,6 +300,30 @@ def _validate_rate(value: object, *, key: str) -> float:
     return number
 
 
+def _validate_loss(value: object, *, key: str) -> float:
+    """Validate a scalar loss: finite number, strictly non-negative.
+
+    Unlike the rate metrics there is no upper bound: a cross-entropy loss is
+    unbounded above by construction (a confident wrong prediction explodes
+    it), so any finite ``>= 0`` value is in-domain. NaN, ``inf``, negatives,
+    and non-numbers raise :class:`MetricValueError`.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float, np.floating)):
+        raise MetricValueError(
+            f"Metric {key!r} must be a number, got {type(value).__name__} "
+            f"({value!r})."
+        )
+    number = float(value)
+    if not np.isfinite(number):
+        raise MetricValueError(f"Metric {key!r} is non-finite ({value!r}).")
+    if number < 0.0:
+        raise MetricValueError(
+            f"Metric {key!r} = {number!r} is negative; a loss metric must be "
+            "non-negative (no upper bound, unlike the [0, 1] rate metrics)."
+        )
+    return number
+
+
 def _validate_count(value: object, *, key: str) -> int:
     if isinstance(value, bool) or not isinstance(value, (int, np.integer)):
         raise MetricValueError(
@@ -319,7 +346,10 @@ def validate_metric_dict(metrics: object) -> dict[str, object]:
     1. top-level keys are exactly :data:`METRIC_KEYS` (missing -> 
        :class:`MissingMetricError`; extra/misnamed ->
        :class:`UnexpectedMetricError`);
-    2. every scalar rate metric is a finite number in ``[0, 1]``;
+    2. every scalar rate metric is a finite number in ``[0, 1]``, and every
+       loss metric (:data:`LOSS_METRIC_KEYS`, e.g. ``log_loss``) is a finite
+       number ``>= 0`` with no upper bound (NaN and ``inf`` raise
+       :class:`MetricValueError`);
     3. ``confusion_matrix`` has exactly its declared integer key set;
     4. ``calibration`` has exactly its declared key set, a non-negative brier
        score and ECE in ``[0, 1]``, a positive integer ``n_bins``, and a
@@ -332,6 +362,8 @@ def validate_metric_dict(metrics: object) -> dict[str, object]:
 
     for key in RATE_METRIC_KEYS:
         _validate_rate(mapping[key], key=key)
+    for key in LOSS_METRIC_KEYS:
+        _validate_loss(mapping[key], key=key)
 
     matrix = _require_exact_keys(
         mapping[CONFUSION_MATRIX_KEY],

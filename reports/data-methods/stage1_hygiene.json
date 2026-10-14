@@ -1,0 +1,111 @@
+{
+  "dtypes": {
+    "Age": "int64",
+    "ChestPainType": "str",
+    "Cholesterol": "int64",
+    "ExerciseAngina": "str",
+    "FastingBS": "int64",
+    "HeartDisease": "int64",
+    "MaxHR": "int64",
+    "Oldpeak": "float64",
+    "RestingBP": "int64",
+    "RestingECG": "str",
+    "ST_Slope": "str",
+    "Sex": "str"
+  },
+  "exact_duplicates": {
+    "columns": [
+      "Age",
+      "RestingBP",
+      "Cholesterol",
+      "MaxHR",
+      "Oldpeak",
+      "Sex",
+      "ChestPainType",
+      "FastingBS",
+      "RestingECG",
+      "ExerciseAngina",
+      "ST_Slope",
+      "HeartDisease"
+    ],
+    "duplicate_groups": 0,
+    "duplicate_rows": 0,
+    "group_size_histogram": {},
+    "row_indices": []
+  },
+  "figures": [
+    "stage1_missingness_patterns.png"
+  ],
+  "impossible_values": {
+    "affected_rows": 172,
+    "class_balance": {
+      "counts": {
+        "0": 410,
+        "1": 508
+      },
+      "imbalance_ratio": 1.239024,
+      "prevalence": 0.553377,
+      "total": 918
+    },
+    "policy": {
+      "action": "median_impute",
+      "columns": [
+        "RestingBP",
+        "Cholesterol"
+      ],
+      "rationale": "Pre-split EDA hygiene audit under the declared zero-as-missing policy.",
+      "sentinel": 0
+    },
+    "row_count": 918,
+    "zero_counts": {
+      "Cholesterol": {
+        "by_target": {
+          "0": 20,
+          "1": 152
+        },
+        "column": "Cholesterol",
+        "count": 172,
+        "share": 0.187364
+      },
+      "RestingBP": {
+        "by_target": {
+          "1": 1
+        },
+        "column": "RestingBP",
+        "count": 1,
+        "share": 0.001089
+      }
+    }
+  },
+  "missingness": {
+    "classification": {
+      "random_nan": "true NaN cells (random missingness)",
+      "systematic_sentinel": "declared sentinel zeros (systematic missingness)"
+    },
+    "random_nan": {
+      "Age": 0,
+      "ChestPainType": 0,
+      "Cholesterol": 0,
+      "ExerciseAngina": 0,
+      "FastingBS": 0,
+      "HeartDisease": 0,
+      "MaxHR": 0,
+      "Oldpeak": 0,
+      "RestingBP": 0,
+      "RestingECG": 0,
+      "ST_Slope": 0,
+      "Sex": 0
+    },
+    "rows_with_any_missingness": 172,
+    "systematic_sentinel": {
+      "Cholesterol": 172,
+      "RestingBP": 1
+    },
+    "total_random_nan_cells": 0,
+    "total_sentinel_zero_cells": 173
+  },
+  "shape": {
+    "columns": 12,
+    "rows": 918
+  }
+}
