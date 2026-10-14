@@ -9,8 +9,10 @@ directly from this git repository, runs `streamlit run <main-file>` natively,
 costs nothing, and constrains exactly what this project needs to respect
 (repo-based artifact packaging and app-scoped dependencies).
 
-- **Main file:** `app/Home.py` (multipage; `app/pages/1_Explore.py` and
-  `app/pages/2_Predict.py` are auto-discovered)
+- **Main file:** `app/Home.py` (multipage; the four pages `app/pages/1_Explore.py`,
+  `app/pages/2_Predict.py`, `app/pages/3_Runs.py` and
+  `app/pages/4_Data_Methods.py` are auto-discovered and served as the
+  `/Explore`, `/Predict`, `/Runs` and `/Data_Methods` routes)
 - **Requirements location:** `app/requirements.txt` (Streamlit Cloud falls back
   to the main-file directory when the repo root has no `requirements.txt`).
   It is scoped to the app's true needs (pinned core sklearn/pandas stack +
@@ -82,6 +84,24 @@ Live-verified in a real browser session (2026-10-07):
 | **Deployed `/Predict` cohort marker** | **OBSERVED 2026-10-13 (after the mlflow fix).** Real browser session on `/Predict` (app frame `~/+/Predict`) renders the M007 cohort-drivers subheader `What drives scores across patients?` with the S03 explanation "Mean \|SHAP\| across 200 deterministically sampled rows of the pinned 918-row dataset, computed once per session from the live serving artifact". |
 
 **Boot crash and resolution (2026-10-13):** the first redeploy (PR #8, merge `442fcb9`) crashed the deployed `/Predict` page at boot — `app/pages/2_Predict.py` → `src/heart/tracking/mlflow_store.py:44` raised `ModuleNotFoundError: No module named 'mlflow'`. Root cause: `app/requirements.txt` (the app-scoped manifest Cloud installs) never carried `mlflow`, which the Predict page's import closure (via `app/lib/runs_view.py` and the M002/M006 code path) imports at module load; it only surfaced once PR #8 landed that code on the deployed branch. Fixed by PR #9 (merge `bc619b7`): pinned `mlflow==3.16.1` (exact `pyproject.toml` `[ml]` version) in `app/requirements.txt`, extended the CI `deploy-manifest` job to smoke-import `mlflow` and pin-assert it, and added `tests/test_deploy_manifest.py` guards (`test_manifest_pins_mlflow_matching_pyproject` + an app-import-coverage guard). PR #9 CI green (test/build/deploy-manifest), and the deployed cohort marker above was then observed. The `shap==0.52.0` pin was never at fault.
+
+### Boot crash observed 2026-10-14 (M008/S01 T02, optuna manifest gap)
+
+The live browser UAT session for the Data & Methods slice found **every**
+deployed page (including `/Data_Methods`) rendering Streamlit's redacted
+`ImportError` box with `Traceback: File "/mount/src/heart-failure-prediction/
+src/heart/tuning/runner.py", line 63, in <module>` — the app serves HTTP 200
+(the shell renders; `/healthz` still answers `ok`), so HTTP-level reachability
+pins stay green while the runtime is down; only the browser half detects it.
+Root cause: `heart.tuning.runner` (in the Runs page's import closure) does
+`import optuna` at module load, and `app/requirements.txt` never carried
+`optuna` — the same bug class as the 2026-10-13 `mlflow` crash above. Fix
+carried on the M008 branch: pin `optuna==5.0.0` (exact pyproject version) in
+`app/requirements.txt`, guarded by the new
+`tests/test_deploy_manifest.py::test_manifest_pins_optuna_matching_pyproject`.
+Redeploy requires the normal merge/push flow (Streamlit Cloud re-clones on
+`main`); the live `/Data_Methods` UAT evidence for M008/S01 is re-captured
+after that redeploy.
 
 ## Verifications already performed locally (pre-deploy)
 

@@ -409,3 +409,28 @@ def test_explainability_evidence_pack_present() -> None:
         assert size > 10 * 1024, (
             f"{path} is {size} bytes — too small to be a real capture"
         )
+
+
+def test_data_methods_evidence_pack_present() -> None:
+    """Screenshots 12/13 are committed, non-empty captures of /Data_Methods.
+
+    The >10 KB floor guards against blank frames or error pages (an empty
+    frame or a Streamlit traceback page compresses far below it); the two
+    files are the slice's demo evidence cited by ``reports/uat.md`` Flow 4:
+    12 shows the dataset-provenance banner with the Stage 1-2 tables and
+    figures, 13 the Part E narrative plus the Part F 48-pair verdicts table
+    and the technical appendix — both captured from the live deployed route
+    in the T02 real-browser session.
+    """
+    evidence_dir = _PROJECT_ROOT / "reports" / "uat-evidence"
+    expected = (
+        "12-data-methods-stage-sections.jpg",
+        "13-data-methods-gate-verdicts.jpg",
+    )
+    for name in expected:
+        path = evidence_dir / name
+        assert path.is_file(), f"missing evidence file: {path}"
+        size = path.stat().st_size
+        assert size > 10 * 1024, (
+            f"{path} is {size} bytes — too small to be a real capture"
+        )

@@ -117,6 +117,23 @@ def test_manifest_pins_mlflow_matching_pyproject():
     assert pins["mlflow"] == _pyproject_dep_version("mlflow")
 
 
+def test_manifest_pins_optuna_matching_pyproject():
+    """Manifest optuna pin equals pyproject [ml] pin — deployed-boot bug guard.
+
+    Regression for the 2026-10-14 deployed crash observed during M008/S01 T02's
+    live browser session: every deployed page rendered the redacted ImportError
+    from ``src/heart/tuning/runner.py:63`` because ``heart.tuning.runner``
+    imports ``optuna`` at module load and the app-scoped manifest never carried
+    it (the same bug class as the 2026-10-13 mlflow crash above).
+    """
+    pins = _manifest_pins()
+    assert "optuna" in pins, (
+        "app/requirements.txt must pin optuna — the deployed app's import "
+        "closure reaches heart.tuning.runner, which imports it at module load"
+    )
+    assert pins["optuna"] == _pyproject_dep_version("optuna")
+
+
 def test_app_third_party_imports_all_carried_by_manifest():
     """Every third-party import under app/ is provided by the deploy manifest.
 
