@@ -103,6 +103,21 @@ Redeploy requires the normal merge/push flow (Streamlit Cloud re-clones on
 `main`); the live `/Data_Methods` UAT evidence for M008/S01 is re-captured
 after that redeploy.
 
+**Resolved 2026-10-14 (PR #10):** the fix reached the tracked branch through
+the established PR flow — `milestone/M008` (with `origin/main` merged in first,
+the same topology as M007's pre-PR merge `d9b133e`) pushed and merged to `main`
+as PR #10 (merge commit `4aec9fe`). CI on the PR head: `build` and
+`deploy-manifest` (installs `app/requirements.txt`, pin-asserts) **green**; the
+`test` job's sole failure was `test_data_methods_evidence_pack_present` — the
+not-yet-captured M008 evidence screenshots this record's re-run then produced.
+Streamlit Cloud re-cloned `main` and rebooted; the post-redeploy real-browser
+session on `/Data_Methods` observed the healthy app (console state machine
+`INITIAL -> … -> RUNNING`, no exception box, `Dataset provenance` banner
+showing `918 rows × 12 columns`) and captured `reports/uat-evidence/12-…jpg`
+and `13-…jpg`. Served surfaces unchanged: the multipage app still serves
+`app/pages/1_Explore.py`–`app/pages/4_Data_Methods.py` as `/Explore`,
+`/Predict`, `/Runs`, `/Data_Methods`.
+
 ## Verifications already performed locally (pre-deploy)
 
 - `app/requirements.txt` pins match the versions verified in development and

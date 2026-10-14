@@ -15,13 +15,20 @@ clean environment:
   probed — it is not the documented health/route contract.
 - *Contract tests* import the same modules the deployed app serves from
   (``app.lib.disclaimer``, ``app.lib.explain``, ``app.lib.data_methods_view``,
-  the winning artifact) and pin the wording/values that were observed in the
-  recorded browser session (screenshots in ``reports/uat-evidence/`` and the
-  per-check table in ``reports/uat.md``). The Data & Methods surface is pinned
-  by re-verifying the committed ``reports/data-methods`` bundle through the
-  same provenance engine the deployed page uses: Streamlit Cloud deploys from
-  a git clone, so the deployed host renders exactly the committed bytes and
-  SHA-256 re-verification pins that view without a second network path.
+  ``app.Home``, the winning artifact) and pin the wording/values that were
+  observed in the recorded browser session (screenshots in
+  ``reports/uat-evidence/`` and the per-check table in ``reports/uat.md``).
+  Two surfaces get a serving-source pin built on one rationale — Streamlit
+  Cloud deploys from a git clone of this repository, so the deployed host
+  renders exactly the committed bytes, and an in-process render pins what a
+  deployed route serves without a second network path: the Data & Methods
+  surface re-verifies the committed ``reports/data-methods`` bundle through
+  the same provenance engine the deployed page uses (SHA-256 re-verification
+  pins that view), and the Home landing surface renders the committed
+  ``app/Home.py`` through ``streamlit.testing.v1.AppTest`` (artifact-status
+  banner gate, guided-story honesty annotations, canonical ``/Predict`` and
+  ``/Data_Methods`` click-path links) to pin what the deployed ``/`` route
+  serves.
 
 The interactive, JavaScript-rendered part of all three flows (dashboard
 navigation, prediction submission, the disclaimer acknowledgement gate, and
@@ -434,3 +441,78 @@ def test_data_methods_evidence_pack_present() -> None:
         assert size > 10 * 1024, (
             f"{path} is {size} bytes — too small to be a real capture"
         )
+
+
+# ---------------------------------------------------------------------------
+# Home landing surface (/) — guided story pinned against the serving source
+# (M008/S02). Streamlit Cloud clones this repo, so rendering the committed
+# app/Home.py in-process pins what the deployed / route serves.
+# ---------------------------------------------------------------------------
+
+
+def _render_home():
+    """Render ``app/Home.py`` with the artifact cache cleared before and after.
+
+    Mirrors ``tests/test_home_landing.py``'s ``_render`` helper so the UAT
+    pin and the local landing test exercise the identical render path.
+    """
+    import streamlit.testing.v1 as st_testing
+
+    from app.lib.artifact_loader import clear_artifact_cache
+
+    clear_artifact_cache()
+    test = st_testing.AppTest.from_file(
+        str(_PROJECT_ROOT / "app/Home.py"), default_timeout=300
+    )
+    try:
+        test.run()
+    finally:
+        clear_artifact_cache()
+    return test
+
+
+def _rendered_markdown(test) -> str:
+    """Every markdown body on the rendered page (main + sidebar), joined."""
+    chunks = [str(m.value) for m in test.markdown]
+    for sidebar_markdown in getattr(test.sidebar, "markdown", []):
+        chunks.append(str(sidebar_markdown.value))
+    return "\n".join(chunks)
+
+
+def test_home_landing_markers_pin_the_deployed_page() -> None:
+    """Home's guided-story markers pin what the deployed ``/`` route serves.
+
+    Rationale: Streamlit Cloud clones this repository, so this render pins
+    what the deployed ``/`` route serves — the same deploy-from-git rationale
+    as the D&M pins above, without a second network path. Asserted markers:
+    the artifact-status success banner stays the trust gate (no error
+    banners), the honesty annotations are quoted verbatim (``p = 0.221``,
+    ``0.1200``, ``0.1111``, ``-0.0089``, ``0.005274``), and the click-path
+    links target the canonical ``/Predict`` and ``/Data_Methods`` routes.
+
+    The plan text named ``/2_Predict``-style hrefs, but Streamlit strips the
+    numeric page prefix when routing (``2_Predict.py`` serves at
+    ``/Predict``), so the numbered forms are dead links that fall back onto
+    Home — the canonical links are asserted instead and the dead numbered
+    hrefs are guarded against as a regression.
+    """
+    test = _render_home()
+    assert not test.exception, str(test.exception)
+    success_text = " ".join(str(s.value) for s in test.success)
+    assert "loaded and validated" in success_text.lower(), (
+        "the artifact-status success banner must stay Home's trust gate"
+    )
+    assert not list(test.error), "the landing must show no error banners"
+    markdown_text = _rendered_markdown(test)
+    for marker in ("p = 0.221", "0.1200", "0.1111", "-0.0089", "0.005274"):
+        assert marker in markdown_text, (
+            f"honesty string missing from rendered markdown: {marker}"
+        )
+    assert "[Try a prediction](/Predict)" in markdown_text, (
+        "the primary CTA must link the canonical /Predict route"
+    )
+    assert "(/Data_Methods)" in markdown_text, (
+        "the Data & Methods link must target the canonical /Data_Methods route"
+    )
+    for dead in ("(/2_Predict)", "(/4_Data_Methods)"):
+        assert dead not in markdown_text, f"dead page href in markdown: {dead}"
