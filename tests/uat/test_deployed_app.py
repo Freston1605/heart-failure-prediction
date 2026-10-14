@@ -10,14 +10,18 @@ clean environment:
   contract so an assertion never mistakes session gating for an outage.
   Once past the edge, the app itself is probed on its documented surfaces:
   ``{url}/healthz`` (JSON ``{"status": "ok"}``) and the direct page routes
-  (``/``, ``/Explore``, ``/Predict``) followed through the auth chain to a
-  200. The retired ``/~/+`` iframe prefix is deliberately not probed — it is
-  not the documented health/route contract.
+  (``/``, ``/Explore``, ``/Predict``, ``/Data_Methods``) followed through the
+  auth chain to a 200. The retired ``/~/+`` iframe prefix is deliberately not
+  probed — it is not the documented health/route contract.
 - *Contract tests* import the same modules the deployed app serves from
-  (``app.lib.disclaimer``, ``app.lib.explain``, the winning artifact) and
-  pin the wording/values that were observed in the recorded browser session
-  (screenshots in ``reports/uat-evidence/`` and the per-check table in
-  ``reports/uat.md``).
+  (``app.lib.disclaimer``, ``app.lib.explain``, ``app.lib.data_methods_view``,
+  the winning artifact) and pin the wording/values that were observed in the
+  recorded browser session (screenshots in ``reports/uat-evidence/`` and the
+  per-check table in ``reports/uat.md``). The Data & Methods surface is pinned
+  by re-verifying the committed ``reports/data-methods`` bundle through the
+  same provenance engine the deployed page uses: Streamlit Cloud deploys from
+  a git clone, so the deployed host renders exactly the committed bytes and
+  SHA-256 re-verification pins that view without a second network path.
 
 The interactive, JavaScript-rendered part of all three flows (dashboard
 navigation, prediction submission, the disclaimer acknowledgement gate, and
@@ -146,15 +150,16 @@ def test_app_health_endpoint_is_ok(deployed_url: str) -> None:
     assert "ok" in health.text.strip().lower()
 
 
-def test_app_iframe_serves_both_flow_routes(deployed_url: str) -> None:
-    """Both flow routes are served by the app (no 404 burial).
+def test_app_serves_all_documented_routes(deployed_url: str) -> None:
+    """All documented routes are served by the app (no 404 burial).
 
     Routes are fetched directly (``/{route}``); each follows the
-    documented 303 auth chain to the 200 app shell. The legacy ``/~/+``
-    iframe prefix was retired by the edge (persistent empty 400 as of
-    2026-10-12) and is no longer used.
+    documented 303 auth chain to the 200 app shell — including the
+    multipage ``/Data_Methods`` route. The legacy ``/~/+`` iframe prefix
+    was retired by the edge (persistent empty 400 as of 2026-10-12) and
+    is no longer used. A 404 is never retried as transient.
     """
-    for route in ("/", "/Explore", "/Predict"):
+    for route in ("/", "/Explore", "/Predict", "/Data_Methods"):
         resp = _get_ok(f"{deployed_url}{route}")
         assert resp.status_code == 200, f"{route} returned {resp.status_code}"
 
@@ -329,6 +334,59 @@ def test_attribution_top_features_match_browser_observed_values() -> None:
     # largest |SHAP| overall is the most-negative driver, per screenshot 10
     largest_name = max(range(len(values)), key=lambda i: abs(values[i]))
     assert names[largest_name] == "ST_Slope_Up"
+
+
+# ---------------------------------------------------------------------------
+# Data & Methods surface (/Data_Methods) — facts pinned against the serving
+# source (M008/S01). Streamlit Cloud clones this repo, so re-verifying the
+# committed bundle pins what the deployed host renders.
+# ---------------------------------------------------------------------------
+
+
+def test_data_methods_bundle_verifies_clean_for_deployed_host() -> None:
+    """The committed D&M bundle re-verifies clean with every rendered surface.
+
+    Rationale: Streamlit Cloud deploys from a git clone of this repository,
+    so the deployed host renders exactly the committed bytes; SHA-256
+    re-verification of the default committed ``reports/data-methods`` dir
+    through :func:`app.lib.data_methods_view.load_data_methods_view` pins
+    the deployed host's view without a second network path.
+    """
+    from app.lib.data_methods_view import load_data_methods_view
+
+    view = load_data_methods_view()
+    assert view.ok, f"D&M bundle failed to verify locally: {view.error!r}"
+    assert view.verified_digests, "manifest re-verification pinned no digests"
+    assert set(view.stages) == {
+        "stage1_hygiene",
+        "stage2_univariate",
+        "stage3_bivariate",
+        "stage4_assumptions",
+    }
+    assert isinstance(view.treatment_plan, dict)
+    assert view.treatment_plan.get("imbalance_ladder"), (
+        "Part D imbalance ladder must be non-empty"
+    )
+    assert view.treatment_audit is not None
+
+
+def test_data_methods_gate_verdicts_pin_the_deployed_table() -> None:
+    """Part F's table: 48 measured pairs, every verdict rejected (incumbent stands).
+
+    This is the exact table the real-browser session confirms on the live
+    ``/Data_Methods`` page in T02.
+    """
+    from app.lib.data_methods_view import load_data_methods_view
+
+    view = load_data_methods_view()
+    assert view.ok
+    verdicts = view.gate_verdicts
+    assert verdicts is not None, "gate verdicts missing from the committed bundle"
+    assert verdicts["split_version"] == "v1"
+    assert verdicts["measured_pair_count"] == 48
+    outcomes = verdicts["outcomes"]
+    assert len(outcomes) == 48
+    assert all(outcome["verdict"] == "rejected" for outcome in outcomes)
 
 
 def test_explainability_evidence_pack_present() -> None:
