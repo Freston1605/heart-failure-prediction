@@ -2,7 +2,7 @@
 
 **Deployed URL:** https://heart-failure-prediction-krwy4etmtavrqd233mteym.streamlit.app/
 **Apps/flows covered:** multipage Streamlit Cloud deployment — dashboard (Home + Explore) and prediction (/Predict).
-**Method:** both flows exercised in a real automated browser session (Chromium 1280x800) against the live URL; each step recorded by a DOM assertion and an on-disk screenshot bundle. The machine-checkable half is the reproducible pytest suite `tests/uat/test_deployed_app.py` (7 tests, all passing), which re-asserts the same facts against the deployed URL and the tracked serving modules.
+**Method:** both flows exercised in a real automated browser session (Chromium 1280x800) against the live URL; each step recorded by a DOM assertion and an on-disk screenshot bundle. The machine-checkable half is the reproducible pytest suite `tests/uat/test_deployed_app.py` (10 tests, all passing), which re-asserts the same facts against the deployed URL and the tracked serving modules. M007/S04 added **Flow 3 — explainability (/Predict)**: the same session asserted the raw/calibrated pair, the per-patient SHAP attribution, and the cohort-drivers section on the deployed page (screenshots 09-11).
 
 Edge context (documented, not a defect): a raw first-hit HTTP GET to the app returns **303 to `share.streamlit.io/-/auth/app`** — the Streamlit Cloud edge's session/bot gate; a browser session transits `/-/login?payload=...` automatically and lands on a 200. `HTTP evidence: pytest test_root_is_reachable_through_documented_auth_chain`.
 
@@ -28,14 +28,26 @@ Edge context (documented, not a defect): a raw first-hit HTTP GET to the app ret
 | P6 | Prediction result: "Predicted probability of heart disease `0.1111`", "Selected threshold (f1) `0.33`", "probability is below the tuned threshold", and the full disclaimer re-rendered next to the result | PASS (DOM) | `browser_assert` 3/3; `reports/uat-evidence/05-predict-success.jpg` |
 | P7 | The served **0.1111** is reproducible offline: the same default feature row (Age 54, F, ASY, 130, 223, 0, Normal, 138, N, 0.6, Up) through the tracked `models/heart-winner-v1.pkl` yields exactly `0.1111` — the deployed app serves the real serialized artifact | PASS (pytest) | `test_default_form_prediction_matches_browser_observed_value` |
 
+## Flow 3 — explainability (/Predict)
+
+Rendered on the same `/Predict` session (M007); screenshots committed under `reports/uat-evidence/`.
+
+| # | Check | Result | Evidence |
+|---|-------|--------|----------|
+| E1 | **Cohort drivers render pre-submit**: section "What drives scores across patients?" with the mean-\|SHAP\| caption (200 deterministically sampled rows of the pinned 918-row dataset), the 8-bar chart, and the top-5 table (ChestPainType_ASY 0.0925, ST_Slope_Up 0.0919, …) — visible before any Predict click | PASS (DOM + screenshot) | `browser_assert` 2/2 text_visible in app iframe before submit; `reports/uat-evidence/11-predict-cohort-drivers.jpg` |
+| E2 | **Negative path — the acknowledgement gate still blocks submit**: clicking Predict with the acknowledgement unticked yields the guard warning "Please tick the disclaimer acknowledgement above before a prediction is computed. Nothing was predicted from this input." and **no** prediction metric, raw pair, or attribution renders | PASS (DOM) | guard `text_visible`; frame `innerText` scan: `Predicted probability…` false, `Raw RF probability…` false, `Why this score?` false |
+| E3 | **Raw/calibrated pair values**: calibrated metric `0.1111`, threshold `0.33`, raw metric `Raw RF probability (pre-calibration) 0.1200`, and the gap line `Raw RF 0.1200 → isotonic-calibrated 0.1111 (calibration gap -0.0089)` (source `->` renders as `→` in the DOM) | PASS (DOM + screenshot + pytest) | `reports/uat-evidence/09-predict-raw-calibrated-pair.jpg`; `test_default_form_raw_and_calibrated_pair_matches_browser_observed_value` |
+| E4 | **Attribution chart top features**: "Why this score?" with the raw-score caption (raw 0.1200, base 0.5557), the 8-bar SHAP chart, and the table headed by `pushed up ChestPainType_ASY 0.0790` / `pushed down ST_Slope_Up -0.0985` (ST_Slope_Up the largest-\|SHAP\| feature overall); additive caption reproduces the raw score (base 0.5557 + Σ -0.4357 = 0.1200) | PASS (DOM + screenshot + pytest) | `reports/uat-evidence/10-predict-shap-attribution.jpg`; `test_attribution_top_features_match_browser_observed_values` |
+| E5 | **No exception anywhere in the session**: no `Traceback`, no "The explanation is unavailable (…)" warning, no degradation notice ("…only the explanation is affected.") anywhere in the frame after submit — the app never white-screened | PASS (DOM) | frame `innerText` scan: `traceback=false`, `degradationNotice=false`, `explanationUnavailable=false` |
+
 ## Reproducible checks (pytest)
 
 ```
 $ python -m pytest tests/uat/test_deployed_app.py -v
-7 passed
+10 passed
 ```
 
-Test list: `test_root_is_reachable_through_documented_auth_chain`, `test_followed_root_resolves_to_a_200_page`, `test_app_health_endpoint_is_ok`, `test_app_iframe_serves_both_flow_routes`, `test_disclaimer_wording_matches_deployed_serving_module`, `test_home_serving_banner_facts_match_deployed_metadata`, `test_default_form_prediction_matches_browser_observed_value`.
+Test list: `test_root_is_reachable_through_documented_auth_chain`, `test_followed_root_resolves_to_a_200_page`, `test_app_health_endpoint_is_ok`, `test_app_iframe_serves_both_flow_routes`, `test_disclaimer_wording_matches_deployed_serving_module`, `test_home_serving_banner_facts_match_deployed_metadata`, `test_default_form_prediction_matches_browser_observed_value`, `test_default_form_raw_and_calibrated_pair_matches_browser_observed_value`, `test_attribution_top_features_match_browser_observed_values`, `test_explainability_evidence_pack_present`.
 
 ## Evidence files
 
@@ -44,6 +56,9 @@ Test list: `test_root_is_reachable_through_documented_auth_chain`, `test_followe
 - `reports/uat-evidence/03-predict-disclaimer.jpg` — Predict: audit trail, NO-SHIP notice, disclaimer banner, patient form
 - `reports/uat-evidence/04-predict-unacknowledged-blocked.jpg` — negative path: guard warning, no prediction
 - `reports/uat-evidence/05-predict-success.jpg` — prediction served with result metrics + full disclaimer
+- `reports/uat-evidence/09-predict-raw-calibrated-pair.jpg` — explainability: calibrated 0.1111 / raw 0.1200 metrics + calibration-gap line (Flow 3, E3)
+- `reports/uat-evidence/10-predict-shap-attribution.jpg` — explainability: "Why this score?" SHAP bar chart + pushed up/down table (Flow 3, E4)
+- `reports/uat-evidence/11-predict-cohort-drivers.jpg` — explainability: cohort-drivers section rendered pre-submit (Flow 3, E1)
 
 (Browser debug bundles — screenshots, accessibility trees, network/console logs — are also on disk under `.artifacts/browser/*uat-*`; the copies above are the committed evidence.)
 
@@ -54,4 +69,4 @@ Test list: `test_root_is_reachable_through_documented_auth_chain`, `test_followe
 
 ## Verdict
 
-Both deployed flows pass end-to-end in a real browser session with the disclaimer confirmed visible on the prediction page, the acknowledgement gate blocking unacknowledged predictions, and a served prediction reproduced exactly by the tracked artifact.
+Both dashboard and prediction flows pass end-to-end in a real browser session with the disclaimer confirmed visible on the prediction page, the acknowledgement gate blocking unacknowledged predictions, and a served prediction reproduced exactly by the tracked artifact. The explainability flow (Flow 3, M007/S04) also passes: the cohort-drivers section renders pre-submit, the raw/calibrated pair and the per-patient SHAP attribution on the deployed page reproduce the pinned local artifact values exactly (0.1200 → 0.1111, gap -0.0089; ChestPainType_ASY +0.0790 / ST_Slope_Up -0.0985), and the session never raised an exception.

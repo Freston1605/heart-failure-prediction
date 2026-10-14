@@ -1,4 +1,4 @@
-"""Tests/uat: browser-backed UAT of the deployed app's two flows.
+"""Tests/uat: browser-backed UAT of the deployed app's three flows.
 
 The deployed app is live at the streamlit.app URL below (recorded in
 ``reports/deployment.md``). These tests make the checks reproducible from a
@@ -10,21 +10,29 @@ clean environment:
   contract so an assertion never mistakes session gating for an outage.
   Once past the edge, the app itself is probed on its documented surfaces:
   ``{url}/healthz`` (JSON ``{"status": "ok"}``) and the direct page routes
-  (``/``, ``/Explore``, ``/Predict``) followed through the auth chain to a
-  200. The retired ``/~/+`` iframe prefix is deliberately not probed — it is
-  not the documented health/route contract.
+  (``/``, ``/Explore``, ``/Predict``, ``/Data_Methods``) followed through the
+  auth chain to a 200. The retired ``/~/+`` iframe prefix is deliberately not
+  probed — it is not the documented health/route contract.
 - *Contract tests* import the same modules the deployed app serves from
-  (``app.lib.disclaimer``, the winning artifact) and pin the wording/values
-  that were observed in the recorded browser session (screenshots in
-  ``reports/uat-evidence/`` and the per-check table in ``reports/uat.md``).
+  (``app.lib.disclaimer``, ``app.lib.explain``, ``app.lib.data_methods_view``,
+  the winning artifact) and pin the wording/values that were observed in the
+  recorded browser session (screenshots in ``reports/uat-evidence/`` and the
+  per-check table in ``reports/uat.md``). The Data & Methods surface is pinned
+  by re-verifying the committed ``reports/data-methods`` bundle through the
+  same provenance engine the deployed page uses: Streamlit Cloud deploys from
+  a git clone, so the deployed host renders exactly the committed bytes and
+  SHA-256 re-verification pins that view without a second network path.
 
-The interactive, JavaScript-rendered part of both flows (dashboard
-navigation, prediction submission, the disclaimer acknowledgement gate) was
-exercised in a real browser session; the objective evidence for each step is
-committed under ``reports/uat-evidence/`` and summarised in
-``reports/uat.md``. The pytest layer keeps the machine-checkable half of
-that evidence reproducible: same URL, same wording pin, same expected
-probability from the same serialized artifact.
+The interactive, JavaScript-rendered part of all three flows (dashboard
+navigation, prediction submission, the disclaimer acknowledgement gate, and
+the explainability surface: raw/calibrated pair, per-patient SHAP
+attribution, cohort drivers) was exercised in a real browser session; the
+objective evidence for each step is committed under ``reports/uat-evidence/``
+and summarised in ``reports/uat.md``. The pytest layer keeps the
+machine-checkable half of that evidence reproducible: same URL, same
+wording pin, same expected probability from the same serialized artifact,
+and the same raw/calibrated pair and attribution signs from the same
+artifact.
 
 Every network call uses a short timeout so a dead host fails fast with an
 explicit message instead of hanging the suite.
@@ -142,15 +150,16 @@ def test_app_health_endpoint_is_ok(deployed_url: str) -> None:
     assert "ok" in health.text.strip().lower()
 
 
-def test_app_iframe_serves_both_flow_routes(deployed_url: str) -> None:
-    """Both flow routes are served by the app (no 404 burial).
+def test_app_serves_all_documented_routes(deployed_url: str) -> None:
+    """All documented routes are served by the app (no 404 burial).
 
     Routes are fetched directly (``/{route}``); each follows the
-    documented 303 auth chain to the 200 app shell. The legacy ``/~/+``
-    iframe prefix was retired by the edge (persistent empty 400 as of
-    2026-10-12) and is no longer used.
+    documented 303 auth chain to the 200 app shell — including the
+    multipage ``/Data_Methods`` route. The legacy ``/~/+`` iframe prefix
+    was retired by the edge (persistent empty 400 as of 2026-10-12) and
+    is no longer used. A 404 is never retried as transient.
     """
-    for route in ("/", "/Explore", "/Predict"):
+    for route in ("/", "/Explore", "/Predict", "/Data_Methods"):
         resp = _get_ok(f"{deployed_url}{route}")
         assert resp.status_code == 200, f"{route} returned {resp.status_code}"
 
@@ -225,3 +234,203 @@ def test_default_form_prediction_matches_browser_observed_value() -> None:
     probability = float(result.artifact.predict_positive_proba(frame)[0])
     # browser session rendered the value formatted to 4 dp as 0.1111
     assert round(probability, 4) == pytest.approx(0.1111)
+
+
+# ---------------------------------------------------------------------------
+# Explainability surface (/Predict) — browser-observed facts pinned against
+# the serving source (M007/S04). Screenshots 09/10/11 record the session;
+# these nodes keep the observed numbers reproducible from the same artifact.
+# ---------------------------------------------------------------------------
+
+
+def _build_default_frame(artifact):
+    """The pre-filled default /Predict row as the form serves it.
+
+    Mirrors the value construction in
+    ``test_default_form_prediction_matches_browser_observed_value``: every
+    categorical takes its first display level, every numeric its default —
+    no randomness, so all downstream pins are deterministic.
+    """
+    from app.lib.input_validation import (
+        CATEGORICAL_DISPLAY_LEVELS,
+        NUMERIC_DEFAULTS,
+        build_feature_frame,
+    )
+    from heart.data.schema import SPECS_BY_NAME
+
+    values: dict[str, object] = {}
+    for column in artifact.metadata.feature_columns:
+        spec = SPECS_BY_NAME[column]
+        if spec.is_categorical:
+            values[column] = list(CATEGORICAL_DISPLAY_LEVELS[column])[0]
+        else:
+            values[column] = NUMERIC_DEFAULTS[column]
+    return build_feature_frame(values)
+
+
+def test_default_form_raw_and_calibrated_pair_matches_browser_observed_value() -> None:
+    """The raw/calibrated pair seen in screenshot 09 reproduces to 4 dp.
+
+    Browser evidence (reports/uat-evidence/09-predict-raw-calibrated-pair.jpg)
+    shows, for the default-form submission on the deployed /Predict page:
+    calibrated metric ``0.1111`` at threshold ``0.33``, the raw
+    ``Raw RF probability (pre-calibration)`` metric ``0.1200``, and the gap
+    line ``Raw RF 0.1200 -> isotonic-calibrated 0.1111 (calibration gap
+    -0.0089)``. The same default row through the same serialized artifact
+    must reproduce raw 0.1200 / calibrated 0.1111 / gap -0.0089 exactly —
+    proving the deployed app serves the seam deliberately (M007), not that
+    it serves a stand-in.
+    """
+    from app.lib.artifact_loader import load_winning_artifact
+
+    result = load_winning_artifact()
+    assert result.ok, f"artifact failed locally: {result.error!r}"
+    frame = _build_default_frame(result.artifact)
+    raw = float(result.artifact.predict_raw_positive_proba(frame)[0])
+    calibrated = float(result.artifact.predict_positive_proba(frame)[0])
+    gap = calibrated - raw
+    # screenshot 09 rendered all three to 4 dp
+    assert round(raw, 4) == pytest.approx(0.1200)
+    assert round(calibrated, 4) == pytest.approx(0.1111)
+    assert round(gap, 4) == pytest.approx(-0.0089)
+
+
+def test_attribution_top_features_match_browser_observed_values() -> None:
+    """Attribution signs/names from screenshot 10 reproduce locally.
+
+    Browser evidence (reports/uat-evidence/10-predict-shap-attribution.jpg)
+    shows on the deployed /Predict page after the default submission:
+    ``Why this score?`` with the raw-score caption (raw 0.1200), and the
+    pushed-up/pushed-down table headed by ``pushed up ChestPainType_ASY
+    0.0790`` and ``pushed down ST_Slope_Up -0.0985`` — ST_Slope_Up also the
+    largest-|SHAP| feature overall. ``explain_patient`` attributes the
+    single default row against the pinned artifact with no randomness, so
+    the same call must yield the same top features and signs.
+    """
+    from app.lib.artifact_loader import load_winning_artifact
+    from app.lib.explain import explain_patient
+
+    result = load_winning_artifact()
+    assert result.ok, f"artifact failed locally: {result.error!r}"
+    frame = _build_default_frame(result.artifact)
+    outcome = explain_patient(result.artifact, frame)
+    assert outcome.error is None, (
+        f"explanation degraded locally: {outcome.error.user_message!r}"
+    )
+    attribution = outcome.attribution
+    assert attribution is not None
+    names = list(attribution.display_names)
+    values = [float(v) for v in attribution.values]
+    assert len(names) == len(values) and names
+    up = [(names[i], values[i]) for i in range(len(values)) if values[i] > 0]
+    down = [(names[i], values[i]) for i in range(len(values)) if values[i] < 0]
+    assert up and down, "attribution must push at least one feature each way"
+    top_up_name, top_up_value = max(up, key=lambda item: item[1])
+    top_down_name, top_down_value = min(down, key=lambda item: item[1])
+    assert top_up_name == "ChestPainType_ASY"
+    assert top_up_value > 0
+    assert top_down_name == "ST_Slope_Up"
+    assert top_down_value < 0
+    # largest |SHAP| overall is the most-negative driver, per screenshot 10
+    largest_name = max(range(len(values)), key=lambda i: abs(values[i]))
+    assert names[largest_name] == "ST_Slope_Up"
+
+
+# ---------------------------------------------------------------------------
+# Data & Methods surface (/Data_Methods) — facts pinned against the serving
+# source (M008/S01). Streamlit Cloud clones this repo, so re-verifying the
+# committed bundle pins what the deployed host renders.
+# ---------------------------------------------------------------------------
+
+
+def test_data_methods_bundle_verifies_clean_for_deployed_host() -> None:
+    """The committed D&M bundle re-verifies clean with every rendered surface.
+
+    Rationale: Streamlit Cloud deploys from a git clone of this repository,
+    so the deployed host renders exactly the committed bytes; SHA-256
+    re-verification of the default committed ``reports/data-methods`` dir
+    through :func:`app.lib.data_methods_view.load_data_methods_view` pins
+    the deployed host's view without a second network path.
+    """
+    from app.lib.data_methods_view import load_data_methods_view
+
+    view = load_data_methods_view()
+    assert view.ok, f"D&M bundle failed to verify locally: {view.error!r}"
+    assert view.verified_digests, "manifest re-verification pinned no digests"
+    assert set(view.stages) == {
+        "stage1_hygiene",
+        "stage2_univariate",
+        "stage3_bivariate",
+        "stage4_assumptions",
+    }
+    assert isinstance(view.treatment_plan, dict)
+    assert view.treatment_plan.get("imbalance_ladder"), (
+        "Part D imbalance ladder must be non-empty"
+    )
+    assert view.treatment_audit is not None
+
+
+def test_data_methods_gate_verdicts_pin_the_deployed_table() -> None:
+    """Part F's table: 48 measured pairs, every verdict rejected (incumbent stands).
+
+    This is the exact table the real-browser session confirms on the live
+    ``/Data_Methods`` page in T02.
+    """
+    from app.lib.data_methods_view import load_data_methods_view
+
+    view = load_data_methods_view()
+    assert view.ok
+    verdicts = view.gate_verdicts
+    assert verdicts is not None, "gate verdicts missing from the committed bundle"
+    assert verdicts["split_version"] == "v1"
+    assert verdicts["measured_pair_count"] == 48
+    outcomes = verdicts["outcomes"]
+    assert len(outcomes) == 48
+    assert all(outcome["verdict"] == "rejected" for outcome in outcomes)
+
+
+def test_explainability_evidence_pack_present() -> None:
+    """Screenshots 09/10/11 are committed, non-empty captures.
+
+    The >10 KB floor guards against empty or error-page captures (a blank
+    frame or a Streamlit traceback page compresses far below it); the three
+    files are the slice's demo evidence cited by ``reports/uat.md`` Flow 3.
+    """
+    evidence_dir = _PROJECT_ROOT / "reports" / "uat-evidence"
+    expected = (
+        "09-predict-raw-calibrated-pair.jpg",
+        "10-predict-shap-attribution.jpg",
+        "11-predict-cohort-drivers.jpg",
+    )
+    for name in expected:
+        path = evidence_dir / name
+        assert path.is_file(), f"missing evidence file: {path}"
+        size = path.stat().st_size
+        assert size > 10 * 1024, (
+            f"{path} is {size} bytes — too small to be a real capture"
+        )
+
+
+def test_data_methods_evidence_pack_present() -> None:
+    """Screenshots 12/13 are committed, non-empty captures of /Data_Methods.
+
+    The >10 KB floor guards against blank frames or error pages (an empty
+    frame or a Streamlit traceback page compresses far below it); the two
+    files are the slice's demo evidence cited by ``reports/uat.md`` Flow 4:
+    12 shows the dataset-provenance banner with the Stage 1-2 tables and
+    figures, 13 the Part E narrative plus the Part F 48-pair verdicts table
+    and the technical appendix — both captured from the live deployed route
+    in the T02 real-browser session.
+    """
+    evidence_dir = _PROJECT_ROOT / "reports" / "uat-evidence"
+    expected = (
+        "12-data-methods-stage-sections.jpg",
+        "13-data-methods-gate-verdicts.jpg",
+    )
+    for name in expected:
+        path = evidence_dir / name
+        assert path.is_file(), f"missing evidence file: {path}"
+        size = path.stat().st_size
+        assert size > 10 * 1024, (
+            f"{path} is {size} bytes — too small to be a real capture"
+        )

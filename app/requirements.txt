@@ -23,3 +23,9 @@ shap==0.52.0
 # pyproject.toml [ml] version. Added 2026-10-13 after the M007 redeploy
 # crashed with ModuleNotFoundError: mlflow (the manifest had never carried it).
 mlflow==3.16.1
+# heart.tuning.runner (imported by the Runs page's import closure) does
+# `import optuna` at module load, so the deployed app cannot boot without it.
+# Pinned to the exact pyproject [ml] version. Added 2026-10-14 after the live
+# UAT session for M008/S01 found every deployed page rendering the redacted
+# ImportError from runner.py:63 (same bug class as the mlflow crash above).
+optuna==5.0.0
